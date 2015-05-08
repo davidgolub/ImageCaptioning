@@ -5,16 +5,14 @@
 
 --]]
 
-local ImageLSTMCaptioner = torch.class('imagelstm.IMAGELSTMSentiment')
+local ImageLSTMCaptioner = torch.class('imagelstm.ImageCaptionerLSTM')
 
 function ImageLSTMCaptioner:__init(config)
   -- parameters for lstm cell
-  self.in_dim           =  config.in_dim 
-  self.mem_dim          =  config.mem_dim           or 150
-  self.output_module_fn =  config.output_module_fn
   self.criterion        =  config.criterion
-  self.num_layers       =  config.num_layers        or 1
+  self.output_module_fn = config.output_module_fn
   self.lstm_layer =  imagelstm.LSTM_Full(config)
+  self.train_mode = true
 
   local modules = nn.Parallel()
     :add(self.lstm_layer)
@@ -23,16 +21,30 @@ function ImageLSTMCaptioner:__init(config)
   self.params, self.grad_params = modules:getParameters()
 end
 
+function ImageLSTMCaptioner:training()
+  self.train_mode = true
+end
+
+function ImageLSTMCaptioner:predicting()
+  self.train_mode = false
+end
+
 -- Forward propagate.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- reverse: if true, read the input from right to left (useful for bidirectional LSTMs).
 -- labels: T x 1 tensor of desired indeces
 -- Returns T x error tensor, all the intermediate hidden states of the LSTM
-function ImageLSTMCaptioner:forward(inputs, labels): 
+function ImageLSTMCaptioner:forward(inputs, labels)
   local lstm_output = self.lstm_layer:forward(inputs, self.reverse)
   local class_predictions = self.output_module_fn:forward(lstm_output)
-  local err = self.criterion:forward(class_predictions, labels)
-  return lstm_output, class_predictions, err
+  if self.train_mode then
+    local err = self.criterion:forward(class_predictions, labels)
+    return lstm_output, class_predictions, err
+  else 
+    return class_predictions
+  end
+
+  
 end
 
 -- Backpropagate. forward() must have been called previously on the same input.
@@ -42,7 +54,7 @@ end
 -- class_predictions: T x 1 tensor of predictions
 -- labels: actual labels
 -- Returns the gradients with respect to the inputs (in the same order as the inputs).
-function ImageLSTMCaptioner:backward(inputs, lstm_output, class_predictions, labels):
+function ImageLSTMCaptioner:backward(inputs, lstm_output, class_predictions, labels)
   output_module_derivs = self.criterion:backward(class_predictions, labels)
   lstm_output_derivs = self.output_module_fn:backward(lstm_output, output_module_derivs)
   lstm_input_derivs = self.lstm_layer:backward(inputs, lstm_output_derivs, self.reverse)
@@ -50,7 +62,7 @@ function ImageLSTMCaptioner:backward(inputs, lstm_output, class_predictions, lab
   return lstm_input_derivs
 end
 
-function ImageCaptioner:predict(image_captioner)
+function ImageLSTMCaptioner:predict(image_captioner)
   print("TODO")
 end
 

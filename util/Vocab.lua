@@ -18,6 +18,7 @@ function Vocab:__init(path)
 
   self:add_start_token()
   self:add_end_token()
+  self:add_unk_token()
 
   -- Include special start symbol and end symbol
   local file = io.open(path)
@@ -93,6 +94,15 @@ function Vocab:token(i)
     error('Index ' .. i .. ' out of bounds')
   end
   return self._tokens[i]
+end
+
+function Vocab:tokens(indeces)
+  local output = {}
+  local len = #indeces
+  for i = 1, len do
+    output[i] = self:token(indeces[i])
+  end
+  return output
 end
 
 function Vocab:map(tokens)

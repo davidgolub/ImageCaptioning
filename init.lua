@@ -15,6 +15,10 @@ print("Starting to load requirements")
 include('util/Vocab.lua')
 include('util/read_data.lua') -- For reading word embeddings, image features, and captions
 include('layers/CRowAddTable.lua')
+
+-- models
+include('models/ImageCaptioner.lua')
+include('models/ImageCaptionerLSTM.lua')
 include('models/LSTM.lua')
 include('models/LSTM_Full.lua')
 

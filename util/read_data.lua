@@ -59,20 +59,8 @@ function imagelstm.read_image_features(feature_path)
   -- Returns Torch tensor of size (image_feature_size)
 
   print('Reading image features from ' .. feature_path)
-
-  local features = json.load(feature_path)
-  local feature_size = #features[1]
-  local num_features = #features
-  local vecs = torch.Tensor(num_features, feature_size)
-  for i = 1, num_features do
-    for j = 1, feature_size do 
-      vecs[i][j] = features[i][j]
-    end
-  end
-  
+  vecs = torch.load(feature_path)
   print('Done reading image features from ' .. feature_path)
-  vec_path = "googlenet_feats.th"
-  torch.save(vec_path, vecs)
 
   return vecs
 end
@@ -119,7 +107,7 @@ function imagelstm.read_caption_dataset(dir, vocab)
   end
 
   caption_dataset.vocab = vocab
-  caption_dataset.image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.json')
+  caption_dataset.image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   caption_dataset.image_ids = image_ids
   caption_dataset.pred_sentences = out_sentences
   caption_dataset.sentences = sentences

@@ -10,11 +10,12 @@ function ImageCaptioner:__init(config)
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
   self.mem_dim                 = config.mem_dim           or 250
-  self.learning_rate           = config.learning_rate     or 0.05
+  self.learning_rate           = config.learning_rate     or 0.005
   self.emb_learning_rate       = config.emb_learning_rate or 0.1
-  self.emb_image_learning_rate = config.emb_image_learning_rate or 0.1
-  self.batch_size              = config.batch_size        or 25
+  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.1
+  self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
+  self.num_classes             = config.num_classes
   self.fine_grained            = (config.fine_grained == nil) and true or config.fine_grained
   self.dropout                 = (config.dropout == nil) and true or config.dropout
 
@@ -23,12 +24,12 @@ function ImageCaptioner:__init(config)
   self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
 
   -- image feature embedding
-  self.image_emb = nn.Linear(self.image_dim, self.embd_dim)
+  self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
 
   -- Do a linear combination of image and word features
   local x1 = nn.Identity()()
   local x2 = nn.Identity()()
-  local a = nn.CAddTable()({x1, x2})
+  local a = imagelstm.CRowAddTable()({x1, x2})
   
   self.lstm_emb = nn.gModule({x1, x2}, {a})
 
@@ -49,18 +50,20 @@ function ImageCaptioner:__init(config)
 
   -- negative log likelihood optimization objective
   self.criterion = nn.ClassNLLCriterion()
+  local num_caption_params = self:new_caption_module():getParameters():size(1)
+  print("Number of caption parameters " .. num_caption_params)
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
     in_dim  = self.emb_dim,
     mem_dim = self.mem_dim,
-    output_module_fn = function() return self:new_captioner_module() end,
+    output_module_fn = self:new_caption_module(),
     criterion = self.criterion,
   }
 
   self.params, self.grad_params = self.image_captioner:getParameters()
 end
 
-function ImageCaptioner:new_captioner_module()
+function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
     caption_module:add(nn.Dropout())
@@ -68,7 +71,8 @@ function ImageCaptioner:new_captioner_module()
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
     :add(nn.LogSoftMax())
-  return captioner_module
+
+  return caption_module
 end
 
 function ImageCaptioner:train(dataset)
@@ -88,7 +92,7 @@ function ImageCaptioner:train(dataset)
         local idx = indices[i + j - 1]
         -- get the image features
         local imgid = dataset.image_ids[idx]
-        local image_feat = dataset.image_ids[idx]
+        local image_feats = dataset.image_feats[imgid]
 
         -- get input and output sentences
         local sentence = dataset.sentences[idx]
@@ -96,10 +100,10 @@ function ImageCaptioner:train(dataset)
 
         -- get text/image inputs
         local text_inputs = self.emb:forward(sentence)
-        local image_inputs = self.image_emb:forward(image_feat)
+        local image_inputs = self.image_emb:forward(image_feats)
 
         -- get the lstm inputs
-        local inputs = self.lstm_emb:forward({text_feats, image_feats})
+        local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
 
         -- compute the loss
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
@@ -116,8 +120,8 @@ function ImageCaptioner:train(dataset)
         local image_grads = input_emb_grads[2]
 
         -- Do backward pass on image features and word embedding gradients
-        self.emb:backward(sent, emb_grads)
-        self.image_emb:backward(image_feat, image_grads)
+        self.emb:backward(sentence, emb_grads)
+        self.image_emb:backward(image_feats, image_grads)
       end
 
       loss = loss / batch_size
@@ -128,26 +132,67 @@ function ImageCaptioner:train(dataset)
       -- regularization
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       self.grad_params:add(self.reg, self.params)
+
+      print("Loss is ")
+      print(loss)
       return loss, self.grad_params
     end
 
-    optim.adagrad(feval, self.params, self.optim_state)
+    optim.rmsprop(feval, self.params, self.optim_state)
     self.emb:updateParameters(self.emb_learning_rate)
     self.image_emb:updateParameters(self.image_emb_learning_rate)
   end
   xlua.progress(dataset.size, dataset.size)
 end
 
+
 function ImageCaptioner:predict(image_features, beam_size)
-  -- TODO: Implement predicting image caption from iamge features
-  -- And beam size
+  -- TODO: Implement predicting image caption from image features with beam size
+  -- set mode to predicting mode
+  self.image_captioner:predicting()
+
+  local tokens = {}
+
+  -- Keep track of tokens predicted
+  local num_iter = 0
+  local tokens = {}
+
+  -- Start with special START token:
+  local next_token = torch.IntTensor{1}
+
+  -- Terminate when predict the END token
+  local end_token = torch.IntTensor{2}
+  
+  while next_token[1] ~= end_token[1] and num_iter < 20 do
+     -- get text/image inputs
+
+    local text_inputs = self.emb:forward(next_token)
+    local image_inputs = self.image_emb:forward(image_features)
+
+    -- get the lstm inputs
+    local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
+
+    -- feed forward to predictions
+    local class_predictions = torch.squeeze(self.image_captioner:forward(inputs))
+    local pred_token = argmax(class_predictions)
+
+    -- keep count of number of tokens seen already
+    num_iter = num_iter + 1
+    table.insert(tokens, pred_token)
+
+    -- convert token into proper format for feed-forwarding
+    next_token = torch.IntTensor{pred_token}
+  end
+  print(tokens)
+  return tokens
 end
 
 function ImageCaptioner:predict_dataset(dataset)
-  local predictions = torch.Tensor(dataset.size)
-  for i = 1, dataset.size do
+  local predictions = {}
+  for i = 1, 100 do
     xlua.progress(i, dataset.size)
-    predictions[i] = self:predict(dataset.trees[i], dataset.sents[i])
+    prediction = self:predict(dataset.image_feats[i])
+    table.insert(predictions, prediction)
   end
   return predictions
 end
@@ -166,23 +211,23 @@ end
 
 function ImageCaptioner:print_config()
   local num_params = self.params:size(1)
-  local num_sentiment_params = self:new_sentiment_module():getParameters():size(1)
-  printf('%-25s = %s\n', 'fine grained sentiment', tostring(self.fine_grained))
+  local num_caption_params = self:new_caption_module():getParameters():size(1)
   printf('%-25s = %d\n', 'num params', num_params)
-  printf('%-25s = %d\n', 'num compositional params', num_params - num_sentiment_params)
+  printf('%-25s = %d\n', 'num compositional params', num_params - num_caption_params)
   printf('%-25s = %d\n', 'word vector dim', self.emb_dim)
+  printf('%-25s = %d\n', 'image feature dim', self.image_dim)
   printf('%-25s = %d\n', 'Tree-LSTM memory dim', self.mem_dim)
   printf('%-25s = %.2e\n', 'regularization strength', self.reg)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
   printf('%-25s = %.2e\n', 'word vector learning rate', self.emb_learning_rate)
-  printf('%-25s = %.2e\n', 'image vector learning rate', self.emb_image_learning_rate)
+  printf('%-25s = %.2e\n', 'image vector learning rate', self.image_emb_learning_rate)
   printf('%-25s = %s\n', 'dropout', tostring(self.dropout))
 end
 
 function ImageCaptioner:save(path)
   local config = {
-    reverse           = self.reverse
+    reverse           = self.reverse,
     batch_size        = self.batch_size,
     dropout           = self.dropout,
     emb_learning_rate = self.emb_learning_rate,

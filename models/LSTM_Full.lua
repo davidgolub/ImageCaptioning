@@ -104,13 +104,10 @@ end
 -- reverse: if true, read the input from right to left (useful for bidirectional LSTMs).
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
-  print("Forwarding the inputs")
   local size = inputs:size(1)
   self.outputs = torch.Tensor(size, self.mem_dim)
 
-  print("Size is" .. size)
   for t = 1, size do
-    print("on iteration" .. t)
     local input = reverse and inputs[size - t + 1] or inputs[t]
     self.depth = self.depth + 1
     local cell = self.cells[self.depth]
@@ -189,7 +186,8 @@ function LSTM:zeroGradParameters()
   self.master_cell:zeroGradParameters()
 end
 
-function LSTM:getParameters()
+function LSTM:parameters()
+  print("Getting parameters")
   return self.master_cell:parameters()
 end
 
