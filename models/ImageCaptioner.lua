@@ -7,17 +7,17 @@
 local ImageCaptioner = torch.class('imagelstm.ImageCaptioner')
 
 function ImageCaptioner:__init(config)
+  self.gpu_mode                = config.gpu_mode          or false
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
-  self.mem_dim                 = config.mem_dim           or 250
-  self.learning_rate           = config.learning_rate     or 0.005
+  self.mem_dim                 = config.mem_dim           or 150
+  self.learning_rate           = config.learning_rate     or 0.1
   self.emb_learning_rate       = config.emb_learning_rate or 0.1
   self.image_emb_learning_rate = config.emb_image_learning_rate or 0.1
-  self.batch_size              = config.batch_size        or 100
+  self.batch_size              = config.batch_size        or 33
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
-  self.fine_grained            = (config.fine_grained == nil) and true or config.fine_grained
-  self.dropout                 = (config.dropout == nil) and true or config.dropout
+  self.dropout                 = (config.dropout == nil) and false or config.dropout
 
   -- word embedding
   self.emb_dim = config.emb_vecs:size(2)
@@ -26,7 +26,7 @@ function ImageCaptioner:__init(config)
   -- image feature embedding
   self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
 
-  -- Do a linear combination of image and word features
+  -- Do a linear combiation of image and word features
   local x1 = nn.Identity()()
   local x2 = nn.Identity()()
   local a = imagelstm.CRowAddTable()({x1, x2})
@@ -61,6 +61,23 @@ function ImageCaptioner:__init(config)
   }
 
   self.params, self.grad_params = self.image_captioner:getParameters()
+
+  -- set gpu mode
+  if self.gpu_mode then
+    self:set_gpu_mode()
+  end
+end
+
+-- Set all of the network parameters to gpu mode
+function ImageCaptioner:set_gpu_mode()
+  self.image_captioner:set_gpu_mode()
+  self.lstm_emb:cuda()
+  self.emb:cuda()
+  self.image_emb:cuda()
+end
+
+function ImageCaptioner:set_cpu_mode()
+  print("TODO")
 end
 
 function ImageCaptioner:new_caption_module()
@@ -86,7 +103,8 @@ function ImageCaptioner:train(dataset)
     local feval = function(x)
       self.grad_params:zero()
       self.emb:zeroGradParameters()
-
+      self.image_emb:zeroGradParameters()
+      
       local loss = 0
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
@@ -133,12 +151,13 @@ function ImageCaptioner:train(dataset)
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       self.grad_params:add(self.reg, self.params)
 
-      print("Loss is ")
+      print("Loss is:")
       print(loss)
+
       return loss, self.grad_params
     end
 
-    optim.rmsprop(feval, self.params, self.optim_state)
+    optim.adagrad(feval, self.params, self.optim_state)
     self.emb:updateParameters(self.emb_learning_rate)
     self.image_emb:updateParameters(self.image_emb_learning_rate)
   end
@@ -162,7 +181,10 @@ function ImageCaptioner:predict(image_features, beam_size)
 
   -- Terminate when predict the END token
   local end_token = torch.IntTensor{2}
-  
+
+  -- Initial hidden state/cell state values for lstm
+  local prev_outputs = nil
+
   while next_token[1] ~= end_token[1] and num_iter < 20 do
      -- get text/image inputs
 
@@ -173,17 +195,19 @@ function ImageCaptioner:predict(image_features, beam_size)
     local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
 
     -- feed forward to predictions
-    local class_predictions = torch.squeeze(self.image_captioner:forward(inputs))
-    local pred_token = argmax(class_predictions)
+    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
 
+    class_predictions = torch.squeeze(class_predictions)
+    local pred_token = argmax(class_predictions, num_iter < 3)
+    
     -- keep count of number of tokens seen already
     num_iter = num_iter + 1
     table.insert(tokens, pred_token)
 
     -- convert token into proper format for feed-forwarding
     next_token = torch.IntTensor{pred_token}
+    prev_outputs = next_outputs
   end
-  print(tokens)
   return tokens
 end
 
@@ -191,16 +215,22 @@ function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
   for i = 1, 100 do
     xlua.progress(i, dataset.size)
-    prediction = self:predict(dataset.image_feats[i])
+    prediction = self:predict(dataset.image_feats[i], 2)
     table.insert(predictions, prediction)
   end
   return predictions
 end
 
-function argmax(v)
+-- Argmax: hacky way to ignore end token to reduce silly sentences
+function argmax(v, ignore_end)
   local idx = 1
   local max = v[1]
-  for i = 2, v:size(1) do
+  local start_index = 2
+  if ignore_end then
+    start_index = 4
+  end
+
+  for i = start_index, v:size(1) do
     if v[i] > max then
       max = v[i]
       idx = i

@@ -135,6 +135,22 @@ function LSTM:forward(inputs, reverse)
   return self.outputs
 end
 
+
+-- Does a single tick of lstm layer, used in beam search
+-- input: in_dim tensor, in_dim is input to the LSTM.
+-- prev_states: previous states of the lstm (hidden, cell_state array)
+-- Returns cell_state, hidden_state of LSTM, both mem_dim tensors
+function LSTM:tick(input, prev_outputs)
+  local cell = self:new_cell()
+
+  if prev_outputs == nil then
+    prev_outputs= self.initial_values
+  end
+
+  local outputs = cell:forward({input, prev_outputs[1], prev_outputs[2]})
+  return outputs
+end
+
 -- Backpropagate. forward() must have been called previously on the same input.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- grad_outputs: T x num_layers x mem_dim tensor.

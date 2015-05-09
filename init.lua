@@ -1,5 +1,7 @@
 require('torch')
 require('nn')
+--require('cutorch') uncomment for GPU mode
+--require('cunn') uncomment for GPU mode
 require('nngraph')
 require('optim')
 require('xlua')
@@ -12,8 +14,11 @@ imagelstm = {}
 
 print("Starting to load requirements")
 
+-- For reading word embeddings, image features, and captions
 include('util/Vocab.lua')
-include('util/read_data.lua') -- For reading word embeddings, image features, and captions
+include('util/read_data.lua') 
+
+-- Layer for adding image features to every entry in sentence
 include('layers/CRowAddTable.lua')
 
 -- models

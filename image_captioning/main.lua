@@ -53,54 +53,55 @@ printf('num train = %d\n', train_dataset.size)
 -- initialize model
 local model = imagelstm.ImageCaptioner{
   emb_vecs = vecs,
-  num_classes = vocab.size + 3 --For start, end and unk tokens
+  num_classes = vocab.size + 3, --For start, end and unk tokens
+  gpu_mode = false -- Set to true for GPU mode
 }
 
 -- number of epochs to train
 local num_epochs = 10
 
+  
 -- print information
 header('model configuration')
 printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
+local model_save_path = string.format(
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 1)
+
+-- model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
+
 -- train
 local train_start = sys.clock()
 local best_train_score = -1.0
 local best_train_model = model
+
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   local start = sys.clock()
-
   printf('-- epoch %d\n', i)
   model:train(train_dataset)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
-  printf('-- predicting sentences on a sample set of 100')
+  model_save_path = string.format(
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, i)
+
+  model:save(model_save_path)
+
   local train_predictions = model:predict_dataset(train_dataset)
+  printf('-- predicting sentences on a sample set of 100')
 
   for j = 1, #train_predictions do
     prediction = train_predictions[j]
     sentence = vocab:tokens(prediction)
     print(sentence)
   end
-  -- local train_score = accuracy(train_predictions, train_dataset.labels)
-  -- printf('-- train score: %.4f\n', train_score)
-  -- local dev_predictions = model:predict_dataset(train_dataset)
-  --local dev_score = accuracy(dev_predictions, dev_dataset.labels)
-  --printf('-- dev score: %.4f\n', dev_score)
 
-  --if dev_score > best_dev_score then
-    --best_dev_score = dev_score
-    --best_dev_model = treelstm.TreeLSTMSentiment{
-      --emb_vecs = vecs,
-      --fine_grained = fine_grained,
-    --}
-    --best_dev_model.params:copy(model.params)
-    --best_dev_model.emb.weight:copy(model.emb.weight)
-    --best_dev_model.image_emb.weight:copy(model.image_emb.weight)
-  --end
 end
+
+print('writing model to ' .. model_save_path)
+model:save(model_save_path)
+
 printf('finished training in %.2fs\n', sys.clock() - train_start)
 
 -- evaluate
