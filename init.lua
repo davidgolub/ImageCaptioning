@@ -14,6 +14,9 @@ imagelstm = {}
 
 print("Starting to load requirements")
 
+-- Math helper functions
+include('util/math.lua')
+
 -- For reading word embeddings, image features, and captions
 include('util/Vocab.lua')
 include('util/read_data.lua') 

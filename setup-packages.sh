@@ -1,3 +1,9 @@
+git clone https://github.com/torch/distro.git ~/torch --recursive
+cd ~/torch; ./install.sh
+
+source ~/.bashrc  # or ~/.zshrc.
+th -e "print 'I just installed Torch! Yesss.'"
+
 sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev
 brew update
 brew install luarocks

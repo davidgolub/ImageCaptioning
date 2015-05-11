@@ -11,9 +11,9 @@ function ImageCaptioner:__init(config)
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
   self.mem_dim                 = config.mem_dim           or 150
-  self.learning_rate           = config.learning_rate     or 0.1
-  self.emb_learning_rate       = config.emb_learning_rate or 0.1
-  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.1
+  self.learning_rate           = config.learning_rate     or 0.01
+  self.emb_learning_rate       = config.emb_learning_rate or 0.01
+  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
   self.batch_size              = config.batch_size        or 33
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
@@ -40,13 +40,14 @@ function ImageCaptioner:__init(config)
     self.image_emb.weight:copy(config.image_weights)
   end
 
+  self.optim_state = { learningRate = self.learning_rate }
+
   self.in_zeros = torch.zeros(self.emb_dim)
 
   -- number of classes is equal to the vocab size sicne we are predicting new words
   self.num_classes = config.emb_vecs:size(1)
 
-  -- optimizer configuration
-  self.optim_state = { learningRate = self.learning_rate }
+  
 
   -- negative log likelihood optimization objective
   self.criterion = nn.ClassNLLCriterion()
@@ -61,7 +62,7 @@ function ImageCaptioner:__init(config)
   }
 
   self.params, self.grad_params = self.image_captioner:getParameters()
-
+  
   -- set gpu mode
   if self.gpu_mode then
     self:set_gpu_mode()
@@ -96,6 +97,7 @@ function ImageCaptioner:train(dataset)
   self.image_captioner:training()
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
+  local tot_loss = 0
   for i = 1, dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
@@ -104,7 +106,7 @@ function ImageCaptioner:train(dataset)
       self.grad_params:zero()
       self.emb:zeroGradParameters()
       self.image_emb:zeroGradParameters()
-      
+
       local loss = 0
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
@@ -141,7 +143,7 @@ function ImageCaptioner:train(dataset)
         self.emb:backward(sentence, emb_grads)
         self.image_emb:backward(image_feats, image_grads)
       end
-
+      tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
       self.emb.gradWeight:div(batch_size)
@@ -151,7 +153,7 @@ function ImageCaptioner:train(dataset)
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       self.grad_params:add(self.reg, self.params)
 
-      print("Loss is:")
+      print("Caption loss is:")
       print(loss)
 
       return loss, self.grad_params
@@ -161,20 +163,42 @@ function ImageCaptioner:train(dataset)
     self.emb:updateParameters(self.emb_learning_rate)
     self.image_emb:updateParameters(self.image_emb_learning_rate)
   end
+  average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
-end
 
+  return average_loss
+end
 
 function ImageCaptioner:predict(image_features, beam_size)
   -- TODO: Implement predicting image caption from image features with beam size
   -- set mode to predicting mode
   self.image_captioner:predicting()
-
-  local tokens = {}
+  
+  local image_inputs = self.image_emb:forward(image_features)
 
   -- Keep track of tokens predicted
   local num_iter = 0
   local tokens = {}
+
+  -- does one tick of lstm, input token and previous lstm state as input
+  -- next_token: input into lstm
+  -- prev_outputs: hidden state, cell state of lstm
+  -- returns predicted token, its log likelihood, state of lstm, and all predictions
+
+  local function lstm_tick(next_token, prev_outputs)
+   local text_inputs = self.emb:forward(next_token)
+   -- get the lstm inputs
+   local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
+
+   -- feed forward to predictions
+   local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
+
+   local class_predictions = torch.squeeze(class_predictions)
+   local pred_token = argmax(class_predictions, num_iter < 3)
+   local likelihood = class_predictions[pred_token]
+
+   return pred_token, likelihood, next_outputs, class_predictions
+  end
 
   -- Start with special START token:
   local next_token = torch.IntTensor{1}
@@ -185,59 +209,91 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = nil
 
-  while next_token[1] ~= end_token[1] and num_iter < 20 do
-     -- get text/image inputs
-
-    local text_inputs = self.emb:forward(next_token)
-    local image_inputs = self.image_emb:forward(image_features)
-
-    -- get the lstm inputs
-    local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
-
-    -- feed forward to predictions
-    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
-
-    class_predictions = torch.squeeze(class_predictions)
-    local pred_token = argmax(class_predictions, num_iter < 3)
+  if beam_size == 0 then
+    local ll = 0
+    -- Greedy search
+    while next_token[1] ~= end_token[1] and num_iter < 20 do
+       -- get text/image inputs
+      local pred_token, likelihood, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
     
-    -- keep count of number of tokens seen already
-    num_iter = num_iter + 1
-    table.insert(tokens, pred_token)
+      -- keep count of number of tokens seen already
+      num_iter = num_iter + 1
+      ll = ll + likelihood
+      if pred_token ~= end_token then
+        table.insert(tokens, pred_token)
+      end
 
-    -- convert token into proper format for feed-forwarding
-    next_token = torch.IntTensor{pred_token}
-    prev_outputs = next_outputs
+      -- convert token into proper format for feed-forwarding
+      next_token = torch.IntTensor{pred_token}
+      prev_outputs = next_outputs
+    end
+    return {ll, tokens}
+  else
+    -- beam search
+    local beams = {}
+
+    -- first get initial predictions
+    local _, _, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
+    
+    -- then get best top k indices indices
+    local best_indices = topkargmax(class_predictions, beam_size)
+
+    -- then initialize our tokens list
+    for i = 1, beam_size do
+      local next_token = best_indices[i]
+      local curr_beam = {class_predictions[next_token], {next_token}, next_outputs}
+      table.insert(beams, curr_beam)
+    end
+
+    -- now do the general beam search algorithm
+    while num_iter < 20 do
+      num_iter = num_iter + 1
+
+      local next_beams = {}
+
+      for i = 1, #beams do
+        local curr_beam = beams[i]
+
+        -- get all predicted tokens so far
+        local curr_tokens_list = curr_beam[2]
+        local next_token = torch.IntTensor{curr_tokens_list[#curr_tokens_list]}
+
+        -- If the next token is the end token, just add prediction to list
+        if next_token[1] == 2 then
+           table.insert(next_beams, curr_beam)
+        else 
+          local log_likelihood = curr_beam[1]
+          local prev_outputs = curr_beam[3]
+
+          -- first get initial predictions
+          local pred_token, likelihood, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
+          table.insert(curr_tokens_list, pred_token)
+          local next_ll = log_likelihood + likelihood
+
+          local next_beam = {next_ll, curr_tokens_list, next_outputs}
+          table.insert(next_beams, next_beam)
+        end
+      end
+
+      -- Keep top beam_size entries in beams
+      beams = topk(next_beams, beam_size)
+    end
+
+    return beams
   end
-  return tokens
 end
+
 
 function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
   for i = 1, 100 do
     xlua.progress(i, dataset.size)
-    prediction = self:predict(dataset.image_feats[i], 2)
+    prediction = self:predict(dataset.image_feats[i], 20)
     table.insert(predictions, prediction)
   end
   return predictions
 end
 
--- Argmax: hacky way to ignore end token to reduce silly sentences
-function argmax(v, ignore_end)
-  local idx = 1
-  local max = v[1]
-  local start_index = 2
-  if ignore_end then
-    start_index = 4
-  end
-
-  for i = start_index, v:size(1) do
-    if v[i] > max then
-      max = v[i]
-      idx = i
-    end
-  end
-  return idx
-end
 
 function ImageCaptioner:print_config()
   local num_params = self.params:size(1)
@@ -271,6 +327,7 @@ function ImageCaptioner:save(path)
 
   torch.save(path, {
     params = self.params,
+    optim_state = self.optim_state,
     config = config,
   })
 end
@@ -279,5 +336,6 @@ function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)
+  model.optim_state = state.optim_state
   return model
 end

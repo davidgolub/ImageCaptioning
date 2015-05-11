@@ -58,29 +58,30 @@ local model = imagelstm.ImageCaptioner{
 }
 
 -- number of epochs to train
-local num_epochs = 10
+local num_epochs = -1
 
-  
 -- print information
 header('model configuration')
 printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 1)
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 10)
 
--- model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
+model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 
 -- train
 local train_start = sys.clock()
 local best_train_score = -1.0
 local best_train_model = model
 
+local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   local start = sys.clock()
   printf('-- epoch %d\n', i)
-  model:train(train_dataset)
+  loss = model:train(train_dataset)
+  printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
   model_save_path = string.format(
@@ -99,39 +100,39 @@ for i = 1, num_epochs do
 
 end
 
-print('writing model to ' .. model_save_path)
-model:save(model_save_path)
-
 printf('finished training in %.2fs\n', sys.clock() - train_start)
 
 -- evaluate
 header('Evaluating on test set')
-printf('-- using model with dev score = %.4f\n', best_dev_score)
-local test_predictions = best_dev_model:predict_dataset(test_dataset)
-printf('-- test score: %.4f\n', accuracy(test_predictions, test_dataset.labels))
+printf('-- using model with train score = %.4f\n', loss)
+local test_predictions = model:predict_dataset(train_dataset)
 
--- write predictions to disk
-local subtask = fine_grained and '5class' or '2class'
-if lfs.attributes(treelstm.predictions_dir) == nil then
-  lfs.mkdir(treelstm.predictions_dir)
+if lfs.attributes(imagelstm.predictions_dir) == nil then
+  lfs.mkdir(imagelstm.predictions_dir)
 end
 local predictions_save_path = string.format(
-  treelstm.predictions_dir .. '/sent-treelstm.%d.%s.pred', model.mem_dim, subtask)
-local predictions_file = torch.DiskFile(predictions_save_path, 'w')
+  imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.pred', model.mem_dim)
+local predictions_file, err = io.open(predictions_save_path,"w")
+
 print('writing predictions to ' .. predictions_save_path)
-for i = 1, test_predictions:size(1) do
-  predictions_file:writeInt(test_predictions[i])
+for i = 1, #test_predictions do
+  local test_prediction = test_predictions[i][1]
+  local likelihood = test_prediction[1]
+  local tokens = test_prediction[2]
+  local sentence = table.concat(vocab:tokens(tokens), ' ')
+  print(sentence)
+  predictions_file:write(sentence .. '\n')
 end
 predictions_file:close()
 
 -- write model to disk
-if lfs.attributes(treelstm.models_dir) == nil then
-  lfs.mkdir(treelstm.models_dir)
+if lfs.attributes(imagelstm.models_dir) == nil then
+  lfs.mkdir(imagelstm.models_dir)
 end
 local model_save_path = string.format(
-  treelstm.models_dir .. '/sent-treelstm.%d.%s.th', model.mem_dim, subtask)
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, num_epochs + 1)
 print('writing model to ' .. model_save_path)
-best_dev_model:save(model_save_path)
+model:save(model_save_path)
 
 -- to load a saved model
 -- local loaded = imagelstm.ImageCaptioner.load(model_save_path)
