@@ -6,6 +6,28 @@
 
 require('..')
 
+cmd = torch.CmdLine()
+cmd:text()
+cmd:text()
+cmd:text('Image Captioning Parameters')
+cmd:text('Options')
+cmd:option('-gpu_mode', false, 'gpu mode')
+cmd:option('-epochs', 10,'number of epochs')
+cmd:text()
+
+-- parse input params
+params = cmd:parse(arg)
+
+print (params.gpu)
+local use_gpu_mode = params.gpu_mode or false
+local num_epochs = params.epochs
+
+if use_gpu_mode then 
+  print("Loading gpu modules")
+  require('cutorch') -- uncomment for GPU mode
+  require('cunn') -- uncomment for GPU mode
+end
+
 function accuracy(pred, gold)
   return torch.eq(pred, gold):sum() / pred:size(1)
 end
@@ -54,11 +76,8 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   emb_vecs = vecs,
   num_classes = vocab.size + 3, --For start, end and unk tokens
-  gpu_mode = false -- Set to true for GPU mode
+  gpu_mode = use_gpu_mode -- Set to true for GPU mode
 }
-
--- number of epochs to train
-local num_epochs = 10
 
 -- print information
 header('model configuration')

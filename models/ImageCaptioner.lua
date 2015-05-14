@@ -92,7 +92,6 @@ function ImageCaptioner:new_caption_module()
 end
 
 function ImageCaptioner:train(dataset)
-  self.image_captioner:training()
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
@@ -118,9 +117,9 @@ function ImageCaptioner:train(dataset)
 
 
         if self.gpu_mode then
-          sentence:cuda()
-          out_sentence:cuda()
-          image_feats:cuda()
+          sentence = sentence:cuda()
+          out_sentence = out_sentence:cuda()
+          image_feats = image_feats:cuda()
         end
 
         -- get text/image inputs
@@ -176,12 +175,8 @@ function ImageCaptioner:train(dataset)
 end
 
 function ImageCaptioner:predict(image_features, beam_size)
-  -- TODO: Implement predicting image caption from image features with beam size
-  -- set mode to predicting mode
-  self.image_captioner:predicting()
-  
   if self.gpu_mode then
-    image_features:cuda()
+    image_features = image_features:cuda()
   end
   
   local image_inputs = self.image_emb:forward(image_features)

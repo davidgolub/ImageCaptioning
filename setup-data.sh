@@ -1,6 +1,12 @@
+# Download data
+wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/downloads/dataset.json
+wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/downloads/googlenet_feats.json
+
+# Preprocess captioning data
 python scripts/download.py
 python scripts/create_vocab.py
 
+# Preprocess glove vectors
 glove_dir="data/glove"
 glove_pre="glove.840B"
 glove_dim="300d"
@@ -9,6 +15,7 @@ if [ ! -f $glove_dir/$glove_pre.$glove_dim.th ]; then
         $glove_dir/$glove_pre.vocab $glove_dir/$glove_pre.$glove_dim.th
 fi
 
+# Convert features to torch format
 image_dir="data/flickr8k"
 image_pre="googlenet_feats"
 

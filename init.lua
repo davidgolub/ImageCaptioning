@@ -1,7 +1,5 @@
 require('torch')
 require('nn')
---require('cutorch') uncomment for GPU mode
---require('cunn') uncomment for GPU mode
 require('nngraph')
 require('optim')
 require('xlua')

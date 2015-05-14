@@ -21,14 +21,6 @@ function ImageCaptionerLSTM:__init(config)
   self.params, self.grad_params = modules:getParameters()
 end
 
-function ImageCaptionerLSTM:training()
-  self.train_mode = true
-end
-
-function ImageCaptionerLSTM:predicting()
-  self.train_mode = false
-end
-
 -- Forward propagate.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- states: hidden, cell states of LSTM if true, read the input from right to left (useful for bidirectional LSTMs).
@@ -85,9 +77,3 @@ function ImageCaptionerLSTM:getParameters()
   return self.params, self.grad_params
 end
 
-function ImageCaptionerLSTM.load(path)
-  local state = torch.load(path)
-  local model = treelstm.TreeLSTMSentiment.new(state.config)
-  model.params:copy(state.params)
-  return model
-end
