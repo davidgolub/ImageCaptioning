@@ -1,3 +1,4 @@
+python scripts/download.py
 python scripts/create_vocab.py
 
 glove_dir="data/glove"
