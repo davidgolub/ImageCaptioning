@@ -203,7 +203,6 @@ function LSTM:zeroGradParameters()
 end
 
 function LSTM:parameters()
-  print("Getting parameters")
   return self.master_cell:parameters()
 end
 

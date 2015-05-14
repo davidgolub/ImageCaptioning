@@ -26,7 +26,7 @@ function ImageCaptioner:__init(config)
   -- image feature embedding
   self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
 
-  -- Do a linear combiation of image and word features
+  -- Do a linear combination of image and word features
   local x1 = nn.Identity()()
   local x2 = nn.Identity()()
   local a = imagelstm.CRowAddTable()({x1, x2})
@@ -44,10 +44,8 @@ function ImageCaptioner:__init(config)
 
   self.in_zeros = torch.zeros(self.emb_dim)
 
-  -- number of classes is equal to the vocab size sicne we are predicting new words
+  -- number of classes is equal to the vocab size size we are predicting new words
   self.num_classes = config.emb_vecs:size(1)
-
-  
 
   -- negative log likelihood optimization objective
   self.criterion = nn.ClassNLLCriterion()
@@ -118,8 +116,16 @@ function ImageCaptioner:train(dataset)
         local sentence = dataset.sentences[idx]
         local out_sentence = dataset.pred_sentences[idx]
 
+
+        if self.gpu_mode then
+          sentence:cuda()
+          out_sentence:cuda()
+          image_feats:cuda()
+        end
+
         -- get text/image inputs
         local text_inputs = self.emb:forward(sentence)
+
         local image_inputs = self.image_emb:forward(image_feats)
 
         -- get the lstm inputs
@@ -174,6 +180,10 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- set mode to predicting mode
   self.image_captioner:predicting()
   
+  if self.gpu_mode then
+    image_features:cuda()
+  end
+  
   local image_inputs = self.image_emb:forward(image_features)
 
   -- Keep track of tokens predicted
@@ -223,6 +233,8 @@ function ImageCaptioner:predict(image_features, beam_size)
         table.insert(tokens, pred_token)
       end
 
+      print("On iteration %d", num_iter)
+      print(pred_token)
       -- convert token into proper format for feed-forwarding
       next_token = torch.IntTensor{pred_token}
       prev_outputs = next_outputs
@@ -278,7 +290,6 @@ function ImageCaptioner:predict(image_features, beam_size)
       -- Keep top beam_size entries in beams
       beams = topk(next_beams, beam_size)
     end
-
     return beams
   end
 end
@@ -286,9 +297,10 @@ end
 
 function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
-  for i = 1, 100 do
+  num_predictions = 1000 -- = dataset.size
+  for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
-    prediction = self:predict(dataset.image_feats[i], 20)
+    prediction = self:predict(dataset.image_feats[i], 1)
     table.insert(predictions, prediction)
   end
   return predictions

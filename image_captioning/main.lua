@@ -58,7 +58,7 @@ local model = imagelstm.ImageCaptioner{
 }
 
 -- number of epochs to train
-local num_epochs = -1
+local num_epochs = 10
 
 -- print information
 header('model configuration')
@@ -100,7 +100,9 @@ for i = 1, num_epochs do
 
 end
 
-printf('finished training in %.2fs\n', sys.clock() - train_start)
+local gold_save_path = string.format(
+  imagelstm.predictions_dir .. '/gold_standard.txt')
+
 
 -- evaluate
 header('Evaluating on test set')
@@ -112,6 +114,7 @@ if lfs.attributes(imagelstm.predictions_dir) == nil then
 end
 local predictions_save_path = string.format(
   imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.pred', model.mem_dim)
+
 local predictions_file, err = io.open(predictions_save_path,"w")
 
 print('writing predictions to ' .. predictions_save_path)
@@ -120,7 +123,6 @@ for i = 1, #test_predictions do
   local likelihood = test_prediction[1]
   local tokens = test_prediction[2]
   local sentence = table.concat(vocab:tokens(tokens), ' ')
-  print(sentence)
   predictions_file:write(sentence .. '\n')
 end
 predictions_file:close()

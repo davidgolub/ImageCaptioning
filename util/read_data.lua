@@ -70,6 +70,40 @@ end
  Read captions dataset
 
 --]]
+
+
+--[[
+
+ Read captions dataset
+
+--]]
+function imagelstm.read_caption_sentences(dir, vocab)
+  local caption_dataset = {}
+
+  local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
+  local num_images = #annotation_dataset
+
+  -- get input and output sentences
+  local sentences = {}
+  local out_sentences = {}
+  local image_ids = {}
+  for i = 1, num_images do
+    local curr_image = annotation_dataset[i]
+
+    -- dataset is zero indexed, torch is 1 indexed
+    local curr_imgid = curr_image['imgid'] + 1
+    local curr_sentences = curr_image['sentences']
+
+    local tokens = curr_sentences[1]['tokens']
+    table.insert(tokens, "</s>")
+    table.insert(sentences, tokens)
+  end
+  
+  caption_dataset.sentences = sentences
+  caption_dataset.size = #sentences
+  return caption_dataset
+end
+
 function imagelstm.read_caption_dataset(dir, vocab)
   local caption_dataset = {}
 
