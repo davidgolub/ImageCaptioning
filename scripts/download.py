@@ -51,8 +51,7 @@ def unzip(filepath):
 
 def download_wordvecs(dirpath):
     if os.path.exists(dirpath):
-        print('Found Glove vectors - skip')
-        return
+        print('Found Glove dir path')
     else:
         os.makedirs(dirpath)
     url = 'http://www-nlp.stanford.edu/data/glove.840B.300d.txt.gz'
@@ -71,4 +70,5 @@ if __name__ == '__main__':
     data_dir = os.path.join(base_dir, 'data')
     wordvec_dir = os.path.join(data_dir, 'glove')
    
+    print("Downloading word vectors")
     download_wordvecs(wordvec_dir)
