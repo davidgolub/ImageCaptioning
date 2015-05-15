@@ -28,7 +28,7 @@ end
 -- Checks how fast CPU speed is for neural net
 function GpuChecks:check_cpu_speed(inputs, nnet)
   local start_time = sys.clock()
-  for i in 1, 1000 do
+  for i = 1, 1000 do
     nnet:forward(inputs)
   end
   local end_time = sys.clock()
@@ -40,7 +40,7 @@ function GpuChecks:check_gpu_speed(inputs, nnet)
   inputs:cuda()
   nnet:cuda()
   local start_time = sys.clock()
-  for i in 1, 1000 do
+  for i = 1, 1000 do
     nnet:forward(inputs)
   end
   local end_time = sys.clock()
