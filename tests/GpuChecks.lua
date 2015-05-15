@@ -51,7 +51,7 @@ end
 function GpuChecks:check_lstm_cell()
   local in_dim = 300
   local mem_dim = 1500
-  local input = torch.rand(10, 300)
+  local input = torch.rand(in_dim)
   local num_iter = 20
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
