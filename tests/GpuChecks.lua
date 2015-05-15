@@ -86,9 +86,8 @@ function GpuChecks:check_lstm_cell()
   print((end_time - start_time) / num_iter)
 
   local start_time = sys.clock()
-    for i = 1, num_iter do
+  for i = 1, num_iter do
         gpu_cell:forward(lstm_cpu_input)
-    end
   end
   local end_time = sys.clock()
 
