@@ -59,15 +59,20 @@ function GpuChecks:check_lstm_full_layer()
     mem_dim = mem_dim,
   }
 
-
-  local cpu_time = self:check_cpu_speed(input, false, lstm_cpu_layer, num_iter)
-  local gpu_time = self:check_gpu_speed(input, false, lstm_gpu_layer, num_iter)
+  local cpu_time = self:check_cpu_speed(input, nil, lstm_cpu_layer, num_iter)
+  local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
 
   print("Cpu time for image captioner is")
   print(cpu_time)
 
   print ("Gpu time for image captioner is")
   print(gpu_time)
+end
+
+function GpuChecks:check_gpu()
+  self:check_lstm_full_layer()
+  self:check_lstm_captioner()
+  self:check_nn_module()
 end
 
 function GpuChecks:check_lstm_captioner()
@@ -101,12 +106,6 @@ function GpuChecks:check_nn_module()
 
   print ("Gpu time for linear model is ")
   print(gpu_time)
-end
-
-function GpuChecks:check_gpu()
-  self:check_lstm_full_layer()
-  self:check_lstm_captioner()
-  self:check_nn_module()
 end
 
 -- Checks how fast CPU speed is for neural net
