@@ -36,7 +36,7 @@ function GpuChecks:new_caption_module()
   local caption_module = nn.Sequential()
 
   caption_module
-    :add(nn.Linear(self.mem_dim, self.num_classes))
+    :add(nn.Linear(1500, 4000))
     :add(nn.LogSoftMax())
   return caption_module
 end
