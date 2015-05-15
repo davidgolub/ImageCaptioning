@@ -35,8 +35,6 @@ end
 function GradChecks:check_lstm_captioner()
   input = torch.rand(10, 4)
   output = torch.IntTensor{1, 2, 5, 4, 3, 4, 1, 2, 3, 5}
-
-  self.image_captioner:training()
   
   local feval = function(x)
       self.grad_params:zero()
