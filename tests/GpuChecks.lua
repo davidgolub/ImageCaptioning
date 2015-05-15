@@ -76,9 +76,8 @@ function GpuChecks:check_lstm_cell()
                         lstm_gpu_layer.initial_values[2]}
 
   local start_time = sys.clock()
-    for i = 1, num_iter do
-        cpu_cell:forward(lstm_cpu_input)
-    end
+  for i = 1, num_iter do
+      cpu_cell:forward(lstm_cpu_input)
   end
   local end_time = sys.clock()
 
