@@ -176,7 +176,7 @@ function LSTM:backward(inputs, grad_outputs, reverse)
 
   local input_grads = nil
   if self.gpu_mode then
-    input_grads = torch.Tensor(inputs:size()).cuda()
+    input_grads = torch.Tensor(inputs:size()):cuda()
   else
     input_grads = torch.Tensor(inputs:size())
   end
