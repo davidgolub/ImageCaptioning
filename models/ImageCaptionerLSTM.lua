@@ -19,7 +19,10 @@ function ImageCaptionerLSTM:__init(config)
     :add(self.lstm_layer)
     :add(self.output_module_fn)
     
-  modules:cuda()
+  if self.gpu_mode then
+    modules:cuda()
+  end
+  
   self.params, self.grad_params = modules:getParameters()
 end
 
