@@ -6,12 +6,12 @@
 
 local GpuChecks = torch.class('imagelstm.GpuChecks')
 
-function GradChecks:__init(config)
+function GpuChecks:__init(config)
   require('cutorch')
   require('cunn')
 end
 
-function GradChecks:check_gpu()
+function GpuChecks:check_gpu()
   inputs = torch.rand(1000)
   net = nn.Linear(1000, 5000)
 
@@ -26,7 +26,7 @@ function GradChecks:check_gpu()
 end
 
 -- Checks how fast CPU speed is for neural net
-function GradChecks:check_cpu_speed(inputs, nnet)
+function GpuChecks:check_cpu_speed(inputs, nnet)
   local start_time = sys.clock()
   for i in 1, 1000 do
     nnet:forward(inputs)
@@ -36,7 +36,7 @@ function GradChecks:check_cpu_speed(inputs, nnet)
 end
 
 -- Checks how fast GPU speed is for neural net
-function GradChecks:check_gpu_speed(inputs, nnet)
+function GpuChecks:check_gpu_speed(inputs, nnet)
   inputs:cuda()
   nnet:cuda()
   local start_time = sys.clock()
