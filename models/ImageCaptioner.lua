@@ -53,7 +53,7 @@ function ImageCaptioner:__init(config)
   print("Number of caption parameters " .. num_caption_params)
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
-    gpu_mode = self.gpu_mode
+    gpu_mode = self.gpu_mode,
     in_dim  = self.emb_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
