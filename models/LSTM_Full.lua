@@ -38,12 +38,22 @@ function LSTM:__init(config)
       htable_grad[i] = torch.zeros(self.mem_dim)
     end
   end
-  self.initial_values = {ctable_init, htable_init}
-  self.gradInput = {
-    torch.zeros(self.in_dim),
-    ctable_grad,
-    htable_grad
-  }
+
+  if self.gpu_mode then
+    self.initial_values = {ctable_init:cuda(), htable_init:cuda()}
+    self.gradInput = {
+      torch.zeros(self.in_dim):cuda(),
+      ctable_grad:cuda(),
+      htable_grad:cuda()
+    }
+  else 
+    self.initial_values = {ctable_init, htable_init}
+    self.gradInput = {
+      torch.zeros(self.in_dim),
+      ctable_grad,
+      htable_grad
+    }
+  end
 end
 
 -- Instantiate a new LSTM cell.
