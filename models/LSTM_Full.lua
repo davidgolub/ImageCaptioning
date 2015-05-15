@@ -15,9 +15,6 @@ function LSTM:__init(config)
   self.gate_output = config.gate_output
   self.gpu_mode = config.gpu_mode or false
 
-  print("GPU MODE")
-  print(self.gpu_mode)
-
   if self.gate_output == nil then self.gate_output = true end
 
   self.master_cell = self:new_cell()
@@ -117,7 +114,6 @@ function LSTM:forward(inputs, reverse)
   self.outputs = torch.Tensor(size, self.mem_dim)
 
   if self.gpu_mode then
-    print("GPU MODE")
     self.outputs:cuda()
   end
 
@@ -140,6 +136,8 @@ function LSTM:forward(inputs, reverse)
     local ctable, htable = unpack(outputs)
     print(htable)
     if self.num_layers == 1 then
+      print("OUTPUTS")
+      print(self.outputs)
       self.outputs[t] = htable
     else
       for i = 1, self.num_layers do
