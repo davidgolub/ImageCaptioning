@@ -111,10 +111,8 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = torch.Tensor(size, self.mem_dim)
+  self.outputs = torch.Tensor(size, self.mem_dim):cuda()
 
-  print("GPU MODE")
-  print(self.gpu_mode)
   if self.gpu_mode then
     self.outputs:cuda()
   end
