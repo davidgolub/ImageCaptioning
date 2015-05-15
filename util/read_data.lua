@@ -104,7 +104,7 @@ function imagelstm.read_caption_sentences(dir, vocab)
   return caption_dataset
 end
 
-function imagelstm.read_caption_dataset(dir, vocab)
+function imagelstm.read_caption_dataset(dir, vocab, gpu_mode)
   local caption_dataset = {}
 
   local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
