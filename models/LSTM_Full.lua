@@ -110,6 +110,7 @@ end
 -- reverse: if true, read the input from right to left (useful for bidirectional LSTMs).
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
+  print(inputs)
   local size = inputs:size(1)
   self.outputs = nil
 
