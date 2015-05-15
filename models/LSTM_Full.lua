@@ -111,10 +111,12 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = torch.Tensor(size, self.mem_dim):cuda()
+  self.outputs = nil
 
   if self.gpu_mode then
-    self.outputs:cuda()
+    self.outputs = torch.Tensor(size, self.mem_dim):cuda()
+  else
+    self.outputs = torch.Tensor(size, self.mem_dim)
   end
 
   for t = 1, size do
@@ -175,10 +177,11 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     error("No cells to backpropagate through")
   end
 
-  local input_grads = torch.Tensor(inputs:size())
-
+  local input_grads = nil
   if self.gpu_mode then
-    input_grads:cuda()
+    input_grads = torch.Tensor(inputs:size()).cuda()
+  else
+    input_grads = torch.Tensor(inputs:size())
   end
 
   for t = size, 1, -1 do
