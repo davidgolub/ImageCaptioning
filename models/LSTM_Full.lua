@@ -115,6 +115,7 @@ function LSTM:forward(inputs, reverse)
 
   print("GPU mode")
   print(self.gpu_mode)
+  print(inputs)
   if self.gpu_mode then
     self.outputs = torch.Tensor(size, self.mem_dim):cuda()
   else
