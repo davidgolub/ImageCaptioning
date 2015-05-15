@@ -49,8 +49,8 @@ function GpuChecks:check_lstm_captioner()
   end
 
   local num_iter = 200
-  local cpu_time = self:check_cpu_speed(input, self.image_captioner, num_iter)
-  local gpu_time = self:check_gpu_speed(input, self.gpu_image_captioner, num_iter)
+  local cpu_time = self:check_cpu_speed(input, output, self.image_captioner, num_iter)
+  local gpu_time = self:check_gpu_speed(input, output, self.gpu_image_captioner, num_iter)
 
   print("Cpu time for image captioner is")
   print(cpu_time)
@@ -64,8 +64,8 @@ function GpuChecks:check_nn_module()
   local net = nn.Linear(1000, 5000)
   local num_iter = 1000
 
-  local cpu_time = self:check_cpu_speed(inputs, net, num_iter)
-  local gpu_time = self:check_gpu_speed(inputs, net, num_iter)
+  local cpu_time = self:check_cpu_speed(inputs, nil, net, num_iter)
+  local gpu_time = self:check_gpu_speed(inputs, nil, net, num_iter)
 
   print("Cpu time for linear model is ")
   print(cpu_time)
@@ -80,22 +80,22 @@ function GpuChecks:check_gpu()
 end
 
 -- Checks how fast CPU speed is for neural net
-function GpuChecks:check_cpu_speed(inputs, nnet, num_iter)
+function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
-    nnet:forward(inputs)
+    nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
   return (end_time - start_time) / 1000
 end
 
 -- Checks how fast GPU speed is for neural net
-function GpuChecks:check_gpu_speed(inputs, nnet, num_iter)
+function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   inputs = inputs:cuda()
   nnet:cuda()
   local start_time = sys.clock()
   for i = 1, num_iter do
-    nnet:forward(inputs)
+    nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
   return (end_time - start_time) / 1000
