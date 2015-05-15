@@ -15,6 +15,9 @@ function LSTM:__init(config)
   self.gate_output = config.gate_output
   self.gpu_mode = config.gpu_mode or false
 
+  print("GPU MODE")
+  print(self.gpu_mode)
+
   if self.gate_output == nil then self.gate_output = true end
 
   self.master_cell = self:new_cell()
