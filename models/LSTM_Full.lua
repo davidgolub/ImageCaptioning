@@ -93,7 +93,7 @@ function LSTM:new_cell()
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
   cell:cuda()
-  
+
   -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
@@ -166,7 +166,7 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     error("No cells to backpropagate through")
   end
 
-  local input_grads = torch.Tensor(inputs:size())
+  local input_grads = torch.Tensor(inputs:size()):cuda()
   for t = size, 1, -1 do
     local input = reverse and inputs[size - t + 1] or inputs[t]
     local grad_output = reverse and grad_outputs[size - t + 1] or grad_outputs[t]
