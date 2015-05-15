@@ -69,14 +69,14 @@ collectgarbage()
 -- load datasets
 print('loading datasets')
 local train_dir = data_dir
-local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, config.gpu_mode)
+local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode)
 
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
 local model = imagelstm.ImageCaptioner{
-  batch_size = config.batch_size,
+  batch_size = params.batch_size,
   emb_vecs = vecs,
   num_classes = vocab.size + 3, --For start, end and unk tokens
   gpu_mode = use_gpu_mode -- Set to true for GPU mode
