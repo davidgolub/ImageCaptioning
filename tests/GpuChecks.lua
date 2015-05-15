@@ -75,7 +75,8 @@ function GpuChecks:check_nn_module()
 end
 
 function GpuChecks:check_gpu()
-  check_nn_module
+  check_nn_module()
+  check_lstm_captioner()
 end
 
 -- Checks how fast CPU speed is for neural net
