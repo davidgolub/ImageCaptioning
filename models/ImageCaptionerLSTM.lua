@@ -21,6 +21,7 @@ function ImageCaptionerLSTM:__init(config)
     
   if self.gpu_mode then
     modules:cuda()
+    self.criterion:cuda()
   end
   
   self.params, self.grad_params = modules:getParameters()
