@@ -32,7 +32,7 @@ function GpuChecks:__init(config)
 
 end
 
-function GradChecks:new_caption_module()
+function GpuChecks:new_caption_module()
   local caption_module = nn.Sequential()
 
   caption_module
@@ -41,7 +41,7 @@ function GradChecks:new_caption_module()
   return caption_module
 end
 
-function GradChecks:check_lstm_captioner()
+function GpuChecks:check_lstm_captioner()
   local input = torch.rand(10, 400)
   local output = torch.IntTensor(4000)
   for i = 1, #output do
