@@ -106,7 +106,7 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = torch.Tensor(size, self.mem_dim)
+  self.outputs = torch.Tensor(size, self.mem_dim):cuda()
 
   for t = 1, size do
     local input = reverse and inputs[size - t + 1] or inputs[t]
