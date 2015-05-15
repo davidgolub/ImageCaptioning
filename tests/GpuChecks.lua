@@ -76,7 +76,7 @@ function GpuChecks:check_lstm_full_layer()
 end
 
 function GpuChecks:check_lstm_captioner()
-  local input = torch.rand(10, 400)
+  local input = torch.rand(10, 400):cuda()
   local output = torch.IntTensor(10)
   for i = 1, 10 do
     output[i] = i
@@ -122,7 +122,7 @@ end
 function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   local inputs = inputs:cuda()
   nnet:forward(inputs, false)
-  
+
   if labels ~= nil then
     labels = labels:cuda()
   end
