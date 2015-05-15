@@ -5,11 +5,11 @@ require('json')
 local feature_path = arg[1]
 local save_path = arg[2]
 
-print('Converting ' .. feature_path .. '.json' .. 'to Torch serialized format')
+print('Converting ' .. feature_path .. ' to Torch serialized format')
 
 print('Reading image features from ' .. feature_path)
 
-local features = json.load(feature_path .. '.json')
+local features = json.load(feature_path)
 local feature_size = #features[1]
 local num_features = #features
 local vecs = torch.Tensor(num_features, feature_size)
@@ -19,6 +19,6 @@ for i = 1, num_features do
   end
 end
   
-print('Done reading image features from ' .. feature_path .. '.json')
-torch.save(feature_path .. '.th', vecs)
+print('Done reading image features from ' .. feature_path)
+torch.save(save_path, vecs)
 
