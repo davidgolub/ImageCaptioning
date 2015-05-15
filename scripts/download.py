@@ -52,6 +52,7 @@ def unzip(filepath):
 def download_wordvecs(dirpath):
     if os.path.exists(dirpath):
         print('Found Glove dir path')
+        return
     else:
         os.makedirs(dirpath)
     url = 'http://www-nlp.stanford.edu/data/glove.840B.300d.txt.gz'
