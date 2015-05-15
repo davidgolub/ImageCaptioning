@@ -44,7 +44,7 @@ end
 function GpuChecks:check_lstm_captioner()
   local input = torch.rand(10, 400)
   local output = torch.IntTensor(4000)
-  for i = 1, #output do
+  for i = 1, 4000 do
     output[i] = i
   end
 
