@@ -127,11 +127,9 @@ function LSTM:forward(inputs, reverse)
     local outputs = cell:forward({input, prev_output[1], prev_output[2]})
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
-      print(htable)
       self.outputs[t] = htable
     else
       for i = 1, self.num_layers do
-        print(htable)
         self.outputs[t] = htable[i]
       end
     end
@@ -183,7 +181,6 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     local prev_output = (self.depth > 1) and self.cells[self.depth - 1].output
                                          or self.initial_values
     self.gradInput = cell:backward({input, prev_output[1], prev_output[2]}, grads)
-    print(self.gradInput)
     if reverse then
       input_grads[size - t + 1] = self.gradInput[1]
     else
