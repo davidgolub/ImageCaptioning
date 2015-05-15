@@ -14,6 +14,7 @@ cmd:text('Options')
 cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
+cmd:option('-batch_size', 33, 'batch_size')
 cmd:text()
 
 -- parse input params
@@ -68,13 +69,14 @@ collectgarbage()
 -- load datasets
 print('loading datasets')
 local train_dir = data_dir
-local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab)
+local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, config.gpu_mode)
 
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
 local model = imagelstm.ImageCaptioner{
+  batch_size = config.batch_size
   emb_vecs = vecs,
   num_classes = vocab.size + 3, --For start, end and unk tokens
   gpu_mode = use_gpu_mode -- Set to true for GPU mode

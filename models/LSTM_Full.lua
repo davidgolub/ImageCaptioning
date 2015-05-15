@@ -13,10 +13,11 @@ function LSTM:__init(config)
   self.mem_dim = config.mem_dim or 150
   self.num_layers = config.num_layers or 1
   self.gate_output = config.gate_output
+  self.gpu_mode = config.gpu_mode or false
+
   if self.gate_output == nil then self.gate_output = true end
 
   self.master_cell = self:new_cell()
-  self.master_cell:cuda()
   self.depth = 0
   self.cells = {}  -- table of cells in a roll-out
 
@@ -92,7 +93,10 @@ function LSTM:new_cell()
   -- this avoids some quirks with nngraph involving tables of size 1.
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
-  cell:cuda()
+
+  if self.gpu_mode then
+    cell:cuda()
+  end
 
   -- share parameters
   if self.master_cell then
@@ -107,7 +111,11 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = torch.Tensor(size, self.mem_dim):cuda()
+  self.outputs = torch.Tensor(size, self.mem_dim)
+
+  if self.gpu_mode then
+    self.outputs:cuda()
+  end
 
   for t = 1, size do
     local input = reverse and inputs[size - t + 1] or inputs[t]
@@ -164,7 +172,11 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     error("No cells to backpropagate through")
   end
 
-  local input_grads = torch.Tensor(inputs:size()):cuda()
+  local input_grads = torch.Tensor(inputs:size())
+  if self.gpu_mode then
+    input_grads:cuda()
+  end
+  
   for t = size, 1, -1 do
     local input = reverse and inputs[size - t + 1] or inputs[t]
     local grad_output = reverse and grad_outputs[size - t + 1] or grad_outputs[t]

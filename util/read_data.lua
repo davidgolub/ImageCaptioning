@@ -133,6 +133,11 @@ function imagelstm.read_caption_dataset(dir, vocab)
       table.remove(tokens)
       local in_ids = vocab:map(tokens)
 
+      if gpu_mode then
+        out_ids:cuda()
+        in_ids:cuda()
+      end
+
       -- then make a new one with special start symbol
       table.insert(image_ids, curr_imgid)
       table.insert(out_sentences, out_ids)
@@ -140,8 +145,13 @@ function imagelstm.read_caption_dataset(dir, vocab)
     end
   end
 
+  image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
+  if gpu_mode then
+    image_feats:cuda()
+  end
+
   caption_dataset.vocab = vocab
-  caption_dataset.image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
+  caption_dataset.image_feats = image_feats
   caption_dataset.image_ids = image_ids
   caption_dataset.pred_sentences = out_sentences
   caption_dataset.sentences = sentences

@@ -53,6 +53,7 @@ function ImageCaptioner:__init(config)
   print("Number of caption parameters " .. num_caption_params)
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
+    gpu_mode = self.gpu_mode
     in_dim  = self.emb_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
@@ -106,7 +107,8 @@ function ImageCaptioner:train(dataset)
 
       local loss = 0
       for j = 1, batch_size do
-        local idx = indices[i + j - 1]
+        -- local idx = indices[i + j - 1]
+        local idx = i + j - 1
         -- get the image features
         local imgid = dataset.image_ids[idx]
         local image_feats = dataset.image_feats[imgid]
