@@ -9,6 +9,7 @@ local ImageCaptionerLSTM = torch.class('imagelstm.ImageCaptionerLSTM')
 
 function ImageCaptionerLSTM:__init(config)
   -- parameters for lstm cell
+  self.gpu_mode = config.gpu_mode
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
   self.lstm_layer =  imagelstm.LSTM_Full(config)
