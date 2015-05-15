@@ -92,7 +92,7 @@ function LSTM:new_cell()
   -- this avoids some quirks with nngraph involving tables of size 1.
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
-  cell:cuda()
+
   -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
@@ -126,9 +126,11 @@ function LSTM:forward(inputs, reverse)
     local outputs = cell:forward({input, prev_output[1], prev_output[2]})
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
+      print(htable)
       self.outputs[t] = htable
     else
       for i = 1, self.num_layers do
+        print(htable)
         self.outputs[t] = htable[i]
       end
     end
