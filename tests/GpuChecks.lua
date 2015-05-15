@@ -48,7 +48,7 @@ function GpuChecks:check_lstm_captioner()
     output[i] = i
   end
 
-  local num_iter = 200
+  local num_iter = 20
   local cpu_time = self:check_cpu_speed(input, output, self.image_captioner, num_iter)
   local gpu_time = self:check_gpu_speed(input, output, self.gpu_image_captioner, num_iter)
 
@@ -83,7 +83,6 @@ end
 function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
-    print("On iteration %d", i)
     nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
@@ -96,7 +95,6 @@ function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   nnet:cuda()
   local start_time = sys.clock()
   for i = 1, num_iter do
-    print("On iteration %d", i)
     nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
