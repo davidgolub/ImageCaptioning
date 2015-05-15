@@ -16,6 +16,7 @@ function LSTM:__init(config)
   if self.gate_output == nil then self.gate_output = true end
 
   self.master_cell = self:new_cell()
+  self.master_cell:cuda()
   self.depth = 0
   self.cells = {}  -- table of cells in a roll-out
 

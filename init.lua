@@ -41,7 +41,6 @@ imagelstm.predictions_dir = 'predictions'
 function share_params(cell, src, ...)
   for i = 1, #cell.forwardnodes do
     local node = cell.forwardnodes[i]
-    node:cuda()
     if node.data.module then
       node.data.module:share(src.forwardnodes[i].data.module, ...)
     end
