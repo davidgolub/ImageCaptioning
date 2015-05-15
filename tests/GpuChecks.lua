@@ -75,15 +75,19 @@ function GpuChecks:check_nn_module()
 end
 
 function GpuChecks:check_gpu()
-  self:check_nn_module()
   self:check_lstm_captioner()
+    self:check_nn_module()
 end
 
 -- Checks how fast CPU speed is for neural net
 function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
-    nnet:forward(inputs, labels)
+    if labels ~= nil then
+      nnet:forward(inputs, labels)
+    else
+      nnet:forward(inputs)
+    end
   end
   local end_time = sys.clock()
   return (end_time - start_time) / 1000
@@ -97,7 +101,11 @@ function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   end
   local start_time = sys.clock()
   for i = 1, num_iter do
-    nnet:forward(inputs, labels)
+    if labels ~= nil then
+      nnet:forward(inputs, labels)
+    else
+      nnet:forward(inputs)
+    end
   end
   local end_time = sys.clock()
   return (end_time - start_time) / 1000
