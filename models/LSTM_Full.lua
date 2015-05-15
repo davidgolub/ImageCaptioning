@@ -114,6 +114,7 @@ function LSTM:forward(inputs, reverse)
   self.outputs = torch.Tensor(size, self.mem_dim)
 
   if self.gpu_mode then
+    print("GPU MODE")
     self.outputs:cuda()
   end
 
