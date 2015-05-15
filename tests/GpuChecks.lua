@@ -15,8 +15,8 @@ function GpuChecks:check_gpu()
   inputs = torch.rand(1000)
   net = nn.Linear(1000, 5000)
 
-  cpu_time = check_cpu_speed(inputs, net)
-  gpu_time = check_gpu_speed(inputs, net)
+  cpu_time = self:check_cpu_speed(inputs, net)
+  gpu_time = self:check_gpu_speed(inputs, net)
 
   print("Cpu time is ")
   print(cpu_time)
