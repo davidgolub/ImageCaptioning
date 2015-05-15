@@ -13,6 +13,7 @@ cmd:text('Image Captioning Parameters')
 cmd:text('Options')
 cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-epochs', 10,'number of epochs')
+cmd:option('-load_model', false, 'load model')
 cmd:text()
 
 -- parse input params
@@ -87,7 +88,9 @@ model:print_config()
 local model_save_path = string.format(
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 10)
 
-model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
+if params.load_model then
+  model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
+end
 
 -- train
 local train_start = sys.clock()

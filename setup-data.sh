@@ -6,6 +6,15 @@ wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/download
 python scripts/download.py
 python scripts/create_vocab.py
 
+# Install dependencies
+luarocks install torch7
+luarocks install nn
+luarocks install nngraph
+luarocks install optim
+luarocks install cutorch
+luarocks install cunn
+luarocks install json
+
 # Preprocess glove vectors
 glove_dir="data/glove"
 glove_pre="glove.840B"
