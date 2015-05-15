@@ -12,11 +12,11 @@ function GpuChecks:__init(config)
 end
 
 function GpuChecks:check_gpu()
-  inputs = torch.rand(1000)
-  net = nn.Linear(1000, 5000)
+  local inputs = torch.rand(1000)
+  local net = nn.Linear(1000, 5000)
 
-  cpu_time = self:check_cpu_speed(inputs, net)
-  gpu_time = self:check_gpu_speed(inputs, net)
+  local cpu_time = self:check_cpu_speed(inputs, net)
+  local gpu_time = self:check_gpu_speed(inputs, net)
 
   print("Cpu time is ")
   print(cpu_time)
@@ -37,7 +37,7 @@ end
 
 -- Checks how fast GPU speed is for neural net
 function GpuChecks:check_gpu_speed(inputs, nnet)
-  inputs:cuda()
+  inputs = inputs:cuda()
   nnet:cuda()
   local start_time = sys.clock()
   for i = 1, 1000 do
