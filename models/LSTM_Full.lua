@@ -134,6 +134,7 @@ function LSTM:forward(inputs, reverse)
 
     local outputs = cell:forward({input, prev_output[1], prev_output[2]})
     local ctable, htable = unpack(outputs)
+    print(htable)
     if self.num_layers == 1 then
       self.outputs[t] = htable
     else
