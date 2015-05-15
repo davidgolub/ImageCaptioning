@@ -23,7 +23,7 @@ function GpuChecks:__init(config)
   }
 
   self.gpu_image_captioner = imagelstm.ImageCaptionerLSTM{
-    gpu_mode = true
+    gpu_mode = true,
     in_dim  = in_dim,
     mem_dim = mem_dim,
     output_module_fn = self:new_caption_module(),
