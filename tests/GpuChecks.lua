@@ -41,6 +41,35 @@ function GpuChecks:new_caption_module()
   return caption_module
 end
 
+function GpuChecks:check_lstm_full_layer()
+  local in_dim = 300
+  local mem_dim = 1500
+  local input = torch.rand(10, 300)
+  local num_iter = 20
+
+  local lstm_gpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = true,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+  local lstm_cpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = false,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+
+  local cpu_time = self:check_cpu_speed(input, false, lstm_cpu_layer, num_iter)
+  local gpu_time = self:check_gpu_speed(input, false, lstm_gpu_layer, num_iter)
+
+  print("Cpu time for image captioner is")
+  print(cpu_time)
+
+  print ("Gpu time for image captioner is")
+  print(gpu_time)
+end
+
 function GpuChecks:check_lstm_captioner()
   local input = torch.rand(10, 400)
   local output = torch.IntTensor(10)
@@ -75,8 +104,9 @@ function GpuChecks:check_nn_module()
 end
 
 function GpuChecks:check_gpu()
+  self:check_lstm_full_layer()
   self:check_lstm_captioner()
-    self:check_nn_module()
+  self:check_nn_module()
 end
 
 -- Checks how fast CPU speed is for neural net
@@ -86,12 +116,12 @@ function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
       nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
-  return (end_time - start_time) / 1000
+  return (end_time - start_time) / num_iter
 end
 
 -- Checks how fast GPU speed is for neural net
 function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
-  inputs = inputs:cuda()
+  local inputs = inputs:cuda()
   if labels ~= nil then
     labels = labels:cuda()
   end
@@ -100,7 +130,7 @@ function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
       nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
-  return (end_time - start_time) / 1000
+  return (end_time - start_time) / num_iter
 end
 
 
