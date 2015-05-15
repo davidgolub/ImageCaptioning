@@ -50,7 +50,7 @@ end
 function GpuChecks:check_lstm_full_layer()
   local in_dim = 300
   local mem_dim = 1500
-  local input = torch.rand(10, 300)
+  local input = torch.rand(10, 300):cuda()
   local num_iter = 20
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
@@ -76,7 +76,7 @@ function GpuChecks:check_lstm_full_layer()
 end
 
 function GpuChecks:check_lstm_captioner()
-  local input = torch.rand(10, 400):cuda()
+  local input = torch.rand(10, 400)
   local output = torch.IntTensor(10)
   for i = 1, 10 do
     output[i] = i
