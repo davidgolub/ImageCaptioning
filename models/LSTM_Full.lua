@@ -92,7 +92,8 @@ function LSTM:new_cell()
   -- this avoids some quirks with nngraph involving tables of size 1.
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
-
+  cell:cuda()
+  
   -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
