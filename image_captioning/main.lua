@@ -76,7 +76,7 @@ printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
 local model = imagelstm.ImageCaptioner{
-  batch_size = config.batch_size
+  batch_size = config.batch_size,
   emb_vecs = vecs,
   num_classes = vocab.size + 3, --For start, end and unk tokens
   gpu_mode = use_gpu_mode -- Set to true for GPU mode
