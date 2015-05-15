@@ -83,6 +83,7 @@ end
 function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
+    print("On iteration %d", i)
     nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
@@ -95,6 +96,7 @@ function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   nnet:cuda()
   local start_time = sys.clock()
   for i = 1, num_iter do
+    print("On iteration %d", i)
     nnet:forward(inputs, labels)
   end
   local end_time = sys.clock()
