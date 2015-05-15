@@ -14,7 +14,7 @@ function ImageCaptioner:__init(config)
   self.learning_rate           = config.learning_rate     or 0.01
   self.emb_learning_rate       = config.emb_learning_rate or 0.01
   self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
-  self.batch_size              = config.batch_size        or 33
+  self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
   self.dropout                 = (config.dropout == nil) and false or config.dropout
