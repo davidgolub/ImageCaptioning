@@ -42,6 +42,7 @@ function GpuChecks:new_caption_module()
 end
 
 function GpuChecks:check_gpu()
+  self:check_lstm_cell()
   self:check_lstm_full_layer()
   self:check_lstm_captioner()
   self:check_nn_module()
