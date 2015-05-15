@@ -183,6 +183,7 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     local prev_output = (self.depth > 1) and self.cells[self.depth - 1].output
                                          or self.initial_values
     self.gradInput = cell:backward({input, prev_output[1], prev_output[2]}, grads)
+    print(self.gradInput)
     if reverse then
       input_grads[size - t + 1] = self.gradInput[1]
     else
