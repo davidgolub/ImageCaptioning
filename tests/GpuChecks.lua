@@ -67,7 +67,7 @@ function GpuChecks:check_lstm_full_layer()
 
   local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
   local cpu_time = self:check_cpu_speed(input, nil, lstm_cpu_layer, num_iter)
-  
+
   print("Cpu time for image captioner is")
   print(cpu_time)
 
@@ -121,6 +121,8 @@ end
 -- Checks how fast GPU speed is for neural net
 function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   local inputs = inputs:cuda()
+  nnet:forward(inputs, false)
+  
   if labels ~= nil then
     labels = labels:cuda()
   end
