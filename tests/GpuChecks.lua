@@ -47,6 +47,55 @@ function GpuChecks:check_gpu()
   self:check_nn_module()
 end
 
+function GpuChecks:check_lstm_cell()
+  local in_dim = 300
+  local mem_dim = 1500
+  local input = torch.rand(10, 300)
+  local num_iter = 20
+
+  local lstm_gpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = true,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+  local lstm_cpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = false,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+  cpu_cell = lstm_cpu_layer:new_cell()
+  gpu_cell = lstm_gpu_layer:new_cell()
+
+  local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
+                        lstm_cpu_layer.initial_values[2]}
+
+  local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
+                        lstm_gpu_layer.initial_values[2]}
+
+  local start_time = sys.clock()
+    for i = 1, num_iter do
+        cpu_cell:forward(lstm_cpu_input)
+    end
+  end
+  local end_time = sys.clock()
+
+  print("Cpu time")
+  print((end_time - start_time) / num_iter)
+
+  local start_time = sys.clock()
+    for i = 1, num_iter do
+        gpu_cell:forward(lstm_cpu_input)
+    end
+  end
+  local end_time = sys.clock()
+
+  print("Gpu time")
+  print((end_time - start_time) / num_iter)
+
+end
+
 function GpuChecks:check_lstm_full_layer()
   local in_dim = 300
   local mem_dim = 1500
@@ -67,7 +116,7 @@ function GpuChecks:check_lstm_full_layer()
 
   local cpu_time = self:check_cpu_speed(input, nil, lstm_cpu_layer, num_iter)
   local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
-  
+
   print("Cpu time for image captioner is")
   print(cpu_time)
 
