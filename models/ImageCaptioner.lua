@@ -166,7 +166,7 @@ function ImageCaptioner:train(dataset)
       return loss, self.grad_params
     end
 
-    optim.adagrad(feval, self.params, self.optim_state)
+    optim.rmsprop(feval, self.params, self.optim_state)
     self.emb:updateParameters(self.emb_learning_rate)
     self.image_emb:updateParameters(self.image_emb_learning_rate)
   end

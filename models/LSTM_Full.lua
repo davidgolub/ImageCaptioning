@@ -20,7 +20,8 @@ function LSTM:__init(config)
   self.master_cell = self:new_cell()
   self.depth = 0
   self.cells = {}  -- table of cells in a roll-out
-
+  self.tensors = {}  -- table of tensors for faster lookup
+  
   -- initial (t = 0) states for forward propagation and initial error signals
   -- for backpropagation
   local ctable_init, ctable_grad, htable_init, htable_grad
@@ -55,9 +56,18 @@ function LSTM:__init(config)
     }
   end
 
-    -- precreate cells for faster performance
+  -- precreate cells for faster performance
   for i = 1, 100 do
     self.cells[i] = self:new_cell()
+  end
+
+  -- precreate outputs for faster performance
+  for i = 1, 100 do
+    if self.gpu_mode then 
+      self.tensors[i] = torch.Tensor(i, self.mem_dim):cuda()
+    else
+      self.tensors[i] = torch.Tensor(i, self.mem_dim)
+    end
   end
 end
 
@@ -113,7 +123,6 @@ function LSTM:new_cell()
     cell:cuda()
   end
 
-
   -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
@@ -127,12 +136,14 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = nil
-
-  if self.gpu_mode then
-    -- self.outputs = torch.Tensor(size, self.mem_dim):cuda()
-  else
-    -- self.outputs = torch.Tensor(size, self.mem_dim)
+  self.outputs = self.tensors[size]
+  if self.outputs == nil then
+    if self.gpu_mode then
+      self.tensors[size] = torch.Tensor(size, self.mem_dim):cuda()
+    else
+      self.tensors[size] = torch.Tensor(size, self.mem_dim)
+    end
+    self.outputs = self.tensors[size]
   end
 
   for t = 1, size do
@@ -153,12 +164,10 @@ function LSTM:forward(inputs, reverse)
     local outputs = cell:forward({input, prev_output[1], prev_output[2]})
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
-      return htable
-      -- self.outputs[t] = htable
+      self.outputs[t] = htable
     else
       for i = 1, self.num_layers do
-        return htable
-        -- self.outputs[t] = htable[i]
+        self.outputs[t] = htable[i]
       end
     end
   end
