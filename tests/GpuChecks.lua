@@ -42,10 +42,59 @@ function GpuChecks:new_caption_module()
 end
 
 function GpuChecks:check_gpu()
+  self:check_lstm_create_cell()
   self:check_lstm_cell()
   self:check_lstm_full_layer()
   self:check_lstm_captioner()
   self:check_nn_module()
+end
+
+function GpuChecks:check_lstm_create_cell()
+  local in_dim = 300
+  local mem_dim = 1500
+  local input = torch.rand(in_dim)
+  local num_iter = 100
+
+  local lstm_gpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = true,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+  local lstm_cpu_layer = imagelstm.LSTM_Full{
+    gpu_mode = false,
+    in_dim  = in_dim,
+    mem_dim = mem_dim,
+  }
+
+  
+  
+  gpu_cell = lstm_gpu_layer:new_cell()
+
+  local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
+                        lstm_cpu_layer.initial_values[2]}
+
+  local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
+                        lstm_gpu_layer.initial_values[2]}
+
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+      local cpu_cell = lstm_cpu_layer:new_cell()
+  end
+  local end_time = sys.clock()
+
+  print("Cpu time for creating lstm cell")
+  print((end_time - start_time) / num_iter)
+
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+        local lstm_gpu_layer:new_cell()
+  end
+  local end_time = sys.clock()
+
+  print("Gpu time for creating lstm cell")
+  print((end_time - start_time) / num_iter)
+
 end
 
 function GpuChecks:check_lstm_cell()
@@ -81,7 +130,7 @@ function GpuChecks:check_lstm_cell()
   end
   local end_time = sys.clock()
 
-  print("Cpu time")
+  print("Cpu time for forwarding lstm cell")
   print((end_time - start_time) / num_iter)
 
   local start_time = sys.clock()
@@ -90,7 +139,7 @@ function GpuChecks:check_lstm_cell()
   end
   local end_time = sys.clock()
 
-  print("Gpu time")
+  print("Gpu time for forwarding lstm cell")
   print((end_time - start_time) / num_iter)
 
 end
