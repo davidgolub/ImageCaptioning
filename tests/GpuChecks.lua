@@ -88,7 +88,7 @@ function GpuChecks:check_lstm_create_cell()
 
   local start_time = sys.clock()
   for i = 1, num_iter do
-        local lstm_gpu_layer:new_cell()
+      local gpu_cell = lstm_gpu_layer:new_cell()
   end
   local end_time = sys.clock()
 
