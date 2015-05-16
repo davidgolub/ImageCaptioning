@@ -60,12 +60,14 @@ function ImageCaptioner:__init(config)
     criterion = self.criterion,
   }
 
-  self.params, self.grad_params = self.image_captioner:getParameters()
-  
   -- set gpu mode
   if self.gpu_mode then
     self:set_gpu_mode()
   end
+  
+  self.params, self.grad_params = self.image_captioner:getParameters()
+  
+
 end
 
 -- Set all of the network parameters to gpu mode
