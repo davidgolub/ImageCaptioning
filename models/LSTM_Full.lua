@@ -54,6 +54,11 @@ function LSTM:__init(config)
       htable_grad
     }
   end
+
+    -- precreate cells for faster performance
+  for i = 1, 1000 do
+    self.cells[i] = self:new_cell()
+  end
 end
 
 -- Instantiate a new LSTM cell.
@@ -107,6 +112,7 @@ function LSTM:new_cell()
   if self.gpu_mode then
     cell:cuda()
   end
+
 
   -- share parameters
   if self.master_cell then
