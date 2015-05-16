@@ -94,6 +94,14 @@ if params.load_model then
   model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 end
 
+if lfs.attributes(imagelstm.models_dir) == nil then
+  lfs.mkdir(imagelstm.models_dir)
+end
+
+if lfs.attributes(imagelstm.predictions_dir) == nil then
+  lfs.mkdir(imagelstm.predictions_dir)
+end
+
 -- train
 local train_start = sys.clock()
 local best_train_score = -1.0
@@ -133,9 +141,6 @@ header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
 local test_predictions = model:predict_dataset(train_dataset)
 
-if lfs.attributes(imagelstm.predictions_dir) == nil then
-  lfs.mkdir(imagelstm.predictions_dir)
-end
 local predictions_save_path = string.format(
   imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.pred', model.mem_dim)
 
@@ -152,9 +157,7 @@ end
 predictions_file:close()
 
 -- write model to disk
-if lfs.attributes(imagelstm.models_dir) == nil then
-  lfs.mkdir(imagelstm.models_dir)
-end
+
 local model_save_path = string.format(
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, num_epochs + 1)
 print('writing model to ' .. model_save_path)
