@@ -56,7 +56,7 @@ function LSTM:__init(config)
   end
 
     -- precreate cells for faster performance
-  for i = 1, 1000 do
+  for i = 1, 100 do
     self.cells[i] = self:new_cell()
   end
 end
