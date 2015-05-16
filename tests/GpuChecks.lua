@@ -42,11 +42,32 @@ function GpuChecks:new_caption_module()
 end
 
 function GpuChecks:check_gpu()
+  self:check_torch_tensor()
   self:check_lstm_create_cell()
   self:check_lstm_cell()
   self:check_lstm_full_layer()
   self:check_lstm_captioner()
   self:check_nn_module()
+end
+
+function GpuChecks:check_torch_tensor()
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+      local tensor = torch.Tensor(5000, 100)
+  end
+  local end_time = sys.clock()
+
+  print("Cpu time for creating torch tensor")
+  print((end_time - start_time) / num_iter)
+
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+      local tensor = torch.Tensor(5000, 100):cuda()
+  end
+  local end_time = sys.clock()
+
+  print("Gpu time for creating torch tensor")
+  print((end_time - start_time) / num_iter) 
 end
 
 function GpuChecks:check_lstm_create_cell()
@@ -66,8 +87,6 @@ function GpuChecks:check_lstm_create_cell()
     in_dim  = in_dim,
     mem_dim = mem_dim,
   }
-
-  
   
   gpu_cell = lstm_gpu_layer:new_cell()
 
