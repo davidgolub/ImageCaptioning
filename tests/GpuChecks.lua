@@ -51,6 +51,7 @@ function GpuChecks:check_gpu()
 end
 
 function GpuChecks:check_torch_tensor()
+  local num_iter = 200
   local start_time = sys.clock()
   for i = 1, num_iter do
       local tensor = torch.Tensor(5000, 100)

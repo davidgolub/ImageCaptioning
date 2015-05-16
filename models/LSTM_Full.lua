@@ -78,7 +78,6 @@ end
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
 function LSTM:new_cell()
-  print("New cell called")
   local input = nn.Identity()()
   local ctable_p = nn.Identity()()
   local htable_p = nn.Identity()()
