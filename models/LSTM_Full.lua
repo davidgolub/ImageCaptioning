@@ -130,9 +130,9 @@ function LSTM:forward(inputs, reverse)
   self.outputs = nil
 
   if self.gpu_mode then
-    self.outputs = torch.Tensor(size, self.mem_dim):cuda()
+    -- self.outputs = torch.Tensor(size, self.mem_dim):cuda()
   else
-    self.outputs = torch.Tensor(size, self.mem_dim)
+    -- self.outputs = torch.Tensor(size, self.mem_dim)
   end
 
   for t = 1, size do
@@ -153,10 +153,12 @@ function LSTM:forward(inputs, reverse)
     local outputs = cell:forward({input, prev_output[1], prev_output[2]})
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
-      self.outputs[t] = htable
+      return htable
+      -- self.outputs[t] = htable
     else
       for i = 1, self.num_layers do
-        self.outputs[t] = htable[i]
+        return htable
+        -- self.outputs[t] = htable[i]
       end
     end
   end
