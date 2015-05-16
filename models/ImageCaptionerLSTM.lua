@@ -23,7 +23,7 @@ function ImageCaptionerLSTM:__init(config)
     modules:cuda()
     self.criterion:cuda()
   end
-  
+
   self.params, self.grad_params = modules:getParameters()
 end
 

@@ -21,7 +21,8 @@ function LSTM:__init(config)
   self.depth = 0
   self.cells = {}  -- table of cells in a roll-out
   self.tensors = {}  -- table of tensors for faster lookup
-  
+  self.back_tensors = {} -- table of tensors for backprop
+
   -- initial (t = 0) states for forward propagation and initial error signals
   -- for backpropagation
   local ctable_init, ctable_grad, htable_init, htable_grad
@@ -65,8 +66,10 @@ function LSTM:__init(config)
   for i = 1, 100 do
     if self.gpu_mode then 
       self.tensors[i] = torch.Tensor(i, self.mem_dim):cuda()
+      self.back_tensors[i] = torch.Tensor(i, self.in_dim):cuda()
     else
       self.tensors[i] = torch.Tensor(i, self.mem_dim)
+      self.back_tensors[i] = torch.Tensor(i, self.in_dim)
     end
   end
 end
@@ -75,6 +78,7 @@ end
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
 function LSTM:new_cell()
+  print("New cell called")
   local input = nn.Identity()()
   local ctable_p = nn.Identity()()
   local htable_p = nn.Identity()()
@@ -201,11 +205,14 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     error("No cells to backpropagate through")
   end
 
-  local input_grads = nil
-  if self.gpu_mode then
-    input_grads = torch.Tensor(inputs:size()):cuda()
-  else
-    input_grads = torch.Tensor(inputs:size())
+  local input_grads = self.back_tensors[size]
+  if input_grads == nil then
+    if self.gpu_mode then
+      self.back_tensors[size] = torch.Tensor(inputs:size()):cuda()
+    else
+      self.back_tensors[size] = torch.Tensor(inputs:size())
+    end
+    input_grads = self.back_tensors[size]
   end
 
   for t = size, 1, -1 do
