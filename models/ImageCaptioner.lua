@@ -169,7 +169,8 @@ function ImageCaptioner:train(dataset)
         --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
       local start8 = sys.clock()
-      print("Times are ", (start8 - start) / batch_size, tot_diff / batch_size)
+      print("Times are ", (start8 - start) / batch_size, tot_forward_diff / batch_size
+        tot_backward_diff / batch_size)
       tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
