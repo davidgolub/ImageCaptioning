@@ -182,10 +182,12 @@ function GpuChecks:check_lstm_full_layer()
   }
 
   local cpu_time = self:check_cpu_speed(input, nil, lstm_cpu_layer, num_iter)
-  local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
 
   print("Cpu time for image captioner is")
   print(cpu_time)
+
+  local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
+
 
   print ("Gpu time for image captioner is")
   print(gpu_time)
