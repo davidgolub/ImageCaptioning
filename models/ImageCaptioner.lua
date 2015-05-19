@@ -27,8 +27,8 @@ function ImageCaptioner:__init(config)
   self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
 
   -- Do a linear combination of image and word features
-  local x1 = nn.Identity()()
-  local x2 = nn.Identity()()
+  local x1 = nn.Identity(self.emb_dim)()
+  local x2 = nn.Identity(self.emb_dim)()
   local a = imagelstm.CRowAddTable()({x1, x2})
   
   self.lstm_emb = nn.gModule({x1, x2}, {a})
@@ -126,22 +126,28 @@ function ImageCaptioner:train(dataset)
           image_feats = image_feats:cuda()
         end
 
+        local start1 = sys.clock()
         -- get text/image inputs
         local text_inputs = self.emb:forward(sentence)
 
+        local start2 = sys.clock()
         local image_inputs = self.image_emb:forward(image_feats)
 
         -- get the lstm inputs
+        local start3 = sys.clock()
         local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
 
         -- compute the loss
+        local start4 = sys.clock()
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
         loss = loss + caption_loss
 
         -- compute the input gradients with respect to the loss
+        local start5 = sys.clock()
         local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)
 
         -- backprop the gradients through the linear combination step
+        local start6 = sys.clock()
         local input_emb_grads = self.lstm_emb:backward({text_feats, image_feats}, input_grads)
 
         -- Separate gradients into word embedding and feature gradients
@@ -149,8 +155,14 @@ function ImageCaptioner:train(dataset)
         local image_grads = input_emb_grads[2]
 
         -- Do backward pass on image features and word embedding gradients
+        local start7 = sys.clock()
         self.emb:backward(sentence, emb_grads)
         self.image_emb:backward(image_feats, image_grads)
+
+        local start8 = sys.clock()
+
+        print("Times are", start8 - start7, start7 - start6, start6 - start5,
+          start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
       tot_loss = tot_loss + loss
       loss = loss / batch_size

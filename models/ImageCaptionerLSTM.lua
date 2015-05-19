@@ -33,9 +33,15 @@ end
 -- labels: T x 1 tensor of desired indeces
 -- Returns lstm output, class predictions, and error if train, else not error 
 function ImageCaptionerLSTM:forward(inputs, labels)
+    local start1 = sys.clock()
     local lstm_output = self.lstm_layer:forward(inputs, self.reverse)
+    local end1 = sys.clock()
     local class_predictions = self.output_module_fn:forward(lstm_output)
+    local end2 = sys.clock()
     local err = self.criterion:forward(class_predictions, labels)
+    local end3 = sys.clock()
+
+    print("Forward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
     return lstm_output, class_predictions, err
 end
 
@@ -60,10 +66,15 @@ end
 -- labels: actual labels
 -- Returns the gradients with respect to the inputs (in the same order as the inputs).
 function ImageCaptionerLSTM:backward(inputs, lstm_output, class_predictions, labels)
+  local start1 = sys.clock()
   output_module_derivs = self.criterion:backward(class_predictions, labels)
+  local end1 = sys.clock()
   lstm_output_derivs = self.output_module_fn:backward(lstm_output, output_module_derivs)
+  local end2 = sys.clock()
   lstm_input_derivs = self.lstm_layer:backward(inputs, lstm_output_derivs, self.reverse)
+  local end3 = sys.clock()
 
+  print("Backward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
   return lstm_input_derivs
 end
 
