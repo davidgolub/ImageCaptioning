@@ -41,7 +41,7 @@ function ImageCaptionerLSTM:forward(inputs, labels)
     local err = self.criterion:forward(class_predictions, labels)
     local end3 = sys.clock()
 
-    print("Forward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
+    --print("Forward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
     return lstm_output, class_predictions, err
 end
 
@@ -74,7 +74,7 @@ function ImageCaptionerLSTM:backward(inputs, lstm_output, class_predictions, lab
   lstm_input_derivs = self.lstm_layer:backward(inputs, lstm_output_derivs, self.reverse)
   local end3 = sys.clock()
 
-  print("Backward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
+  --print("Backward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
   return lstm_input_derivs
 end
 

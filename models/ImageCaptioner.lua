@@ -161,8 +161,8 @@ function ImageCaptioner:train(dataset)
 
         local start8 = sys.clock()
 
-        print("Times are", start8 - start7, start7 - start6, start6 - start5,
-          start5 - start4, start4 - start3, start3 - start2, start2 - start1)
+        --print("Times are", start8 - start7, start7 - start6, start6 - start5,
+        --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
       tot_loss = tot_loss + loss
       loss = loss / batch_size
