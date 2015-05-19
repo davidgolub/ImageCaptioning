@@ -153,8 +153,8 @@ function ImageCaptioner:train(dataset)
         -- backprop the gradients through the linear combination step
         local start6 = sys.clock()
 
-        tot_forward_diff = tot_diff + start5 - start4
-        tot_backward_diff = tot_diff + start6 - start5
+        tot_forward_diff = tot_forward_diff + start5 - start4
+        tot_backward_diff = tot_backward_diff + start6 - start5
         local input_emb_grads = self.lstm_emb:backward({text_feats, image_feats}, input_grads)
 
         -- Separate gradients into word embedding and feature gradients
