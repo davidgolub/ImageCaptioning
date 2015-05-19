@@ -108,7 +108,8 @@ function ImageCaptioner:train(dataset)
       self.image_emb:zeroGradParameters()
 
       local start = sys.clock()
-      local tot_diff = 0
+      local tot_forward_diff = 0
+      local tot_backward_diff = 0
       local loss = 0
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
@@ -152,7 +153,8 @@ function ImageCaptioner:train(dataset)
         -- backprop the gradients through the linear combination step
         local start6 = sys.clock()
 
-        tot_diff = tot_diff + start6 - start5
+        tot_forward_diff = tot_diff + start5 - start4
+        tot_backward_diff = tot_diff + start6 - start5
         local input_emb_grads = self.lstm_emb:backward({text_feats, image_feats}, input_grads)
 
         -- Separate gradients into word embedding and feature gradients
