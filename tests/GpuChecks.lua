@@ -237,7 +237,6 @@ end
 -- Checks how fast GPU speed is for neural net
 function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   local inputs = inputs:cuda()
-  nnet:forward(inputs, false)
 
   if labels ~= nil then
     labels = labels:cuda()
