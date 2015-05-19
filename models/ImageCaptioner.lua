@@ -109,8 +109,9 @@ function ImageCaptioner:train(dataset)
 
       local loss = 0
       for j = 1, batch_size do
-        -- local idx = indices[i + j - 1]
-        local idx = i + j - 1
+        local idx = indices[i + j - 1]
+        local start = sys.clock()
+        --local idx = i + j - 1
         -- get the image features
         local imgid = dataset.image_ids[idx]
         local image_feats = dataset.image_feats[imgid]
@@ -161,7 +162,7 @@ function ImageCaptioner:train(dataset)
 
         local start8 = sys.clock()
 
-        --print("Times are", start8 - start7, start7 - start6, start6 - start5,
+        print("Times are", start8 - start)
         --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
       tot_loss = tot_loss + loss
