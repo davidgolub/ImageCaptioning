@@ -107,10 +107,11 @@ function ImageCaptioner:train(dataset)
       self.emb:zeroGradParameters()
       self.image_emb:zeroGradParameters()
 
+      local start = sys.clock()
       local loss = 0
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
-        local start = sys.clock()
+        
         --local idx = i + j - 1
         -- get the image features
         local imgid = dataset.image_ids[idx]
@@ -160,11 +161,13 @@ function ImageCaptioner:train(dataset)
         self.emb:backward(sentence, emb_grads)
         self.image_emb:backward(image_feats, image_grads)
 
-        local start8 = sys.clock()
+        
 
-        print("Times are", start8 - start)
+        
         --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
+      local start8 = sys.clock()
+      print("Times are", start8 - start)
       tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
