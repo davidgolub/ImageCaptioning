@@ -169,7 +169,7 @@ function ImageCaptioner:train(dataset)
         --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
       local start8 = sys.clock()
-      print("Times are ", (start8 - start) 
+      print("Times are ", (start8 - start))
       print("Forward time ", tot_forward_diff)
       print("Backward time ", tot_backward_diff)
       tot_loss = tot_loss + loss
