@@ -27,17 +27,17 @@ function LSTM:__init(config)
   -- for backpropagation
   local ctable_init, ctable_grad, htable_init, htable_grad
   if self.num_layers == 1 then
-    ctable_init = torch.zeros(self.mem_dim)
-    htable_init = torch.zeros(self.mem_dim)
-    ctable_grad = torch.zeros(self.mem_dim)
-    htable_grad = torch.zeros(self.mem_dim)
+    ctable_init = torch.zeros(self.mem_dim):cuda()
+    htable_init = torch.zeros(self.mem_dim):cuda()
+    ctable_grad = torch.zeros(self.mem_dim):cuda()
+    htable_grad = torch.zeros(self.mem_dim):cuda()
   else
     ctable_init, ctable_grad, htable_init, htable_grad = {}, {}, {}, {}
     for i = 1, self.num_layers do
-      ctable_init[i] = torch.zeros(self.mem_dim)
-      htable_init[i] = torch.zeros(self.mem_dim)
-      ctable_grad[i] = torch.zeros(self.mem_dim)
-      htable_grad[i] = torch.zeros(self.mem_dim)
+      ctable_init[i] = torch.zeros(self.mem_dim):cuda()
+      htable_init[i] = torch.zeros(self.mem_dim):cuda()
+      ctable_grad[i] = torch.zeros(self.mem_dim):cuda()
+      htable_grad[i] = torch.zeros(self.mem_dim):cuda()
     end
   end
 
@@ -65,11 +65,11 @@ function LSTM:__init(config)
   -- precreate outputs for faster performance
   for i = 1, 100 do
     if self.gpu_mode then 
-      self.tensors[i] = torch.Tensor(i, self.mem_dim):cuda()
-      self.back_tensors[i] = torch.Tensor(i, self.in_dim):cuda()
+      self.tensors[i] = torch.FloatTensor(i, self.mem_dim):cuda()
+      self.back_tensors[i] = torch.FloatTensor(i, self.in_dim):cuda()
     else
-      self.tensors[i] = torch.Tensor(i, self.mem_dim)
-      self.back_tensors[i] = torch.Tensor(i, self.in_dim)
+      self.tensors[i] = torch.FloatTensor(i, self.mem_dim)
+      self.back_tensors[i] = torch.FloatTensor(i, self.in_dim)
     end
   end
 end
@@ -142,13 +142,14 @@ function LSTM:forward(inputs, reverse)
   self.outputs = self.tensors[size]
   if self.outputs == nil then
     if self.gpu_mode then
-      self.tensors[size] = torch.Tensor(size, self.mem_dim):cuda()
+      self.tensors[size] = torch.FloatTensor(size, self.mem_dim):cuda()
     else
-      self.tensors[size] = torch.Tensor(size, self.mem_dim)
+      self.tensors[size] = torch.FloatTensor(size, self.mem_dim)
     end
     self.outputs = self.tensors[size]
   end
 
+  time1 = sys.clock()
   for t = 1, size do
     local input = reverse and inputs[size - t + 1] or inputs[t]
     self.depth = self.depth + 1
@@ -164,7 +165,8 @@ function LSTM:forward(inputs, reverse)
       prev_output = self.initial_values
     end
 
-    local outputs = cell:forward({input, prev_output[1], prev_output[2]})
+    local cell_inputs = {input, prev_output[1], prev_output[2]}
+    local outputs = cell:forward(cell_inputs)
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
       self.outputs[t] = htable
@@ -174,6 +176,8 @@ function LSTM:forward(inputs, reverse)
       end
     end
   end
+
+  time2 = sys.clock()
   return self.outputs
 end
 
@@ -207,9 +211,9 @@ function LSTM:backward(inputs, grad_outputs, reverse)
   local input_grads = self.back_tensors[size]
   if input_grads == nil then
     if self.gpu_mode then
-      self.back_tensors[size] = torch.Tensor(inputs:size()):cuda()
+      self.back_tensors[size] = torch.FloatTensor(inputs:size()):cuda()
     else
-      self.back_tensors[size] = torch.Tensor(inputs:size())
+      self.back_tensors[size] = torch.FloatTensor(inputs:size())
     end
     input_grads = self.back_tensors[size]
   end
