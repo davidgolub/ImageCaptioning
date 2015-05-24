@@ -171,7 +171,7 @@ function LSTM:forward(inputs, reverse)
     time3 = sys.clock()
     local outputs = cell:forward(cell_inputs)
     time4 = sys.clock()
-    accTime += time4 - time3
+    accTime = accTime + time4 - time3
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
       self.outputs[t] = htable
