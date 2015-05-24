@@ -159,6 +159,13 @@ function LSTM:forward(inputs, reverse)
     self.depth = self.depth + 1
     local cell = self.cells[self.depth]
 
+    if cell == nil then
+      print("Cells are null at depth ", self.depth)
+      cell = self:new_cell()
+      self.cells[self.depth] = cell
+    else 
+      print("NOT null at depth ", self.depth)
+    end
     time6 = sys.clock()
 
     local prev_output
