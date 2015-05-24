@@ -10,9 +10,9 @@ function GpuChecks:__init(config)
   require('cutorch')
   require('cunn')
 
-  local in_dim = 400
-  local mem_dim = 1500
-  local num_classes = 4000
+  self.in_dim = 400
+  self.mem_dim = 1500
+  self.num_classes = 4000
   local criterion = nn.ClassNLLCriterion()
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
@@ -36,24 +36,24 @@ function GpuChecks:new_caption_module()
   local caption_module = nn.Sequential()
 
   caption_module
-    :add(nn.Linear(1500, 4000))
+    :add(nn.Linear(self.mem_dim, self.num_classes))
     :add(nn.LogSoftMax())
   return caption_module
 end
 
 function GpuChecks:check_gpu()
+  self:check_lstm_captioner()
+  self:check_lstm_full_layer()
   self:check_torch_tensor()
   self:check_lstm_create_cell()
   self:check_lstm_cell()
-  self:check_lstm_full_layer()
-  self:check_lstm_captioner()
 end
 
 function GpuChecks:check_torch_tensor()
   local num_iter = 200
   local start_time = sys.clock()
   for i = 1, num_iter do
-      local tensor = torch.Tensor(5000, 100)
+      local tensor = torch.Tensor(self.num_classes, 100)
   end
   local end_time = sys.clock()
 
@@ -62,7 +62,7 @@ function GpuChecks:check_torch_tensor()
 
   local start_time = sys.clock()
   for i = 1, num_iter do
-      local tensor = torch.Tensor(5000, 100):cuda()
+      local tensor = torch.Tensor(self.num_classes, 100):cuda()
   end
   local end_time = sys.clock()
 
@@ -71,21 +71,19 @@ function GpuChecks:check_torch_tensor()
 end
 
 function GpuChecks:check_lstm_create_cell()
-  local in_dim = 300
-  local mem_dim = 1500
-  local input = torch.rand(in_dim)
+  local input = torch.rand(self.in_dim)
   local num_iter = 100
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
     gpu_mode = true,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
 
   local lstm_cpu_layer = imagelstm.LSTM_Full{
     gpu_mode = false,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
   
   gpu_cell = lstm_gpu_layer:new_cell()
@@ -117,21 +115,19 @@ function GpuChecks:check_lstm_create_cell()
 end
 
 function GpuChecks:check_lstm_cell()
-  local in_dim = 300
-  local mem_dim = 1500
-  local input = torch.rand(in_dim)
-  local num_iter = 100
+  local input = torch.rand(self.in_dim)
+
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
     gpu_mode = true,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
 
   local lstm_cpu_layer = imagelstm.LSTM_Full{
     gpu_mode = false,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
 
   cpu_cell = lstm_cpu_layer:new_cell()
@@ -162,36 +158,34 @@ function GpuChecks:check_lstm_cell()
 end
 
 function GpuChecks:check_lstm_full_layer()
-  local in_dim = 300
-  local mem_dim = 1500
-  local input = torch.rand(10, 300)
+  local input = torch.rand(10, self.in_dim)
   local num_iter = 20
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
     gpu_mode = true,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
 
   local lstm_cpu_layer = imagelstm.LSTM_Full{
     gpu_mode = false,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
   }
 
   local cpu_time = self:check_cpu_speed(input, nil, lstm_cpu_layer, num_iter)
 
-  print("Cpu time for image captioner is")
+  print("Cpu time for LSTM cell network is")
   print(cpu_time)
 
   local gpu_time = self:check_gpu_speed(input, nil, lstm_gpu_layer, num_iter)
 
-  print ("Gpu time for image captioner is")
+  print ("Gpu time for LSTM cell network is")
   print(gpu_time)
 end
 
 function GpuChecks:check_lstm_captioner()
-  local input = torch.rand(10, 400)
+  local input = torch.rand(10, self.in_dim)
   local output = torch.IntTensor(10)
   for i = 1, 10 do
     output[i] = i
@@ -228,6 +222,7 @@ end
 function GpuChecks:check_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
+      print(labels)
       res = nnet:forward(inputs, labels)
       tmp = nnet:backward(inputs, res)
   end
