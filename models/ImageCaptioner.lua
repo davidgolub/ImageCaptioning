@@ -168,10 +168,7 @@ function ImageCaptioner:train(dataset)
     
         --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
       end
-      if self.gpu_mode then
-        cutorch.synchronize()
-      end
-      collectgarbage()
+
       local start8 = sys.clock()
       print("Times are ", (start8 - start))
       print("Forward time ", tot_forward_diff)
