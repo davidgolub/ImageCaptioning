@@ -10,7 +10,7 @@ include('tests/CpuChecks.lua')
 cpu_checker = imagelstm.CpuChecks{}
 cpu_checker:check_cpu()
 
-gpu checks
+-- gpu checks
 gpu_checker = imagelstm.GpuChecks{}
 gpu_checker:check_gpu()
 
