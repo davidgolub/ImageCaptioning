@@ -1,5 +1,19 @@
 require('.')
 
+cmd = torch.CmdLine()
+cmd:text()
+cmd:text()
+cmd:text('Testing parameters')
+cmd:text('Options')
+cmd:option('-in_dim', 150, 'input dimension into lstm')
+cmd:option('-mem_dim', 300,'memory dimension into lstm')
+cmd:option('-num_classes', 4000, 'number of classes')
+cmd:option('-batch_size', 33, 'batch_size')
+cmd:text()
+
+-- parse input params
+params = cmd:parse(arg)
+
 -- tests
 include('tests/GradChecks.lua')
 include('tests/CpuChecks.lua')

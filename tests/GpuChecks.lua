@@ -193,11 +193,11 @@ function GpuChecks:check_lstm_captioner()
 
   local num_iter = 20
 
-  local cpu_time = self:check_cpu_speed(input, output, self.image_captioner, num_iter)
+  local cpu_time = self:check_captioner_cpu_speed(input, output, self.image_captioner, num_iter)
   print("Cpu time for image captioner is")
   print(cpu_time)
 
-  local gpu_time = self:check_gpu_speed(input, output:cuda(), self.gpu_image_captioner, num_iter)
+  local gpu_time = self:check_captioner_gpu_speed(input, output:cuda(), self.gpu_image_captioner, num_iter)
 
   print ("Gpu time for image captioner is")
   print(gpu_time)
@@ -216,6 +216,34 @@ function GpuChecks:check_nn_module()
 
   print ("Gpu time for linear model is ")
   print(gpu_time)
+end
+
+-- Checks how fast CPU speed is for captioner
+function GpuChecks:check_captioner_cpu_speed(inputs, labels, nnet, num_iter)
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+      print(labels)
+      lstm_output, class_predictions = nnet:forward(inputs, labels)
+      res = nnet:backward(inputs, lstm_output, class_predictions, labels)
+  end
+  local end_time = sys.clock()
+  return (end_time - start_time) / num_iter
+end
+
+-- Checks how fast GPU speed is for neural net
+function GpuChecks:check_captioner_gpu_speed(inputs, labels, nnet, num_iter)
+  local inputs = inputs:cuda()
+
+  if labels ~= nil then
+    labels = labels:cuda()
+  end
+  local start_time = sys.clock()
+  for i = 1, num_iter do
+      lstm_output, class_predictions = nnet:forward(inputs, labels)
+      res = nnet:backward(inputs, lstm_output, class_predictions, labels)
+  end
+  local end_time = sys.clock()
+  return (end_time - start_time) / num_iter
 end
 
 -- Checks how fast CPU speed is for neural net
