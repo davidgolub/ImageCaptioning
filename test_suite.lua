@@ -3,7 +3,7 @@ require('.')
 -- tests
 include('tests/GradChecks.lua')
 include('tests/CpuChecks.lua')
---include('tests/GpuChecks.lua')
+include('tests/GpuChecks.lua')
 
 
 -- cpu checks
