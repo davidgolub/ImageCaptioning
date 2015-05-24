@@ -152,14 +152,15 @@ function LSTM:forward(inputs, reverse)
 
   time1 = sys.clock()
   accTime = 0
+  copyingTime = 0
   for t = 1, size do
+    time5 = sys.clock()
     local input = reverse and inputs[size - t + 1] or inputs[t]
     self.depth = self.depth + 1
     local cell = self.cells[self.depth]
-    if cell == nil then
-      cell = self:new_cell()
-      self.cells[self.depth] = cell
-    end
+
+    time6 = sys.clock()
+
     local prev_output
     if self.depth > 1 then
       prev_output = self.cells[self.depth - 1].output
@@ -168,7 +169,10 @@ function LSTM:forward(inputs, reverse)
     end
     local cell_inputs = {input, prev_output[1], prev_output[2]}
 
+
+    copyingTime = copyingTime + time6 - time5
     time3 = sys.clock()
+
     local outputs = cell:forward(cell_inputs)
     time4 = sys.clock()
     accTime = accTime + time4 - time3
@@ -184,7 +188,9 @@ function LSTM:forward(inputs, reverse)
 
   time2 = sys.clock()
   collectgarbage()
-  print("Times are: ", time2 - time1, accTime)
+  print("Times are: ", time2 - time1)
+  print("Forwarding times are:", accTime)
+  print("Coping times are:", copyingTime)
   return self.outputs
 end
 

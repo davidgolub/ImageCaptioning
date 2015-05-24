@@ -243,7 +243,8 @@ function GpuChecks:check_gpu_speed(inputs, labels, nnet, num_iter)
   end
   local start_time = sys.clock()
   for i = 1, num_iter do
-      nnet:forward(inputs, labels)
+      tmp = nnet:forward(inputs, labels)
+      res = nnet:backward(inputs, tmp)
   end
   local end_time = sys.clock()
   return (end_time - start_time) / num_iter
