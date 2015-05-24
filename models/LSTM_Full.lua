@@ -193,9 +193,9 @@ function LSTM:forward(inputs, reverse)
 
   time2 = sys.clock()
   collectgarbage()
-  print("Times are: ", time2 - time1)
-  print("Forwarding times are:", accTime)
-  print("Coping times are:", copyingTime)
+  --print("Times are: ", time2 - time1)
+  --print("Forwarding times are:", accTime)
+  --print("Coping times are:", copyingTime)
   return self.outputs
 end
 
