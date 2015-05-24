@@ -27,7 +27,7 @@ print('dim = ' .. dim)
 -- convert to torch-friendly format
 file:seek('set')
 local vocab = io.open(vocabpath, 'w')
-local vecs = torch.FloatTensor(count, dim)
+local vecs = torch.DoubleTensor(count, dim)
 for i = 1, count do
   xlua.progress(i, count)
   local tokens = stringx.split(file:read())

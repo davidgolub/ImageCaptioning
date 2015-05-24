@@ -27,17 +27,17 @@ function LSTM:__init(config)
   -- for backpropagation
   local ctable_init, ctable_grad, htable_init, htable_grad
   if self.num_layers == 1 then
-    ctable_init = torch.zeros(self.mem_dim):cuda()
-    htable_init = torch.zeros(self.mem_dim):cuda()
-    ctable_grad = torch.zeros(self.mem_dim):cuda()
-    htable_grad = torch.zeros(self.mem_dim):cuda()
+    ctable_init = torch.zeros(self.mem_dim)
+    htable_init = torch.zeros(self.mem_dim)
+    ctable_grad = torch.zeros(self.mem_dim)
+    htable_grad = torch.zeros(self.mem_dim)
   else
     ctable_init, ctable_grad, htable_init, htable_grad = {}, {}, {}, {}
     for i = 1, self.num_layers do
-      ctable_init[i] = torch.zeros(self.mem_dim):cuda()
-      htable_init[i] = torch.zeros(self.mem_dim):cuda()
-      ctable_grad[i] = torch.zeros(self.mem_dim):cuda()
-      htable_grad[i] = torch.zeros(self.mem_dim):cuda()
+      ctable_init[i] = torch.zeros(self.mem_dim)
+      htable_init[i] = torch.zeros(self.mem_dim)
+      ctable_grad[i] = torch.zeros(self.mem_dim)
+      htable_grad[i] = torch.zeros(self.mem_dim)
     end
   end
 
@@ -68,8 +68,8 @@ function LSTM:__init(config)
       self.tensors[i] = torch.FloatTensor(i, self.mem_dim):cuda()
       self.back_tensors[i] = torch.FloatTensor(i, self.in_dim):cuda()
     else
-      self.tensors[i] = torch.FloatTensor(i, self.mem_dim)
-      self.back_tensors[i] = torch.FloatTensor(i, self.in_dim)
+      self.tensors[i] = torch.DoubleTensor(i, self.mem_dim)
+      self.back_tensors[i] = torch.DoubleTensor(i, self.in_dim)
     end
   end
 end
@@ -144,7 +144,7 @@ function LSTM:forward(inputs, reverse)
     if self.gpu_mode then
       self.tensors[size] = torch.FloatTensor(size, self.mem_dim):cuda()
     else
-      self.tensors[size] = torch.FloatTensor(size, self.mem_dim)
+      self.tensors[size] = torch.DoubleTensor(size, self.mem_dim)
     end
     self.outputs = self.tensors[size]
   end
@@ -213,7 +213,7 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     if self.gpu_mode then
       self.back_tensors[size] = torch.FloatTensor(inputs:size()):cuda()
     else
-      self.back_tensors[size] = torch.FloatTensor(inputs:size())
+      self.back_tensors[size] = torch.DoubleTensor(inputs:size())
     end
     input_grads = self.back_tensors[size]
   end
