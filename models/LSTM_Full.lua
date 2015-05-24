@@ -139,7 +139,7 @@ end
 -- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
-  local cell_inputs = {torch.zeros(self.in_dim), torch.zeros(self.mem_dim), torch.zeros(self.mem_dim)}
+  
   self.outputs = self.tensors[size]
   if self.outputs == nil then
     if self.gpu_mode then
@@ -151,6 +151,7 @@ function LSTM:forward(inputs, reverse)
   end
 
   time1 = sys.clock()
+  accTime = 0
   for t = 1, size do
     local input = reverse and inputs[size - t + 1] or inputs[t]
     self.depth = self.depth + 1
@@ -165,12 +166,12 @@ function LSTM:forward(inputs, reverse)
     else
       prev_output = self.initial_values
     end
+    local cell_inputs = {input, prev_output[1], prev_output[2]}
 
-    cell_inputs[1] = input
-    cell_inputs[2] = prev_output[1]
-    cell_inputs[3] = prev_output[2]
-
+    time3 = sys.clock()
     local outputs = cell:forward(cell_inputs)
+    time4 = sys.clock()
+    accTime += time4 - time3
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
       self.outputs[t] = htable
@@ -183,7 +184,7 @@ function LSTM:forward(inputs, reverse)
 
   time2 = sys.clock()
   collectgarbage()
-  print("Times are: ", time2 - time1)
+  print("Times are: ", time2 - time1, accTime)
   return self.outputs
 end
 
