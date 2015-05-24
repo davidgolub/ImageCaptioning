@@ -137,14 +137,10 @@ function GpuChecks:check_lstm_cell()
   cpu_cell = lstm_cpu_layer:new_cell()
   gpu_cell = lstm_gpu_layer:new_cell()
 
-  local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
-                        lstm_cpu_layer.initial_values[2]}
-
-  local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
-                        lstm_gpu_layer.initial_values[2]}
-
   local start_time = sys.clock()
   for i = 1, num_iter do
+      local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
+                        lstm_cpu_layer.initial_values[2]}
       cpu_cell:forward(lstm_cpu_input)
   end
   local end_time = sys.clock()
@@ -154,7 +150,9 @@ function GpuChecks:check_lstm_cell()
 
   local start_time = sys.clock()
   for i = 1, num_iter do
-        gpu_cell:forward(lstm_gpu_input)
+      local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
+                            lstm_gpu_layer.initial_values[2]}
+      gpu_cell:forward(lstm_gpu_input)
   end
   local end_time = sys.clock()
 
