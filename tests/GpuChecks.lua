@@ -16,16 +16,16 @@ function GpuChecks:__init(config)
   local criterion = nn.ClassNLLCriterion()
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
     criterion = criterion,
   }
 
   self.gpu_image_captioner = imagelstm.ImageCaptionerLSTM{
     gpu_mode = true,
-    in_dim  = in_dim,
-    mem_dim = mem_dim,
+    in_dim  = self.in_dim,
+    mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
     criterion = criterion,
   }
