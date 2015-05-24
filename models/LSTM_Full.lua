@@ -163,8 +163,6 @@ function LSTM:forward(inputs, reverse)
       print("Cells are null at depth ", self.depth)
       cell = self:new_cell()
       self.cells[self.depth] = cell
-    else 
-      print("NOT null at depth ", self.depth)
     end
     time6 = sys.clock()
 
