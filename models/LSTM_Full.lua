@@ -182,6 +182,7 @@ function LSTM:forward(inputs, reverse)
   end
 
   time2 = sys.clock()
+  print("Times are: ", time2 - tim1)
   return self.outputs
 end
 
