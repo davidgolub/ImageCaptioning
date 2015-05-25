@@ -15,7 +15,7 @@ function GpuChecks:__init(config)
   self.num_classes = 4000
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
-    gpu_mode = false
+    gpu_mode = false,
     in_dim  = self.in_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
