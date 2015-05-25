@@ -116,7 +116,7 @@ end
 
 function GpuChecks:check_lstm_cell()
   local input = torch.rand(self.in_dim)
-
+  local num_iter = 300
 
   local lstm_gpu_layer = imagelstm.LSTM_Full{
     gpu_mode = true,
