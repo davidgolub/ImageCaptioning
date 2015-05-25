@@ -132,12 +132,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode)
       table.insert(tokens, 1, "<s>")
       table.remove(tokens)
       local in_ids = vocab:map(tokens)
-
-      if gpu_mode then
-        out_ids:cuda()
-        in_ids:cuda()
-      end
-
+      
       -- then make a new one with special start symbol
       table.insert(image_ids, curr_imgid)
       table.insert(out_sentences, out_ids)
