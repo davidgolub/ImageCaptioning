@@ -48,7 +48,6 @@ function ImageCaptioner:__init(config)
   self.num_classes = config.emb_vecs:size(1)
 
   -- negative log likelihood optimization objective
-  self.criterion = nn.ClassNLLCriterion()
   local num_caption_params = self:new_caption_module():getParameters():size(1)
   print("Number of caption parameters " .. num_caption_params)
 
@@ -57,7 +56,7 @@ function ImageCaptioner:__init(config)
     in_dim  = self.emb_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
-    criterion = self.criterion,
+    criterion = nn.ClassNLLCriterion()
   }
 
   -- set gpu mode
@@ -141,6 +140,8 @@ function ImageCaptioner:train(dataset)
         local start3 = sys.clock()
         local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
 
+        print(inputs)
+        print(out_sentence)
         -- compute the loss
         local start4 = sys.clock()
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)

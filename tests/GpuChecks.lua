@@ -10,8 +10,8 @@ function GpuChecks:__init(config)
   require('cutorch')
   require('cunn')
 
-  self.in_dim = 400
-  self.mem_dim = 1500
+  self.in_dim = 150
+  self.mem_dim = 300
   self.num_classes = 4000
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
