@@ -15,8 +15,8 @@ cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
-cmd:option('-data_dir', 'data/flickr8k', 'directory of caption dataset')
-cmd:option('-emb_dir', 'data/glove', 'director of word embeddings')
+cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
+cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:text()
 
 -- parse input params
