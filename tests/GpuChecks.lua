@@ -13,13 +13,13 @@ function GpuChecks:__init(config)
   self.in_dim = 400
   self.mem_dim = 1500
   self.num_classes = 4000
-  local criterion = nn.ClassNLLCriterion()
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
+    gpu_mode = false
     in_dim  = self.in_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
-    criterion = criterion,
+    criterion = nn.ClassNLLCriterion(),
   }
 
   self.gpu_image_captioner = imagelstm.ImageCaptionerLSTM{
@@ -27,7 +27,7 @@ function GpuChecks:__init(config)
     in_dim  = self.in_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
-    criterion = criterion,
+    criterion = nn.ClassNLLCriterion(),
   }
 
 end
