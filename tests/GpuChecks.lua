@@ -10,9 +10,9 @@ function GpuChecks:__init(config)
   require('cutorch')
   require('cunn')
 
-  self.in_dim = 150
-  self.mem_dim = 300
-  self.num_classes = 4000
+  self.in_dim = config.in_dim
+  self.mem_dim = config.mem_dim
+  self.num_classes = config.num_classes
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
     gpu_mode = false,
@@ -134,8 +134,7 @@ function GpuChecks:check_lstm_cell()
   gpu_cell = lstm_gpu_layer:new_cell()
 
   local start_time = sys.clock()
-  local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
-                        lstm_cpu_layer.initial_values[2]}
+
   for i = 1, num_iter do
       cpu_cell:forward(lstm_cpu_input)
   end
