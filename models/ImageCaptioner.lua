@@ -100,6 +100,7 @@ function ImageCaptioner:train(dataset)
   for i = 1, dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
+    
     local feval = function(x)
       self.grad_params:zero()
       self.emb:zeroGradParameters()
@@ -186,8 +187,6 @@ function ImageCaptioner:train(dataset)
 
       return loss, self.grad_params
     end
-
-    feval()
 
     optim.rmsprop(feval, self.params, self.optim_state)
     self.emb:updateParameters(self.emb_learning_rate)
