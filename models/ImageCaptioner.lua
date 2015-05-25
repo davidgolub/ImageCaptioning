@@ -140,8 +140,6 @@ function ImageCaptioner:train(dataset)
         local start3 = sys.clock()
         local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
 
-        print(inputs)
-        print(out_sentence)
         -- compute the loss
         local start4 = sys.clock()
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
