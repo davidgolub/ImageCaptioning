@@ -15,18 +15,24 @@ cmd:text()
 params = cmd:parse(arg)
 
 -- tests
-include('tests/GradChecks.lua')
+--include('tests/GradChecks.lua')
+include('tests/TrainChecks.lua')
 include('tests/CpuChecks.lua')
 include('tests/GpuChecks.lua')
 
+-- train checks
+train_checker = imagelstm.TrainChecks{}
+train_checker:check_train()
 
 -- cpu checks
 cpu_checker = imagelstm.CpuChecks{}
 cpu_checker:check_cpu()
 
 -- gpu checks
-gpu_checker = imagelstm.GpuChecks{}
-gpu_checker:check_gpu()
+--gpu_checker = imagelstm.GpuChecks{in_dim = params.in_dim, 
+									--mem_dim = params.mem_dim, 
+									--num_classes = params.num_classes}
+--gpu_checker:check_gpu()
 
 -- grad checks
 grad_checker = imagelstm.GradChecks{}
