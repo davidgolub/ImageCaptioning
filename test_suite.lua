@@ -30,8 +30,8 @@ cpu_checker:check_cpu()
 
 -- gpu checks
 gpu_checker = imagelstm.GpuChecks{in_dim = params.in_dim, 
-									--mem_dim = params.mem_dim, 
-									--num_classes = params.num_classes}
+									mem_dim = params.mem_dim, 
+									num_classes = params.num_classes}
 gpu_checker:check_gpu()
 
 -- grad checks
