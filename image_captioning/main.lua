@@ -15,6 +15,8 @@ cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
+cmd:option('-data_dir', 'data/flickr8k', 'directory of caption dataset')
+cmd:option('-emb_dir', 'data/glove', 'director of word embeddings')
 cmd:text()
 
 -- parse input params
@@ -37,14 +39,14 @@ end
 header('Image-Captioning with LSTMs')
 
 -- directory containing dataset files
-local data_dir = 'data/flickr8k/'
+local data_dir = params.data_dir
 
 -- load vocab
 local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
 
 -- load embeddings
 print('loading word embeddings')
-local emb_dir = 'data/glove/'
+local emb_dir = params.emb_dir
 local emb_prefix = emb_dir .. 'glove.840B'
 local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')
 local emb_dim = emb_vecs:size(2)

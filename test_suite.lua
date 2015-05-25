@@ -15,14 +15,14 @@ cmd:text()
 params = cmd:parse(arg)
 
 -- tests
---include('tests/GradChecks.lua')
+include('tests/GradChecks.lua')
 include('tests/TrainChecks.lua')
 include('tests/CpuChecks.lua')
 include('tests/GpuChecks.lua')
 
 -- train checks
---train_checker = imagelstm.TrainChecks{}
---train_checker:check_train()
+train_checker = imagelstm.TrainChecks{}
+train_checker:check_train()
 
 -- cpu checks
 cpu_checker = imagelstm.CpuChecks{}
