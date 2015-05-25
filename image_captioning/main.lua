@@ -15,6 +15,8 @@ cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
+cmd:option('-image_dim', 1024, 'input image size into captioner')
+cmd:option('-mem_dim', 300,'memory dimension of captioner')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:text()
@@ -80,6 +82,8 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   emb_vecs = vecs,
+  image_dim = params.image_dim,
+  mem_dim = params.mem_dim,
   num_classes = vocab.size + 3, --For start, end and unk tokens
   gpu_mode = use_gpu_mode -- Set to true for GPU mode
 }
