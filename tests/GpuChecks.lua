@@ -10,6 +10,8 @@ function GpuChecks:__init(config)
   require('cutorch')
   require('cunn')
 
+  print("Checking gpu stuff with in_dim ", config.in_dim, " mem_dim ", config.mem_dim, 
+    " num_classes ", config.num_classes)
   self.in_dim = config.in_dim
   self.mem_dim = config.mem_dim
   self.num_classes = config.num_classes
