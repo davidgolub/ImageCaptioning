@@ -134,9 +134,9 @@ function GpuChecks:check_lstm_cell()
   gpu_cell = lstm_gpu_layer:new_cell()
 
   local start_time = sys.clock()
-  for i = 1, num_iter do
-      local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
+  local lstm_cpu_input = {input, lstm_cpu_layer.initial_values[1], 
                         lstm_cpu_layer.initial_values[2]}
+  for i = 1, num_iter do
       cpu_cell:forward(lstm_cpu_input)
   end
   local end_time = sys.clock()
@@ -144,10 +144,10 @@ function GpuChecks:check_lstm_cell()
   print("Cpu time for forwarding lstm cell")
   print((end_time - start_time) / num_iter)
 
+  local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
+                            lstm_gpu_layer.initial_values[2]}
   local start_time = sys.clock()
   for i = 1, num_iter do
-      local lstm_gpu_input = {input:cuda(), lstm_gpu_layer.initial_values[1], 
-                            lstm_gpu_layer.initial_values[2]}
       gpu_cell:forward(lstm_gpu_input)
   end
   local end_time = sys.clock()
@@ -222,7 +222,6 @@ end
 function GpuChecks:check_captioner_cpu_speed(inputs, labels, nnet, num_iter)
   local start_time = sys.clock()
   for i = 1, num_iter do
-      print(labels)
       lstm_output, class_predictions = nnet:forward(inputs, labels)
       res = nnet:backward(inputs, lstm_output, class_predictions, labels)
   end
