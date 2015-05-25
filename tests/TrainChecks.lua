@@ -57,7 +57,7 @@ end
 
 function TrainChecks:check_train() 
 
-  for i = 1, 100 do
+  for i = 10, 11 do
     self:check_single_forward_pass(self.train_dataset, self.model)
     self:check_train_speed(i, self.train_dataset, self.model)
   end
@@ -179,15 +179,9 @@ function TrainChecks:check_train_speed(batch_size, dataset, model)
       end
       local start8 = sys.clock()
       print("======BATCH SIZE ", batch_size, " ===============")
-      print("Times are ", (start8 - start) / batch_size)
-      print("Forward time ", tot_forward_diff / batch_size)
-      print("Backward time ", tot_backward_diff / batch_size)
+      print("Image captioner time ", tot_forward_diff / batch_size)
     end
 
-    feval()
-    feval()
-    feval()
-    feval()
 end
 
 
