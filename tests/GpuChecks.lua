@@ -235,7 +235,7 @@ function GpuChecks:check_captioner_gpu_speed(inputs, labels, nnet, num_iter)
   local inputs = inputs:cuda()
 
   if labels ~= nil then
-    labels = labels:cuda()
+    labels = labels
   end
   local start_time = sys.clock()
   for i = 1, num_iter do
