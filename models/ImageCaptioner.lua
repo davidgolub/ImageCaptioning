@@ -136,7 +136,7 @@ function ImageCaptioner:train(dataset)
       return loss, self.grad_params
     end
 
-    optim.rmsprop(feval, self.params, self.optim_state)
+    optim.adagrad(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end
   average_loss = tot_loss / dataset.size
@@ -181,7 +181,7 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = nil
 
-  if beam_size == 0 then
+  if beam_size < 2 then
     local ll = 0
     -- Greedy search
     while next_token[1] ~= end_token[1] and num_iter < 20 do
@@ -195,8 +195,6 @@ function ImageCaptioner:predict(image_features, beam_size)
         table.insert(tokens, pred_token)
       end
 
-      print("On iteration %d", num_iter)
-      print(pred_token)
       -- convert token into proper format for feed-forwarding
       next_token = torch.IntTensor{pred_token}
       prev_outputs = next_outputs
@@ -263,7 +261,7 @@ function ImageCaptioner:predict_dataset(dataset)
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], 1)
-    table.insert(predictions, prediction[1])
+    table.insert(predictions, prediction[2])
   end
   return predictions
 end

@@ -101,7 +101,8 @@ model:print_config()
 local model_save_path = string.format(
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 10)
 
-if params.load_model then
+--if params.load_model then
+if true then
   model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 end
 
@@ -138,7 +139,7 @@ for i = 1, num_epochs do
 
   print(train_predictions)
   for j = 1, #train_predictions do
-    prediction = train_predictions[j][2]
+    print(prediction)
     sentence = vocab:tokens(prediction)
     print(sentence)
   end
