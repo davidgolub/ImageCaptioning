@@ -19,6 +19,7 @@ function ImageCaptioner:__init(config)
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
+  self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
 
   if self.combine_module_type == "addlayer" then
@@ -34,7 +35,7 @@ function ImageCaptioner:__init(config)
 
   -- number of classes is equal to the vocab size size we are predicting new words
   self.num_classes = config.emb_vecs:size(1)
-
+  
   -- negative log likelihood optimization objective
   local num_caption_params = self:new_caption_module():getParameters():size(1)
   print("Number of caption parameters " .. num_caption_params)
@@ -294,6 +295,7 @@ function ImageCaptioner:save(path)
     learning_rate     = self.learning_rate,
     mem_dim           = self.mem_dim,
     reg               = self.reg,
+    emb_vecs          = self.emb_vecs
   }
 
   torch.save(path, {
