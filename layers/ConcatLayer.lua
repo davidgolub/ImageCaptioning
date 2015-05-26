@@ -25,6 +25,11 @@ function ConcatLayer:__init(config)
   if gpu_mode then
     self:set_gpu_mode()
   end
+
+     -- Copy the image embedding vectors
+  if config.combine_weights ~= nil then
+    self.params.weight:copy(config.combine_weights)
+  end
 end
 
 -- Returns all of the weights of this module
@@ -54,7 +59,7 @@ function ConcatLayer:backward(word_indices, image_feats, err)
    image_emb_errors = emb_errors[2]
    word_proj_errors = emb_errors[1]
 
-   self.emb:backward(self.word_proj, word_proj_errors)
+   self.emb:backward(word_indices, word_proj_errors)
 end
 
 -- Returns size of outputs of this combine module

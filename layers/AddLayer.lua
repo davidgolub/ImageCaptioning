@@ -23,8 +23,6 @@ function AddLayer:__init(config)
   
    self.lstm_emb = nn.gModule({x1, x2}, {a})
 
-   self.emb.weight:copy(config.emb_vecs)
-  
    local modules = nn.Parallel()
     :add(self.image_emb)
     :add(self.emb)
@@ -36,7 +34,7 @@ function AddLayer:__init(config)
    end
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
-     self.params.weight:copy(config.image_weights)
+     self.params.weight:copy(config.combine_weights)
    end
 end
 

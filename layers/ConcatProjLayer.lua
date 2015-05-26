@@ -29,7 +29,7 @@ function ConcatProjLayer:__init(config)
 
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
-     self.params.weight:copy(config.image_weights)
+     self.params.weight:copy(config.combine_weights)
    end
 
   if gpu_mode then
