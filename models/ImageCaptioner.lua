@@ -187,6 +187,7 @@ function ImageCaptioner:predict(image_features, beam_size)
     
       -- keep count of number of tokens seen already
       num_iter = num_iter + 1
+      print(likelihood)
       ll = ll + likelihood
       if pred_token ~= end_token then
         table.insert(tokens, pred_token)
