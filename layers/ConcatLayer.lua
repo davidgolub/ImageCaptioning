@@ -26,7 +26,7 @@ function ConcatLayer:__init(config)
     self:set_gpu_mode()
   end
 
-     -- Copy the image embedding vectors
+  -- Copy the image embedding vectors
   if config.combine_weights ~= nil then
     self.params.weight:copy(config.combine_weights)
   end

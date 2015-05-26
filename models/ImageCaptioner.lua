@@ -90,8 +90,6 @@ function ImageCaptioner:train(dataset)
       self.image_captioner:zeroGradParameters()
 
       local start = sys.clock()
-      local tot_forward_diff = 0
-      local tot_backward_diff = 0
       local loss = 0
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
@@ -136,7 +134,7 @@ function ImageCaptioner:train(dataset)
 
       return loss, self.grad_params
     end
-
+    feval()
     optim.adagrad(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end
@@ -165,11 +163,6 @@ function ImageCaptioner:predict(image_features, beam_size)
 
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
-
-   print("Class predictions are: ")
-   print(class_predictions)
-
-   local class_predictions = torch.squeeze(class_predictions)
    local pred_token = argmax(class_predictions, num_iter < 3)
    local likelihood = class_predictions[pred_token]
 
@@ -312,6 +305,6 @@ function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)
-  --model.optim_state = state.optim_state:float()
+  model.optim_state = state.optim_state
   return model
 end

@@ -1,6 +1,6 @@
 th image_captioning/main.lua \
 -load_model \
--batch_size 33  \
+-batch_size 33 \
 -mem_dim 150 \
 -epochs 100 \
 -combine_module addlayer \

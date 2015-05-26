@@ -94,10 +94,13 @@ header('model configuration')
 printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
-local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 1)
+print("Predicting on dataset 1")
+prediction = model:predict(train_dataset.image_feats[1], 1)
 
+local model_save_path = string.format(
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 150)
+model:save(model_save_path)
 model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 
-print("Predicting on dataset")
+print("Predicting on dataset 2")
 prediction = model:predict(train_dataset.image_feats[1], 1)

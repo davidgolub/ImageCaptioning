@@ -22,6 +22,7 @@ cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', 'type of input layer')
+cmd:option('-model_epoch', 98, 'epoch to load model from')
 cmd:text()
 
 -- parse input params
@@ -99,7 +100,7 @@ printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 99)
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, params.model_epoch)
 
 if params.load_model then
 --if true then
@@ -144,6 +145,7 @@ for i = 1, num_epochs do
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, i)
 
   model:save(model_save_path)
+  model = imagelstm.ImageCaptioner.load(model_save_path)
 end
 
 local gold_save_path = string.format(
