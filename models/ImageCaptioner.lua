@@ -10,17 +10,25 @@ function ImageCaptioner:__init(config)
   self.gpu_mode                = config.gpu_mode          or false
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
+  self.combine_module_type     = config.combine_module    or "addlayer"
   self.mem_dim                 = config.mem_dim           or 150
   self.emb_dim                 = config.emb_dim           or 300
-  self.learning_rate           = config.learning_rate     or 0.05
-  self.emb_learning_rate       = config.emb_learning_rate or 0.05
-  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.05
+  self.learning_rate           = config.learning_rate     or 0.01
+  self.emb_learning_rate       = config.emb_learning_rate or 0.01
+  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
   self.dropout                 = (config.dropout == nil) and false or config.dropout
 
-  self.combine_layer = imagelstm.ConcatProjLayer(config)
+  if self.combine_module_type == "addlayer" then
+    self.combine_layer = imagelstm.AddLayer(config)
+  else if self.combine_module_type == "concatlayer" then
+    self.combine_layer = imagelstm.ConcatLayer(config)
+  else
+    self.combine_layer = imagelstm.ConcatProjLayer(config)
+  end
+  
 
   self.optim_state = { learningRate = self.learning_rate }
 

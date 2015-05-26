@@ -21,6 +21,7 @@ cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
+cmd:option('-combine_module', 'addlayer', 'type of input layer')
 cmd:text()
 
 -- parse input params
@@ -83,6 +84,7 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   emb_vecs = vecs,
+  combine_module = params.combine_module
   learning_rate = params.learning_rate,
   emb_learning_rate = params.emb_learning_rate,
   image_dim = params.image_dim,
