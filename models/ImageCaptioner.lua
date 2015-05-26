@@ -168,7 +168,7 @@ function ImageCaptioner:predict(image_features, beam_size)
 
    print("Class predictions are: ")
    print(class_predictions)
-   
+
    local class_predictions = torch.squeeze(class_predictions)
    local pred_token = argmax(class_predictions, num_iter < 3)
    local likelihood = class_predictions[pred_token]
@@ -293,7 +293,7 @@ function ImageCaptioner:save(path)
     batch_size        = self.batch_size,
     dropout           = self.dropout,
     emb_learning_rate = self.emb_learning_rate,
-    combine_weights   = self.combine_layer:getWeights(),
+    combine_weights   = self.combine_layer:getWeights():float(),
     fine_grained      = self.fine_grained,
     learning_rate     = self.learning_rate,
     mem_dim           = self.mem_dim,
@@ -302,7 +302,7 @@ function ImageCaptioner:save(path)
   }
 
   torch.save(path, {
-    params = self.params,
+    params = self.params:float(),
     optim_state = self.optim_state,
     config = config,
   })
