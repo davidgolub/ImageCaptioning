@@ -99,7 +99,7 @@ printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 10)
+  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 5)
 
 --if params.load_model then
 if true then
