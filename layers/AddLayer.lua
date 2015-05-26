@@ -56,6 +56,8 @@ end
 function AddLayer:forward(word_indeces, image_feats)
     self.text_inputs = self.emb:forward(word_indeces)
     self.image_inputs = self.image_emb:forward(image_feats)
+    print(self.image_inputs)
+    print(self.text_inputs)
     self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
 
     return self.inputs
