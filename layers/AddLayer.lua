@@ -91,7 +91,6 @@ end
 function AddLayer:normalizeGrads(batch_size)
   self.image_emb.gradWeight:div(batch_size)
   self.emb.gradWeight:div(batch_size)
-  self.lstm_emb.gradWeight:div()
 end
 
 function AddLayer:updateParameters()
