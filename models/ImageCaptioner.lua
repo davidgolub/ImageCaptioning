@@ -12,15 +12,15 @@ function ImageCaptioner:__init(config)
   self.image_dim               = config.image_dim         or 1024
   self.mem_dim                 = config.mem_dim           or 150
   self.emb_dim                 = config.emb_dim           or 300
-  self.learning_rate           = config.learning_rate     or 0.01
-  self.emb_learning_rate       = config.emb_learning_rate or 0.01
-  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
+  self.learning_rate           = config.learning_rate     or 0.05
+  self.emb_learning_rate       = config.emb_learning_rate or 0.05
+  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.05
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
   self.num_classes             = config.num_classes
   self.dropout                 = (config.dropout == nil) and false or config.dropout
 
-  self.combine_layer = imagelstm.ConcatLayer(config)
+  self.combine_layer = imagelstm.AddLayer(config)
 
   self.optim_state = { learningRate = self.learning_rate }
 
@@ -113,10 +113,6 @@ function ImageCaptioner:train(dataset)
         self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
-      local start8 = sys.clock()
-      print("Times are ", (start8 - start))
-      print("Forward time ", tot_forward_diff)
-      print("Backward time ", tot_backward_diff)
       tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
@@ -145,8 +141,6 @@ function ImageCaptioner:predict(image_features, beam_size)
   if self.gpu_mode then
     image_features = image_features:cuda()
   end
-  
-  local image_inputs = self.image_emb:forward(image_features)
 
   -- Keep track of tokens predicted
   local num_iter = 0
@@ -158,9 +152,7 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- returns predicted token, its log likelihood, state of lstm, and all predictions
 
   local function lstm_tick(next_token, prev_outputs)
-   local text_inputs = self.emb:forward(next_token)
-   -- get the lstm inputs
-   local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
+   local inputs = self.combine_layer:forward(next_token, image_features)
 
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
@@ -259,11 +251,11 @@ end
 
 function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
-  num_predictions = 1000 -- = dataset.size
+  num_predictions = 100 -- = dataset.size
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], 1)
-    table.insert(predictions, prediction)
+    table.insert(predictions, prediction[1])
   end
   return predictions
 end

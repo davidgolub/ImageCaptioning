@@ -17,6 +17,8 @@ cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
+cmd:option('-learning_rate', 0.05, 'learning rate')
+cmd:option('-emb_learning_rate', 0.05, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:text()
@@ -81,6 +83,8 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   emb_vecs = vecs,
+  learning_rate = params.learning_rate
+  emb_learning_rate = params.emb_learning_rate
   image_dim = params.image_dim,
   mem_dim = params.mem_dim,
   num_classes = vocab.size + 3, --For start, end and unk tokens
@@ -115,6 +119,7 @@ local best_train_model = model
 local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
+
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -127,10 +132,11 @@ for i = 1, num_epochs do
   model:save(model_save_path)
 
   local train_predictions = model:predict_dataset(train_dataset)
-  printf('-- predicting sentences on a sample set of 100')
+  printf('-- predicting sentences on a sample set of 100\n')
 
+  print(train_predictions)
   for j = 1, #train_predictions do
-    prediction = train_predictions[j]
+    prediction = train_predictions[j][2]
     sentence = vocab:tokens(prediction)
     print(sentence)
   end
