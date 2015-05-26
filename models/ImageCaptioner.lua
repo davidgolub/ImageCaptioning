@@ -312,6 +312,6 @@ function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)
-  model.optim_state = state.optim_state:float()
+  --model.optim_state = state.optim_state:float()
   return model
 end
