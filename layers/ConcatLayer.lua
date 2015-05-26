@@ -48,7 +48,7 @@ function ConcatLayer:forward(word_indeces, image_feats)
 end
 
 function ConcatLayer:backward(word_indices, image_feats, err)
-   emb_errors = self.combine_model:backward({self.word_proj, self.image_proj}, err)
+   emb_errors = self.combine_model:backward({self.word_proj, image_feats}, err)
 
    -- get the image and word projection errors
    image_emb_errors = emb_errors[2]
@@ -69,6 +69,7 @@ end
 -- zeros out the gradients
 function ConcatLayer:zeroGradParameters() 
   self.emb:zeroGradParameters()
+  self.combine_model:zeroGradParameters()
 end
 
 function ConcatLayer:normalizeGrads(batch_size)

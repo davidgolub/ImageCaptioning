@@ -84,11 +84,13 @@ end
 function ConcatProjLayer:zeroGradParameters() 
   self.emb:zeroGradParameters()
   self.image_emb:zeroGradParameters()
+  self.combine_model:zeroGradParameters()
 end
 
 function ConcatProjLayer:normalizeGrads(batch_size)
   self.emb.gradWeights:div(batch_size)
   self.image_emb.gradWeights:div(batch_size)
+  self.combine_model.gradWeights:div(batch_size)
 end
 
 function ConcatProjLayer:updateParameters()

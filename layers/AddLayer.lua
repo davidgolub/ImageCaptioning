@@ -83,10 +83,15 @@ end
 -- zeros out the gradients
 function AddLayer:zeroGradParameters() 
   self.grad_params:zero()
+  self.image_emb:zero()
+  self.emb:zero()
+  self.lstm_emb:zeroGradParameters()
 end
 
 function AddLayer:normalizeGrads(batch_size)
-  self.grad_params:div(batch_size)
+  self.image_emb.gradWeight:div(batch_size)
+  self.emb.gradWeight:div(batch_size)
+  self.lstm_emb.gradWeight:div()
 end
 
 function AddLayer:updateParameters()
