@@ -98,7 +98,7 @@ function ImageCaptioner:train(dataset)
 
 
         if self.gpu_mode then
-          --sentence = sentence:cuda()
+          sentence = sentence:cuda()
           out_sentence = out_sentence:cuda()
           image_feats = image_feats:cuda()
         end
