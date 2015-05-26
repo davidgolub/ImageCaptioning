@@ -101,8 +101,8 @@ model:print_config()
 local model_save_path = string.format(
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 5)
 
---if params.load_model then
-if true then
+if params.load_model then
+--if true then
   model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 end
 
