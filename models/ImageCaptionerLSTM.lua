@@ -27,6 +27,11 @@ function ImageCaptionerLSTM:__init(config)
   self.params, self.grad_params = modules:getParameters()
 end
 
+function ImageCaptionerLSTM:zeroGradParameters()
+  self.grad_params:zero()
+  self.lstm_layer:zeroGradParameters()
+end
+
 -- Forward propagate.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- states: hidden, cell states of LSTM if true, read the input from right to left (useful for bidirectional LSTMs).

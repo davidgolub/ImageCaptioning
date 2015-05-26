@@ -32,6 +32,34 @@ function GradChecks:new_caption_module()
   return caption_module
 end
 
+function GradChecks:check_addlayer()
+  input = torch.rand(10, 4)
+  output = torch.IntTensor{1, 2, 5, 4, 3, 4, 1, 2, 3, 5}
+  
+  local feval = function(x)
+      self.grad_params:zero()
+
+      -- compute the loss
+      local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(input, output)
+
+      -- compute the input gradients with respect to the loss
+      local input_grads = self.image_captioner:backward(input, lstm_output, class_predictions, output)
+
+      -- regularization
+      caption_loss = caption_loss + 0.5 * self.reg * self.params:norm() ^ 2
+      self.grad_params:add(self.reg, self.params)
+
+      return caption_loss, self.grad_params
+  end
+
+  diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-6)
+  print("Gradient error for lstm captioner is")
+  print(diff)
+
+  assert(diff < self.tol, "Gradient is greater than tolerance")
+
+end
+
 function GradChecks:check_lstm_captioner()
   input = torch.rand(10, 4)
   output = torch.IntTensor{1, 2, 5, 4, 3, 4, 1, 2, 3, 5}

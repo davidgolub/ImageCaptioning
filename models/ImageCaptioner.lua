@@ -20,7 +20,7 @@ function ImageCaptioner:__init(config)
   self.num_classes             = config.num_classes
   self.dropout                 = (config.dropout == nil) and false or config.dropout
 
-  self.combine_layer = imagelstm.AddLayer(config)
+  self.combine_layer = imagelstm.ConcatProjLayer(config)
 
   self.optim_state = { learningRate = self.learning_rate }
 
@@ -77,8 +77,8 @@ function ImageCaptioner:train(dataset)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
     
     local feval = function(x)
-      self.grad_params:zero()
       self.combine_layer:zeroGradParameters()
+      self.image_captioner:zeroGradParameters()
 
       local start = sys.clock()
       local tot_forward_diff = 0

@@ -21,6 +21,7 @@ include('util/read_data.lua')
 include('layers/CRowAddTable.lua')
 include('layers/CRowJoinTable.lua')
 include('layers/AddLayer.lua')
+include('layers/ConcatProjLayer.lua')
 include('layers/ConcatLayer.lua')
 
 -- models

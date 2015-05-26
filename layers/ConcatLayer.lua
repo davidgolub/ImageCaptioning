@@ -54,7 +54,7 @@ function ConcatLayer:backward(word_indices, image_feats, err)
    image_emb_errors = emb_errors[2]
    word_proj_errors = emb_errors[1]
 
-   self.emb:backward(word_indices, word_proj_errors)
+   self.emb:backward(self.word_proj, word_proj_errors)
 end
 
 -- Returns size of outputs of this combine module
