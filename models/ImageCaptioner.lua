@@ -164,6 +164,7 @@ function ImageCaptioner:predict(image_features, beam_size)
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
    local pred_token = argmax(class_predictions, num_iter < 3)
+   print("Predicted token ", pred_token)
    local likelihood = class_predictions[pred_token]
 
    return pred_token, likelihood, next_outputs, class_predictions
