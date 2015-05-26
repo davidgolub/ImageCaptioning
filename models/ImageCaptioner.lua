@@ -23,7 +23,7 @@ function ImageCaptioner:__init(config)
 
   if self.combine_module_type == "addlayer" then
     self.combine_layer = imagelstm.AddLayer(config)
-  else if self.combine_module_type == "concatlayer" then
+  elseif self.combine_module_type == "concatlayer" then
     self.combine_layer = imagelstm.ConcatLayer(config)
   else
     self.combine_layer = imagelstm.ConcatProjLayer(config)
