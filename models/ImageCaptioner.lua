@@ -50,7 +50,7 @@ end
 -- Set all of the network parameters to gpu mode
 function ImageCaptioner:set_gpu_mode()
   self.image_captioner:set_gpu_mode()
-  self.combine_module:set_gpu_mode()
+  self.combine_layer:set_gpu_mode()
 end
 
 function ImageCaptioner:set_cpu_mode()
@@ -105,22 +105,11 @@ function ImageCaptioner:train(dataset)
 
         -- get text/image inputs
         local inputs = self.combine_layer:forward(sentence, image_feats)
-
-        local start4 = sys.clock()
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
         
         loss = loss + caption_loss
 
-        -- compute the input gradients with respect to the loss
-        local start5 = sys.clock()
-        local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)
-
-        -- backprop the gradients through the linear combination step
-        local start6 = sys.clock()
-
-        tot_forward_diff = tot_forward_diff + start5 - start4
-        tot_backward_diff = tot_backward_diff + start6 - start5
-        
+        local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
         self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
