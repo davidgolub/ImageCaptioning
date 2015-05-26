@@ -34,7 +34,7 @@ function AddLayer:__init(config)
    end
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
-     self.params.weight:copy(config.combine_weights)
+     self.params:copy(config.combine_weights)
    end
 end
 

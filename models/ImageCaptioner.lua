@@ -166,6 +166,9 @@ function ImageCaptioner:predict(image_features, beam_size)
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
 
+   print("Class predictions are: ")
+   print(class_predictions)
+   
    local class_predictions = torch.squeeze(class_predictions)
    local pred_token = argmax(class_predictions, num_iter < 3)
    local likelihood = class_predictions[pred_token]
