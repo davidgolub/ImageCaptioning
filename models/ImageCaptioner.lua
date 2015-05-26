@@ -262,7 +262,7 @@ function ImageCaptioner:predict_dataset(dataset)
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], 1)
-    table.insert(predictions, prediction[2])
+    table.insert(predictions, prediction)
   end
   return predictions
 end

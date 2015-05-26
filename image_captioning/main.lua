@@ -123,6 +123,17 @@ local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
 
+  local train_predictions = model:predict_dataset(train_dataset)
+  printf('-- predicting sentences on a sample set of 100\n')
+
+  for j = 1, #train_predictions do
+    prediction = train_predictions[j]
+    likelihood = prediction[1]
+    tokens = prediction[2]
+    sentence = vocab:tokens(tokens)
+    print(sentence)
+  end
+
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -133,17 +144,6 @@ for i = 1, num_epochs do
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, i)
 
   model:save(model_save_path)
-
-  local train_predictions = model:predict_dataset(train_dataset)
-  printf('-- predicting sentences on a sample set of 100\n')
-
-  print(train_predictions)
-  for j = 1, #train_predictions do
-    print(prediction)
-    sentence = vocab:tokens(prediction)
-    print(sentence)
-  end
-
 end
 
 local gold_save_path = string.format(
