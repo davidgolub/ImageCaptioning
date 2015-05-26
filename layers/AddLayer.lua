@@ -83,7 +83,7 @@ end
 -- zeros out the gradients
 function AddLayer:zeroGradParameters() 
   self.grad_params:zero()
-  self.image_emb:zero()
+  self.image_emb:zeroGradParameters()
   self.emb:zero()
   self.lstm_emb:zeroGradParameters()
 end
