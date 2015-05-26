@@ -16,7 +16,7 @@ cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
-cmd:option('-mem_dim', 300,'memory dimension of captioner')
+cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:text()
@@ -24,7 +24,6 @@ cmd:text()
 -- parse input params
 params = cmd:parse(arg)
 
-print (params.gpu)
 local use_gpu_mode = params.gpu_mode or false
 local num_epochs = params.epochs
 

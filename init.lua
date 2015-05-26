@@ -10,8 +10,6 @@ require('json')
 
 imagelstm = {}
 
-print("Starting to load requirements")
-
 -- Math helper functions
 include('util/math.lua')
 
@@ -21,14 +19,15 @@ include('util/read_data.lua')
 
 -- Layer for adding image features to every entry in sentence
 include('layers/CRowAddTable.lua')
+include('layers/CRowJoinTable.lua')
+include('layers/AddLayer.lua')
+include('layers/ConcatLayer.lua')
 
 -- models
 include('models/ImageCaptioner.lua')
 include('models/ImageCaptionerLSTM.lua')
 include('models/LSTM.lua')
 include('models/LSTM_Full.lua')
-
-print("Loaded requirements")
 
 printf = utils.printf
 

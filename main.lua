@@ -1,3 +1,5 @@
+nn.DepthConcat(dim)
+
 local train_sentences = imagelstm.read_caption_sentences(train_dir, vocab)
 print(train_sentences)
 local train_file, err = io.open(gold_save_path,"w")

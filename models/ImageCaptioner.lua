@@ -11,6 +11,7 @@ function ImageCaptioner:__init(config)
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
   self.mem_dim                 = config.mem_dim           or 150
+  self.emb_dim                 = config.emb_dim           or 300
   self.learning_rate           = config.learning_rate     or 0.01
   self.emb_learning_rate       = config.emb_learning_rate or 0.01
   self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
@@ -19,30 +20,9 @@ function ImageCaptioner:__init(config)
   self.num_classes             = config.num_classes
   self.dropout                 = (config.dropout == nil) and false or config.dropout
 
-  -- word embedding
-  self.emb_dim = config.emb_vecs:size(2)
-  self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
-
-  -- image feature embedding
-  self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
-
-  -- Do a linear combination of image and word features
-  local x1 = nn.Identity(self.emb_dim)()
-  local x2 = nn.Identity(self.emb_dim)()
-  local a = imagelstm.CRowAddTable()({x1, x2})
-  
-  self.lstm_emb = nn.gModule({x1, x2}, {a})
-
-  self.emb.weight:copy(config.emb_vecs)
-  
-  -- Copy the image embedding vectors
-  if config.image_weights ~= nil then
-    self.image_emb.weight:copy(config.image_weights)
-  end
+  self.combine_layer = imagelstm.ConcatLayer(config)
 
   self.optim_state = { learningRate = self.learning_rate }
-
-  self.in_zeros = torch.zeros(self.emb_dim)
 
   -- number of classes is equal to the vocab size size we are predicting new words
   self.num_classes = config.emb_vecs:size(1)
@@ -53,7 +33,7 @@ function ImageCaptioner:__init(config)
 
   self.image_captioner = imagelstm.ImageCaptionerLSTM{
     gpu_mode = self.gpu_mode,
-    in_dim  = self.emb_dim,
+    in_dim  = self.combine_layer:getOutputSize(),
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),
     criterion = nn.ClassNLLCriterion()
@@ -65,16 +45,12 @@ function ImageCaptioner:__init(config)
   end
   
   self.params, self.grad_params = self.image_captioner:getParameters()
-  
-
 end
 
 -- Set all of the network parameters to gpu mode
 function ImageCaptioner:set_gpu_mode()
   self.image_captioner:set_gpu_mode()
-  self.lstm_emb:cuda()
-  self.emb:cuda()
-  self.image_emb:cuda()
+  self.combine_module:set_gpu_mode()
 end
 
 function ImageCaptioner:set_cpu_mode()
@@ -89,7 +65,6 @@ function ImageCaptioner:new_caption_module()
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
     :add(nn.LogSoftMax())
-
   return caption_module
 end
 
@@ -103,8 +78,7 @@ function ImageCaptioner:train(dataset)
     
     local feval = function(x)
       self.grad_params:zero()
-      self.emb:zeroGradParameters()
-      self.image_emb:zeroGradParameters()
+      self.combine_layer:zeroGradParameters()
 
       local start = sys.clock()
       local tot_forward_diff = 0
@@ -129,20 +103,12 @@ function ImageCaptioner:train(dataset)
           image_feats = image_feats:cuda()
         end
 
-        local start1 = sys.clock()
         -- get text/image inputs
-        local text_inputs = self.emb:forward(sentence)
+        local inputs = self.combine_layer:forward(sentence, image_feats)
 
-        local start2 = sys.clock()
-        local image_inputs = self.image_emb:forward(image_feats)
-
-        -- get the lstm inputs
-        local start3 = sys.clock()
-        local inputs = self.lstm_emb:forward({text_inputs, image_inputs})
-
-        -- compute the loss
         local start4 = sys.clock()
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
+        
         loss = loss + caption_loss
 
         -- compute the input gradients with respect to the loss
@@ -154,18 +120,8 @@ function ImageCaptioner:train(dataset)
 
         tot_forward_diff = tot_forward_diff + start5 - start4
         tot_backward_diff = tot_backward_diff + start6 - start5
-        local input_emb_grads = self.lstm_emb:backward({text_feats, image_feats}, input_grads)
-
-        -- Separate gradients into word embedding and feature gradients
-        local emb_grads = input_emb_grads[1]
-        local image_grads = input_emb_grads[2]
-
-        -- Do backward pass on image features and word embedding gradients
-        local start7 = sys.clock()
-        self.emb:backward(sentence, emb_grads)
-        self.image_emb:backward(image_feats, image_grads)
-    
-        --  start5 - start4, start4 - start3, start3 - start2, start2 - start1)
+        
+        self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
       local start8 = sys.clock()
@@ -175,8 +131,7 @@ function ImageCaptioner:train(dataset)
       tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
-      self.emb.gradWeight:div(batch_size)
-      self.image_emb.gradWeight:div(batch_size)
+      self.combine_layer:normalizeGrads(batch_size)
 
       -- regularization
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
@@ -189,8 +144,7 @@ function ImageCaptioner:train(dataset)
     end
 
     optim.rmsprop(feval, self.params, self.optim_state)
-    self.emb:updateParameters(self.emb_learning_rate)
-    self.image_emb:updateParameters(self.image_emb_learning_rate)
+    self.combine_layer:updateParameters()
   end
   average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
@@ -348,8 +302,7 @@ function ImageCaptioner:save(path)
     batch_size        = self.batch_size,
     dropout           = self.dropout,
     emb_learning_rate = self.emb_learning_rate,
-    emb_vecs          = self.emb.weight:float(),
-    image_weights     = self.image_emb.weight:float(),
+    combine_weights   = self.combine_layer:getWeights(),
     fine_grained      = self.fine_grained,
     learning_rate     = self.learning_rate,
     mem_dim           = self.mem_dim,
