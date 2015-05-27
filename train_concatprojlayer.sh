@@ -8,4 +8,5 @@ th image_captioning/main.lua \
 -combine_module concatprojlayer \
 -learning_rate 0.1 \
 -emb_learning_rate 0.01 \
+-gpu_mode
 | tee -a "log_concatprojlayer_gpu.txt"

@@ -135,17 +135,7 @@ local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
-  -- get training predictions
-  local train_predictions = model:predict_dataset(train_dataset)
-  printf('-- predicting sentences on a sample set of 100\n')
-
-  -- save them to disk for later use
-  local predictions_save_path = string.format(
-  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
-  model.combine_module_type, model.mem_dim, i)
-
-  model:save_predictions(predictions_save_path, train_predictions)
-
+  
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -158,6 +148,18 @@ for i = 1, num_epochs do
   model.mem_dim, params.model_epoch)
 
   model:save(model_save_path)
+
+  -- get training predictions
+  local train_predictions = model:predict_dataset(train_dataset)
+  printf('-- predicting sentences on a sample set of 100\n')
+
+  -- save them to disk for later use
+  local predictions_save_path = string.format(
+  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
+  model.combine_module_type, model.mem_dim, i)
+
+  model:save_predictions(predictions_save_path, train_predictions)
+
 end
 
 local gold_save_path = string.format(
