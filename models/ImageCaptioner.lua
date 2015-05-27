@@ -272,10 +272,11 @@ function ImageCaptioner:predict_dataset(dataset)
 end
 
 -- saves prediction to specified file path
-function ImageCaptioner:save_predictions(predictions_save_path, test_predictions)
+function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predictions)
   local predictions_file, err = io.open(predictions_save_path,"w")
 
   print('writing predictions to ' .. predictions_save_path)
+  predictions_file:write("LOSS " .. loss .. '\n')
   for i = 1, #test_predictions do
     local test_prediction = test_predictions[i]
     local likelihood = test_prediction[1]

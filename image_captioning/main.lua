@@ -158,7 +158,7 @@ for i = 1, num_epochs do
   imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
   model.combine_module_type, model.mem_dim, i)
 
-  model:save_predictions(predictions_save_path, train_predictions)
+  model:save_predictions(predictions_save_path, loss, train_predictions)
 
 end
 
