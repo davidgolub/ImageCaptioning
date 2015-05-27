@@ -145,7 +145,6 @@ for i = 1, num_epochs do
   imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, i)
 
   model:save(model_save_path)
-  model = imagelstm.ImageCaptioner.load(model_save_path)
 end
 
 local gold_save_path = string.format(

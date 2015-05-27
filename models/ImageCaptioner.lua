@@ -31,6 +31,7 @@ function ImageCaptioner:__init(config)
   end
   
 
+  self.in_zeros = torch.zeros(self.emb_dim)
   self.optim_state = { learningRate = self.learning_rate }
 
   -- number of classes is equal to the vocab size size we are predicting new words
@@ -116,7 +117,7 @@ function ImageCaptioner:train(dataset)
         local inputs = self.combine_layer:forward(sentence, image_feats)
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
         
-        if curr_epoch > 1 then 
+        if curr_epoch > 6 then 
           for j = 1, out_sentence:size(1) do
             local predicted_token = argmax(class_predictions[j])
             print(vocab:token(predicted_token), "_____", vocab:token(out_sentence[j]))

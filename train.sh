@@ -7,6 +7,6 @@ th image_captioning/main.lua \
 -mem_dim 150 \
 -epochs 100 \
 -combine_module addlayer \
--learning_rate 0.5 \
--emb_learning_rate 0.05 \
+-learning_rate 0.1 \
+-emb_learning_rate 0.001 \
 | tee -a "log_3.txt"
