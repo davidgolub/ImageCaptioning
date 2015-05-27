@@ -266,7 +266,7 @@ end
 
 function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
-  num_predictions = 100 -- = dataset.size
+  num_predictions = 10 -- = dataset.size
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], 1)
