@@ -12,6 +12,7 @@ cmd:text()
 cmd:text('Image Captioning Parameters')
 cmd:text('Options')
 cmd:option('-gpu_mode', false, 'gpu mode')
+cmd:option('-optim', 'rmsprop', 'optimization type')
 cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
@@ -39,6 +40,13 @@ end
 
 function accuracy(pred, gold)
   return torch.eq(pred, gold):sum() / pred:size(1)
+end
+
+local opt_method
+if params.optim == 'adagrad' then
+  opt_method = optim.adagrad
+else
+  opt_method = optim.rmsprop
 end
 
 header('Image-Captioning with LSTMs')
@@ -84,6 +92,7 @@ printf('num train = %d\n', train_dataset.size)
 -- initialize model
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
+  optim_method = optim_method,
   emb_vecs = vecs,
   combine_module = params.combine_module,
   learning_rate = params.learning_rate,
@@ -100,7 +109,9 @@ printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, params.model_epoch)
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, params.model_epoch)
 
 if params.load_model then
 --if true then
@@ -130,7 +141,8 @@ for i = 1, num_epochs do
 
   -- save them to disk for later use
   local predictions_save_path = string.format(
-    imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.%d.pred', model.mem_dim, i)
+  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
+  model.combine_module_type, model.mem_dim, i)
 
   model:save_predictions(predictions_save_path, train_predictions)
 
@@ -141,7 +153,9 @@ for i = 1, num_epochs do
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
   model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, i)
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, params.model_epoch)
 
   model:save(model_save_path)
 end
@@ -155,11 +169,14 @@ header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
 local test_predictions = model:predict_dataset(train_dataset)
 
-
 -- write model to disk
 
+  
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, num_epochs + 1)
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, params.model_epoch)
+
 print('writing model to ' .. model_save_path)
 model:save(model_save_path)
 

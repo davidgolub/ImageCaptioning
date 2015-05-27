@@ -21,6 +21,7 @@ function ImageCaptioner:__init(config)
   self.num_classes             = config.num_classes
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
+  self.optim_method            = config.optim_method or optim.adagrad
 
   if self.combine_module_type == "addlayer" then
     self.combine_layer = imagelstm.AddLayer(config)
@@ -120,6 +121,7 @@ function ImageCaptioner:train(dataset)
         loss = loss + caption_loss
 
         local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
+        --self.combine_layer:backward(text_feats, image_feats, input_grads)
         self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
@@ -137,7 +139,7 @@ function ImageCaptioner:train(dataset)
 
       return loss, self.grad_params
     end
-    optim.adagrad(feval, self.params, self.optim_state)
+    self.optim_method(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end
   average_loss = tot_loss / dataset.size
@@ -311,7 +313,8 @@ function ImageCaptioner:save(path)
     learning_rate     = self.learning_rate,
     mem_dim           = self.mem_dim,
     reg               = self.reg,
-    emb_vecs          = self.emb_vecs
+    emb_vecs          = self.emb_vecs,
+    optim_method      = self.optim_method
   }
 
   torch.save(path, {
