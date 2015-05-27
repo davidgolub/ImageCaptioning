@@ -9,7 +9,7 @@ local AddLayer = torch.class('imagelstm.AddLayer')
 function AddLayer:__init(config)
    self.gpu_mode = config.gpu_mode or false
    self.emb_learning_rate  = config.emb_learning_rate or 0.01
-   self.emb_dim = config.emb_vecs:size(2)
+   self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
    self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
 
@@ -32,10 +32,16 @@ function AddLayer:__init(config)
    if self.gpu_mode then 
     self:set_gpu_mode()
    end
+
+   if config.emb_vecs ~= nil then
+    self.emb:copy(config.emb_vecs)
+   end
+
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
      self.params:copy(config.combine_weights)
    end
+
 end
 
 -- Sets gpu mode

@@ -56,6 +56,7 @@ function ImageCaptioner:__init(config)
   end
   
   self.params, self.grad_params = self.image_captioner:getParameters()
+  self.combine_params, self.combine_grad_params = self.combine_layer:getParameters()
 end
 
 -- Set all of the network parameters to gpu mode
@@ -88,7 +89,7 @@ function ImageCaptioner:train(dataset)
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
     
-
+    currIndex = 0
     local feval = function(x)
       self.combine_layer:zeroGradParameters()
       self.image_captioner:zeroGradParameters()
@@ -134,11 +135,80 @@ function ImageCaptioner:train(dataset)
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       self.grad_params:add(self.reg, self.params)
 
-      print("Caption loss is:")
-      print(loss)
-
+      --print("Caption loss is:")
+      --print(loss)
+      print(currIndex, " of ", self.params:size(1))
+      currIndex = currIndex + 1
       return loss, self.grad_params
     end
+
+    currIndex = 0
+    local ceval = function(x)
+      self.combine_layer:zeroGradParameters()
+      self.image_captioner:zeroGradParameters()
+
+      local start = sys.clock()
+      local loss = 0
+      for j = 1, batch_size do
+        local idx = indices[i + j - 1]
+        
+        --local idx = i + j - 1
+        -- get the image features
+        local imgid = dataset.image_ids[idx]
+        local image_feats = dataset.image_feats[imgid]
+
+        -- get input and output sentences
+        local sentence = dataset.sentences[idx]
+        local out_sentence = dataset.pred_sentences[idx]
+
+
+        if self.gpu_mode then
+          sentence = sentence:cuda()
+          out_sentence = out_sentence:cuda()
+          image_feats = image_feats:cuda()
+        end
+
+        -- get text/image inputs
+        local inputs = self.combine_layer:forward(sentence, image_feats)
+        local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
+        
+        loss = loss + caption_loss
+
+        local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
+        --self.combine_layer:backward(text_feats, image_feats, input_grads)
+        self.combine_layer:backward(sentence, image_feats, input_grads)
+      end
+
+      tot_loss = tot_loss + loss
+      loss = loss / batch_size
+      self.grad_params:div(batch_size)
+      self.combine_layer:normalizeGrads(batch_size)
+
+      -- regularization
+      --loss = loss + 0.5 * self.reg * self.combine_params:norm() ^ 2
+      --self.combine_params:add(self.reg, self.combine_params)
+
+      --print("Caption loss is:")
+      --print(loss)
+      print(currIndex, " of ", self.combine_params:size(1))
+      currIndex = currIndex + 1
+      return loss, self.combine_grad_params
+    end
+
+    -- check gradients for input/combine layer
+    diff, DC, DC_est = optim.checkgrad(ceval, self.combine_params, 1e-7)
+    print("Gradient error for combine layer is")
+    print(diff)
+    assert(diff < 1e-5, "Gradient is greater than tolerance")
+
+    -- check gradients for lstm layer
+    diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
+    print("Gradient error for lstm captioner is")
+    print(diff)
+    assert(diff < 1e-5, "Gradient is greater than tolerance")
+
+
+    assert(false)
     self.optim_method(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end
