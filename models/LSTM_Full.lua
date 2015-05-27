@@ -150,9 +150,6 @@ function LSTM:forward(inputs, reverse)
     self.outputs = self.tensors[size]
   end
 
-  time1 = sys.clock()
-  accTime = 0
-  copyingTime = 0
   for t = 1, size do
     time5 = sys.clock()
     local input = reverse and inputs[size - t + 1] or inputs[t]
@@ -164,7 +161,6 @@ function LSTM:forward(inputs, reverse)
       cell = self:new_cell()
       self.cells[self.depth] = cell
     end
-    time6 = sys.clock()
 
     local prev_output
     if self.depth > 1 then
@@ -174,13 +170,7 @@ function LSTM:forward(inputs, reverse)
     end
     local cell_inputs = {input, prev_output[1], prev_output[2]}
 
-
-    copyingTime = copyingTime + time6 - time5
-    time3 = sys.clock()
-
     local outputs = cell:forward(cell_inputs)
-    time4 = sys.clock()
-    accTime = accTime + time4 - time3
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then
       self.outputs[t] = htable
@@ -190,11 +180,6 @@ function LSTM:forward(inputs, reverse)
       end
     end
   end
-
-  time2 = sys.clock()
-  --print("Times are: ", time2 - time1)
-  --print("Forwarding times are:", accTime)
-  --print("Coping times are:", copyingTime)
   return self.outputs
 end
 

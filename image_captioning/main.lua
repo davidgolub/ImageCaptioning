@@ -47,7 +47,7 @@ header('Image-Captioning with LSTMs')
 local data_dir = params.data_dir
 
 -- load vocab
-local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
 
 -- load embeddings
 print('loading word embeddings')
@@ -123,7 +123,7 @@ local best_train_model = model
 local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
-
+  curr_epoch = i
   local train_predictions = model:predict_dataset(train_dataset)
   printf('-- predicting sentences on a sample set of 100\n')
 

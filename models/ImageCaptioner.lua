@@ -81,10 +81,12 @@ function ImageCaptioner:train(dataset)
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
+  --dataset.size
   for i = 1, dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
     
+
     local feval = function(x)
       self.combine_layer:zeroGradParameters()
       self.image_captioner:zeroGradParameters()
@@ -114,6 +116,12 @@ function ImageCaptioner:train(dataset)
         local inputs = self.combine_layer:forward(sentence, image_feats)
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
         
+        if curr_epoch > 1 then 
+          for j = 1, out_sentence:size(1) do
+            local predicted_token = argmax(class_predictions[j])
+            print(vocab:token(predicted_token), "_____", vocab:token(out_sentence[j]))
+          end
+        end
         loss = loss + caption_loss
 
         local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
@@ -134,7 +142,6 @@ function ImageCaptioner:train(dataset)
 
       return loss, self.grad_params
     end
-    feval()
     optim.adagrad(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end
@@ -163,11 +170,14 @@ function ImageCaptioner:predict(image_features, beam_size)
 
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
-   local pred_token = argmax(class_predictions, num_iter < 3)
-   print("Predicted token ", pred_token)
-   local likelihood = class_predictions[pred_token]
+   local squeezed_predictions = torch.squeeze(class_predictions)
+   local predicted_token = argmax(squeezed_predictions, num_iter < 3)
+   
+   --print("Predicted token ")
+   --print(predicted_token, next_token)
+   local likelihood = squeezed_predictions[predicted_token]
 
-   return pred_token, likelihood, next_outputs, class_predictions
+   return predicted_token, likelihood, next_outputs, squeezed_predictions
   end
 
   -- Start with special START token:
@@ -188,7 +198,6 @@ function ImageCaptioner:predict(image_features, beam_size)
     
       -- keep count of number of tokens seen already
       num_iter = num_iter + 1
-      print(likelihood)
       ll = ll + likelihood
       if pred_token ~= end_token then
         table.insert(tokens, pred_token)
