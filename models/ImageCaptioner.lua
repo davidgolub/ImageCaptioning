@@ -117,12 +117,6 @@ function ImageCaptioner:train(dataset)
         local inputs = self.combine_layer:forward(sentence, image_feats)
         local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
         
-        if curr_epoch > 6 then 
-          for j = 1, out_sentence:size(1) do
-            local predicted_token = argmax(class_predictions[j])
-            print(vocab:token(predicted_token), "_____", vocab:token(out_sentence[j]))
-          end
-        end
         loss = loss + caption_loss
 
         local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
