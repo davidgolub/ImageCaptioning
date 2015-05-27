@@ -124,16 +124,15 @@ local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
+  -- get training predictions
   local train_predictions = model:predict_dataset(train_dataset)
   printf('-- predicting sentences on a sample set of 100\n')
 
-  for j = 1, #train_predictions do
-    prediction = train_predictions[j]
-    likelihood = prediction[1]
-    tokens = prediction[2]
-    sentence = vocab:tokens(tokens)
-    print(sentence)
-  end
+  -- save them to disk for later use
+  local predictions_save_path = string.format(
+    imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.%d.pred', model.mem_dim, i)
+
+  model:save_predictions(predictions_save_path, train_predictions)
 
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -156,20 +155,6 @@ header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
 local test_predictions = model:predict_dataset(train_dataset)
 
-local predictions_save_path = string.format(
-  imagelstm.predictions_dir .. '/imagecaptioning-lstm.%d.pred', model.mem_dim)
-
-local predictions_file, err = io.open(predictions_save_path,"w")
-
-print('writing predictions to ' .. predictions_save_path)
-for i = 1, #test_predictions do
-  local test_prediction = test_predictions[i][1]
-  local likelihood = test_prediction[1]
-  local tokens = test_prediction[2]
-  local sentence = table.concat(vocab:tokens(tokens), ' ')
-  predictions_file:write(sentence .. '\n')
-end
-predictions_file:close()
 
 -- write model to disk
 

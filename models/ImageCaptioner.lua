@@ -266,7 +266,7 @@ end
 
 function ImageCaptioner:predict_dataset(dataset)
   local predictions = {}
-  num_predictions = 10 -- = dataset.size
+  num_predictions = 30 -- = dataset.size
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], 1)
@@ -275,6 +275,20 @@ function ImageCaptioner:predict_dataset(dataset)
   return predictions
 end
 
+-- saves prediction to specified file path
+function ImageCaptioner:save_predictions(predictions_save_path, test_predictions)
+  local predictions_file, err = io.open(predictions_save_path,"w")
+
+  print('writing predictions to ' .. predictions_save_path)
+  for i = 1, #test_predictions do
+    local test_prediction = test_predictions[i]
+    local likelihood = test_prediction[1]
+    local tokens = test_prediction[2]
+    local sentence = table.concat(vocab:tokens(tokens), ' ')
+    predictions_file:write(sentence .. '\n')
+  end
+  predictions_file:close()
+end
 
 function ImageCaptioner:print_config()
   local num_params = self.params:size(1)
