@@ -6,7 +6,7 @@ th image_captioning/main.lua \
 -optim rmsprop \
 -epochs 300 \
 -combine_module concatprojlayer \
--learning_rate 0.1 \
--emb_learning_rate 0.01 \
+-learning_rate 0.5 \
+-emb_learning_rate 0.1 \
 -gpu_mode
 | tee -a "log_concatprojlayer_gpu.txt"
