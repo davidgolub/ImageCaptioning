@@ -8,4 +8,5 @@ th image_captioning/main.lua \
 -combine_module addlayer \
 -learning_rate 0.5 \
 -optim rmsprop \
+-gpu_mode
 | tee -a "log_concatlayer.txt"
