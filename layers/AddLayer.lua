@@ -11,7 +11,11 @@ function AddLayer:__init(config)
    self.emb_learning_rate  = config.emb_learning_rate or 0.01
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
-   self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
+   self.vocab_size = config.num_classes or 2944
+   if config.emb_vecs ~= nil then
+    self.vocab_size = config.emb_vecs:size(1)
+   end
+   self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
 
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
@@ -34,11 +38,12 @@ function AddLayer:__init(config)
    end
 
    if config.emb_vecs ~= nil then
-    self.emb:copy(config.emb_vecs)
+    self.emb.weight:copy(config.emb_vecs)
    end
 
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
+     print("Copying combine weights")
      self.params:copy(config.combine_weights)
    end
 
@@ -50,6 +55,10 @@ function AddLayer:set_gpu_mode()
   self.emb:cuda()
   self.lstm_emb:cuda()
   self.params:cuda()
+end
+
+function AddLayer:getModules() 
+  return {self.emb, self.image_emb}
 end
 
 -- Returns all of the weights of this module

@@ -12,17 +12,19 @@ function ImageCaptioner:__init(config)
   self.image_dim               = config.image_dim         or 1024
   self.combine_module_type     = config.combine_module    or "addlayer"
   self.mem_dim                 = config.mem_dim           or 150
-  self.emb_dim                 = config.emb_dim           or 300
+  self.emb_dim                 = config.emb_dim           or 10
   self.learning_rate           = config.learning_rate     or 0.01
   self.emb_learning_rate       = config.emb_learning_rate or 0.01
   self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-4
-  self.num_classes             = config.num_classes
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
   self.optim_method            = config.optim_method or optim.adagrad
-
+  self.num_classes             = config.num_classes or 2944
+  if config.emb_vecs ~= nil then
+    self.num_classes = config.emb_vecs:size(1)
+  end
   if self.combine_module_type == "addlayer" then
     self.combine_layer = imagelstm.AddLayer(config)
   elseif self.combine_module_type == "concatlayer" then
@@ -31,12 +33,8 @@ function ImageCaptioner:__init(config)
     self.combine_layer = imagelstm.ConcatProjLayer(config)
   end
   
-
   self.in_zeros = torch.zeros(self.emb_dim)
   self.optim_state = { learningRate = self.learning_rate }
-
-  -- number of classes is equal to the vocab size size we are predicting new words
-  self.num_classes = config.emb_vecs:size(1)
   
   -- negative log likelihood optimization objective
   local num_caption_params = self:new_caption_module():getParameters():size(1)
@@ -55,8 +53,21 @@ function ImageCaptioner:__init(config)
     self:set_gpu_mode()
   end
   
-  self.params, self.grad_params = self.image_captioner:getParameters()
-  self.combine_params, self.combine_grad_params = self.combine_layer:getParameters()
+  local captioner_modules = self.image_captioner:getModules()
+  local combine_modules = self.combine_layer:getModules()
+
+  local modules = nn.Parallel()
+  for i = 1, #captioner_modules do
+    cap_module = captioner_modules[i]
+    modules:add(cap_module)
+  end
+
+  for i = 1, #combine_modules do
+    combine_module = combine_modules[i]
+    modules:add(combine_module)
+  end
+
+  self.params, self.grad_params = modules:getParameters()
 end
 
 -- Set all of the network parameters to gpu mode
@@ -91,6 +102,7 @@ function ImageCaptioner:train(dataset)
     
     currIndex = 0
     local feval = function(x)
+      self.grad_params:zero()
       self.combine_layer:zeroGradParameters()
       self.image_captioner:zeroGradParameters()
 
@@ -122,93 +134,29 @@ function ImageCaptioner:train(dataset)
         loss = loss + caption_loss
 
         local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
-        --self.combine_layer:backward(text_feats, image_feats, input_grads)
         self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
       tot_loss = tot_loss + loss
       loss = loss / batch_size
       self.grad_params:div(batch_size)
-      self.combine_layer:normalizeGrads(batch_size)
 
       -- regularization
-      loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      self.grad_params:add(self.reg, self.params)
+      --loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      --self.grad_params:add(self.reg, self.params)
 
-      --print("Caption loss is:")
-      --print(loss)
-      print(currIndex, " of ", self.params:size(1))
-      currIndex = currIndex + 1
+      print("Caption loss is:")
+      print(loss)
+      --print(currIndex, " of ", self.params:size(1))
+      --currIndex = currIndex + 1
       return loss, self.grad_params
     end
-
-    currIndex = 0
-    local ceval = function(x)
-      self.combine_layer:zeroGradParameters()
-      self.image_captioner:zeroGradParameters()
-
-      local start = sys.clock()
-      local loss = 0
-      for j = 1, batch_size do
-        local idx = indices[i + j - 1]
-        
-        --local idx = i + j - 1
-        -- get the image features
-        local imgid = dataset.image_ids[idx]
-        local image_feats = dataset.image_feats[imgid]
-
-        -- get input and output sentences
-        local sentence = dataset.sentences[idx]
-        local out_sentence = dataset.pred_sentences[idx]
-
-
-        if self.gpu_mode then
-          sentence = sentence:cuda()
-          out_sentence = out_sentence:cuda()
-          image_feats = image_feats:cuda()
-        end
-
-        -- get text/image inputs
-        local inputs = self.combine_layer:forward(sentence, image_feats)
-        local lstm_output, class_predictions, caption_loss = self.image_captioner:forward(inputs, out_sentence)
-        
-        loss = loss + caption_loss
-
-        local input_grads = self.image_captioner:backward(inputs, lstm_output, class_predictions, out_sentence)      
-        --self.combine_layer:backward(text_feats, image_feats, input_grads)
-        self.combine_layer:backward(sentence, image_feats, input_grads)
-      end
-
-      tot_loss = tot_loss + loss
-      loss = loss / batch_size
-      self.grad_params:div(batch_size)
-      self.combine_layer:normalizeGrads(batch_size)
-
-      -- regularization
-      --loss = loss + 0.5 * self.reg * self.combine_params:norm() ^ 2
-      --self.combine_params:add(self.reg, self.combine_params)
-
-      --print("Caption loss is:")
-      --print(loss)
-      print(currIndex, " of ", self.combine_params:size(1))
-      currIndex = currIndex + 1
-      return loss, self.combine_grad_params
-    end
-
-    -- check gradients for input/combine layer
-    diff, DC, DC_est = optim.checkgrad(ceval, self.combine_params, 1e-7)
-    print("Gradient error for combine layer is")
-    print(diff)
-    assert(diff < 1e-5, "Gradient is greater than tolerance")
-
     -- check gradients for lstm layer
-    diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
-    print("Gradient error for lstm captioner is")
-    print(diff)
-    assert(diff < 1e-5, "Gradient is greater than tolerance")
+    --diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
+    --print("Gradient error for lstm captioner is")
+    --print(diff)
+    --assert(diff < 1e-5, "Gradient is greater than tolerance")
 
-
-    assert(false)
     self.optim_method(feval, self.params, self.optim_state)
     self.combine_layer:updateParameters()
   end

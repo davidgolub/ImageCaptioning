@@ -13,13 +13,16 @@ function ConcatProjLayer:__init(config)
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
    self.proj_dim = config.proj_dim or 300
-   self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
+   self.vocab_size = config.num_classes or 2944
 
+   if config.emb_vecs ~= nil then
+    self.vocab_size = config.emb_vecs:size(1)
+   end
+
+   self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.proj_dim)
    self.combine_model = imagelstm.CRowJoinTable(2)
-
-   self.emb.weight:copy(config.emb_vecs)
 
    local modules = nn.Parallel()
     :add(self.image_emb)
@@ -27,9 +30,14 @@ function ConcatProjLayer:__init(config)
 
    self.params, self.grad_params = modules:getParameters()
 
+   -- Copy embedding vectors
+   if config.emb_vecs ~= nil then
+     self.emb.weight:copy(config.emb_vecs)
+   end
+
    -- Copy the image embedding vectors
    if config.combine_weights ~= nil then
-     self.params.weight:copy(config.combine_weights)
+     self.params:copy(config.combine_weights)
    end
 
   if gpu_mode then
@@ -40,6 +48,10 @@ end
 -- Returns all of the weights of this module
 function ConcatProjLayer:getWeights()
   return self.params
+end
+
+function ConcatProjLayer:getModules() 
+  return {self.emb, self.image_emb}
 end
 
 -- Sets gpu mode

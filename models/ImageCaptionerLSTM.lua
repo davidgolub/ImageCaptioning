@@ -95,6 +95,10 @@ function ImageCaptionerLSTM:set_cpu_mode()
   print("TODO")
 end
 
+function ImageCaptionerLSTM:getModules() 
+  return {self.lstm_layer, self.output_module_fn}
+end
+
 function ImageCaptionerLSTM:getParameters()
   return self.params, self.grad_params
 end

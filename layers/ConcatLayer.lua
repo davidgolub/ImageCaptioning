@@ -12,23 +12,31 @@ function ConcatLayer:__init(config)
    self.gpu_mode = config.gpu_mode or false
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
-   self.emb = nn.LookupTable(config.emb_vecs:size(1), self.emb_dim)
+   self.vocab_size = config.num_classes or 300
+   if config.emb_vecs ~= nil then
+    self.vocab_size = config.emb_vecs:size(1)
+   end
+
+   self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
+
+   -- image feature embedding
+   self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
 
    -- image feature embedding
    self.combine_model = imagelstm.CRowJoinTable(2)
-
-   self.emb.weight:copy(config.emb_vecs)
-
-
    self.params, self.grad_params = self.emb:getParameters()
 
   if gpu_mode then
     self:set_gpu_mode()
   end
 
+  -- Copy embedding weights
+  if config.emb_vecs ~= nil then
+    self.emb.weight:copy(config.emb_vecs)
+  end
   -- Copy the image embedding vectors
   if config.combine_weights ~= nil then
-    self.params.weight:copy(config.combine_weights)
+    self.params:copy(config.combine_weights)
   end
 end
 
@@ -75,6 +83,10 @@ end
 function ConcatLayer:zeroGradParameters() 
   self.emb:zeroGradParameters()
   self.combine_model:zeroGradParameters()
+end
+
+function ConcatLayer:getModules() 
+  return {self.emb}
 end
 
 function ConcatLayer:normalizeGrads(batch_size)

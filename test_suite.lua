@@ -20,6 +20,13 @@ include('tests/TrainChecks.lua')
 include('tests/CpuChecks.lua')
 include('tests/GpuChecks.lua')
 
+-- grad checks
+grad_checker = imagelstm.GradChecks{}
+grad_checker:check_lstm_captioner()
+grad_checker:check_add_module()
+grad_checker:check_concat_module()
+grad_checker:check_concat_proj_module()
+
 -- train checks
 train_checker = imagelstm.TrainChecks{}
 train_checker:check_train()
@@ -34,6 +41,3 @@ gpu_checker = imagelstm.GpuChecks{in_dim = params.in_dim,
 									num_classes = params.num_classes}
 gpu_checker:check_gpu()
 
--- grad checks
-grad_checker = imagelstm.GradChecks{}
-grad_checker:check_lstm_captioner()

@@ -17,6 +17,7 @@ cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
+cmd:option('-emb_dim', 100, 'embedding size')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
@@ -76,6 +77,7 @@ for i = 1, vocab.size do
     vecs[i]:uniform(-0.05, 0.05)
   end
 end
+
 print('unk count = ' .. num_unk)
 emb_vocab = nil
 emb_vecs = nil
@@ -93,7 +95,9 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = optim_method,
-  emb_vecs = vecs,
+  --emb_vecs = vecs,
+  num_classes = 2944,
+  emb_dim = params.emb_dim,
   combine_module = params.combine_module,
   learning_rate = params.learning_rate,
   emb_learning_rate = params.emb_learning_rate,

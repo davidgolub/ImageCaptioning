@@ -83,9 +83,8 @@ function CRowJoinTable:updateGradInput(input, gradOutput)
                       currSize)
 
       if currentOutput:nDimension() == 1 then
-        for j=1, currentGradInput:size(1) do
-          self.gradInput[i]:add(currentGradInput[j])
-        end
+        local summedGrad = torch.squeeze(torch.sum(currentGradInput, 1))
+        self.gradInput[i]:copy(summedGrad)
       else 
         self.gradInput[i]:copy(currentGradInput)
       end 
