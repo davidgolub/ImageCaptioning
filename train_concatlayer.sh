@@ -7,6 +7,4 @@ th image_captioning/main.lua \
 -epochs 300 \
 -combine_module concatlayer \
 -learning_rate 0.1 \
--emb_learning_rate 0.1 \
--gpu_mode
 | tee -a "log_concatlayer_gpu.txt"

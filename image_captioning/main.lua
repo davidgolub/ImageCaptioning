@@ -84,7 +84,6 @@ emb_vecs = nil
 collectgarbage()
 
 -- load datasets
-print('loading datasets')
 local train_dir = data_dir
 local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode)
 
@@ -164,6 +163,7 @@ for i = 1, num_epochs do
   imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
   model.combine_module_type, model.mem_dim, i)
 
+  print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, train_predictions)
 
 end
