@@ -11,7 +11,7 @@ function AddLayer:__init(config)
    self.emb_learning_rate  = config.emb_learning_rate or 0.01
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
-   self.vocab_size = config.num_classes or 2944
+   self.vocab_size = config.num_classes or 300
    if config.emb_vecs ~= nil then
     self.vocab_size = config.emb_vecs:size(1)
    end
@@ -57,13 +57,13 @@ function AddLayer:set_gpu_mode()
   self.params:cuda()
 end
 
-function AddLayer:getModules() 
-  return {self.emb, self.image_emb}
-end
-
 -- Returns all of the weights of this module
 function AddLayer:getWeights()
   return self.params
+end
+
+function AddLayer:getModules() 
+  return {self.image_emb, self.emb}
 end
 
 -- Does a single forward step of add layer

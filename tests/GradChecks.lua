@@ -164,6 +164,80 @@ function GradChecks:check_concat_proj_module()
 
 end
 
+function GradChecks:check_add_module()
+
+  self.add_layer = imagelstm.AddLayer{
+    emb_dim = 10,
+    image_dim = 10
+  }
+
+  self.add_params, self.add_grads = self.add_layer:getParameters()
+  local sentence_input = torch.IntTensor{1, 2, 5, 4, 3}
+  local image_input = torch.rand(10)
+  
+  local desired = torch.rand(5, 10)
+  self.mse_criterion = nn.MSECriterion()
+
+  local feval = function(x)
+      self.add_grads:zero()
+
+      -- compute the loss
+      local outputs = self.add_layer:forward(sentence_input, image_input)
+      local err = self.mse_criterion:forward(outputs, desired)
+
+      local d_outputs = self.mse_criterion:backward(outputs, desired)
+      -- compute the input gradients with respect to the loss
+      local input_grads = self.add_layer:backward(sentence_input, image_input, d_outputs)
+
+      return err, self.add_grads
+  end
+
+  
+  diff, DC, DC_est = optim.checkgrad(feval, self.add_params, 1e-6)
+  print("Gradient error for add layer is")
+  print(diff)
+
+  assert(diff < self.tol, "Gradient is greater than tolerance")
+
+end
+
+
+function GradChecks:check_single_add_module()
+  self.add_layer = imagelstm.SingleAddLayer{
+    emb_dim = 10,
+    image_dim = 10,
+  }
+
+  self.add_params, self.add_grads = self.add_layer:getParameters()
+  local sentence_input = torch.IntTensor{1, 2, 5, 4, 3}
+  local image_input = torch.rand(10)
+  
+  local desired = torch.rand(5, 10)
+  self.mse_criterion = nn.MSECriterion()
+
+  local feval = function(x)
+      self.add_grads:zero()
+
+      -- compute the loss
+      local outputs = self.add_layer:forward(sentence_input, image_input)
+      local err = self.mse_criterion:forward(outputs, desired)
+
+      local d_outputs = self.mse_criterion:backward(outputs, desired)
+      -- compute the input gradients with respect to the loss
+      local input_grads = self.add_layer:backward(sentence_input, image_input, d_outputs)
+
+      return err, self.add_grads
+  end
+
+  
+  diff, DC, DC_est = optim.checkgrad(feval, self.add_params, 1e-6)
+  print("Gradient error for single add module is")
+  print(diff)
+
+  assert(diff < self.tol, "Gradient is greater than tolerance")
+
+end
+
 function GradChecks:check_concat_module()
 
   self.add_layer = imagelstm.ConcatLayer{

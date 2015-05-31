@@ -1,8 +1,8 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
 th image_captioning/main.lua \
-# -load_model \
-#-model_epoch 2 \
+-load_model \
+-model_epoch 20 \
 -optim rmsprop \
 -batch_size 33 \
 -mem_dim 150 \

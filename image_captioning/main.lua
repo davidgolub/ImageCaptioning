@@ -23,7 +23,7 @@ cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
-cmd:option('-combine_module', 'addlayer', 'type of input layer')
+cmd:option('-combine_module', 'addlayer', '[addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
 cmd:option('-model_epoch', 98, 'epoch to load model from')
 cmd:text()
 
@@ -96,7 +96,7 @@ local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = optim_method,
   --emb_vecs = vecs,
-  num_classes = 2944,
+  num_classes = vocab.size,
   emb_dim = params.emb_dim,
   combine_module = params.combine_module,
   learning_rate = params.learning_rate,
@@ -119,6 +119,7 @@ local model_save_path = string.format(
 
 if params.load_model then
 --if true then
+  print("Loading model from file " .. model_save_path)
   model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 end
 
@@ -149,12 +150,13 @@ for i = 1, num_epochs do
   model_save_path = string.format(
   imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
   model.combine_module_type,
-  model.mem_dim, params.model_epoch)
+  model.mem_dim, i)
 
+  print("Model save path is", model_save_path)
   model:save(model_save_path)
-
+  --model = imagelstm.ImageCaptioner.load(model_save_path)
   -- get training predictions
-  local train_predictions = model:predict_dataset(train_dataset)
+  local train_predictions = model:predict_dataset(train_dataset, 5)
   printf('-- predicting sentences on a sample set of 100\n')
 
   -- save them to disk for later use

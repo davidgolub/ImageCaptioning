@@ -14,14 +14,13 @@ function ImageCaptioner:__init(config)
   self.mem_dim                 = config.mem_dim           or 150
   self.emb_dim                 = config.emb_dim           or 10
   self.learning_rate           = config.learning_rate     or 0.01
-  self.emb_learning_rate       = config.emb_learning_rate or 0.01
-  self.image_emb_learning_rate = config.emb_image_learning_rate or 0.01
   self.batch_size              = config.batch_size        or 100
-  self.reg                     = config.reg               or 1e-4
+  self.reg                     = config.reg               or 1e-7
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
   self.optim_method            = config.optim_method or optim.adagrad
   self.num_classes             = config.num_classes or 2944
+  self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
   end
@@ -29,6 +28,8 @@ function ImageCaptioner:__init(config)
     self.combine_layer = imagelstm.AddLayer(config)
   elseif self.combine_module_type == "concatlayer" then
     self.combine_layer = imagelstm.ConcatLayer(config)
+  elseif self.combine_module_type == "singleaddlayer" then
+    self.combine_layer = imagelstm.SingleAddLayer(config)
   else
     self.combine_layer = imagelstm.ConcatProjLayer(config)
   end
@@ -74,10 +75,6 @@ end
 function ImageCaptioner:set_gpu_mode()
   self.image_captioner:set_gpu_mode()
   self.combine_layer:set_gpu_mode()
-end
-
-function ImageCaptioner:set_cpu_mode()
-  print("TODO")
 end
 
 function ImageCaptioner:new_caption_module()
@@ -142,8 +139,8 @@ function ImageCaptioner:train(dataset)
       self.grad_params:div(batch_size)
 
       -- regularization
-      --loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      --self.grad_params:add(self.reg, self.params)
+      -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      -- self.grad_params:add(self.reg, self.params)
 
       print("Caption loss is:")
       print(loss)
@@ -158,7 +155,6 @@ function ImageCaptioner:train(dataset)
     --assert(diff < 1e-5, "Gradient is greater than tolerance")
 
     self.optim_method(feval, self.params, self.optim_state)
-    self.combine_layer:updateParameters()
   end
   average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
@@ -177,11 +173,12 @@ function ImageCaptioner:predict(image_features, beam_size)
 
   -- does one tick of lstm, input token and previous lstm state as input
   -- next_token: input into lstm
+  -- curr_iter: current iteration
   -- prev_outputs: hidden state, cell state of lstm
   -- returns predicted token, its log likelihood, state of lstm, and all predictions
 
-  local function lstm_tick(next_token, prev_outputs)
-   local inputs = self.combine_layer:forward(next_token, image_features)
+  local function lstm_tick(next_token, prev_outputs, curr_iter)
+   local inputs = self.combine_layer:forward(next_token, image_features, curr_iter)
 
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
@@ -209,7 +206,8 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- Greedy search
     while next_token[1] ~= end_token[1] and num_iter < 20 do
        -- get text/image inputs
-      local pred_token, likelihood, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
+      local pred_token, likelihood, next_outputs, class_predictions = 
+                        lstm_tick(next_token, prev_outputs, num_iter)
     
       -- keep count of number of tokens seen already
       num_iter = num_iter + 1
@@ -228,7 +226,7 @@ function ImageCaptioner:predict(image_features, beam_size)
     local beams = {}
 
     -- first get initial predictions
-    local _, _, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
+    local _, _, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs, num_iter)
     
     -- then get best top k indices indices
     local best_indices = topkargmax(class_predictions, beam_size)
@@ -242,7 +240,6 @@ function ImageCaptioner:predict(image_features, beam_size)
 
     -- now do the general beam search algorithm
     while num_iter < 20 do
-      num_iter = num_iter + 1
 
       local next_beams = {}
 
@@ -255,14 +252,21 @@ function ImageCaptioner:predict(image_features, beam_size)
 
         -- If the next token is the end token, just add prediction to list
         if next_token[1] == 2 then
+           -- hack: 
            table.insert(next_beams, curr_beam)
         else 
           local log_likelihood = curr_beam[1]
           local prev_outputs = curr_beam[3]
 
           -- first get initial predictions
-          local pred_token, likelihood, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs)
-          table.insert(curr_tokens_list, pred_token)
+          local pred_token, likelihood, next_outputs, class_predictions = 
+          lstm_tick(next_token, prev_outputs, num_iter)
+
+          -- hack: for some reason tokens repeat on first iteration
+          if num_iter > 0 then 
+            table.insert(curr_tokens_list, pred_token)
+          end
+
           local next_ll = log_likelihood + likelihood
 
           local next_beam = {next_ll, curr_tokens_list, next_outputs}
@@ -270,6 +274,7 @@ function ImageCaptioner:predict(image_features, beam_size)
         end
       end
 
+      num_iter = num_iter + 1
       -- Keep top beam_size entries in beams
       beams = topk(next_beams, beam_size)
     end
@@ -278,12 +283,13 @@ function ImageCaptioner:predict(image_features, beam_size)
 end
 
 
-function ImageCaptioner:predict_dataset(dataset)
+function ImageCaptioner:predict_dataset(dataset, beam_size)
+  local beam_size = beam_size or 1
   local predictions = {}
   num_predictions = 30 -- = dataset.size
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
-    prediction = self:predict(dataset.image_feats[i], 1)
+    prediction = self:predict(dataset.image_feats[i], beam_size)
     table.insert(predictions, prediction)
   end
   return predictions
@@ -296,7 +302,7 @@ function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predi
   print('writing predictions to ' .. predictions_save_path)
   predictions_file:write("LOSS " .. loss .. '\n')
   for i = 1, #test_predictions do
-    local test_prediction = test_predictions[i]
+    local test_prediction = test_predictions[i][1]
     local likelihood = test_prediction[1]
     local tokens = test_prediction[2]
     local sentence = table.concat(vocab:tokens(tokens), ' ')
@@ -311,13 +317,12 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'num params', num_params)
   printf('%-25s = %d\n', 'num compositional params', num_params - num_caption_params)
   printf('%-25s = %d\n', 'word vector dim', self.emb_dim)
-  printf('%-25s = %d\n', 'image feature dim', self.image_dim)
   printf('%-25s = %d\n', 'Tree-LSTM memory dim', self.mem_dim)
   printf('%-25s = %.2e\n', 'regularization strength', self.reg)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
-  printf('%-25s = %.2e\n', 'word vector learning rate', self.emb_learning_rate)
-  printf('%-25s = %.2e\n', 'image vector learning rate', self.image_emb_learning_rate)
+  printf('%-25s = %d\n', 'number of classes', self.num_classes)
+  printf('%-25s = %s\n', 'module type', self.combine_module_type)
   printf('%-25s = %s\n', 'dropout', tostring(self.dropout))
 end
 
@@ -326,24 +331,25 @@ function ImageCaptioner:save(path)
     reverse           = self.reverse,
     batch_size        = self.batch_size,
     dropout           = self.dropout,
-    emb_learning_rate = self.emb_learning_rate,
-    combine_weights   = self.combine_layer:getWeights():float(),
-    fine_grained      = self.fine_grained,
+    num_classes       = self.num_classes,
     learning_rate     = self.learning_rate,
     mem_dim           = self.mem_dim,
     reg               = self.reg,
+    emb_dim           = self.emb_dim,
     emb_vecs          = self.emb_vecs,
-    optim_method      = self.optim_method
+    optim_method      = self.optim_method,
+    combine_module    = self.combine_module_type
   }
 
   torch.save(path, {
-    params = self.params:float(),
+    params = self.params,
     optim_state = self.optim_state,
     config = config,
   })
 end
 
 function ImageCaptioner.load(path)
+  print(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)

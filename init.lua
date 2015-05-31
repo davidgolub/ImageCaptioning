@@ -17,10 +17,14 @@ include('util/math.lua')
 include('util/Vocab.lua')
 include('util/read_data.lua') 
 
--- Layer for adding image features to every entry in sentence
+-- New forward/backward layers
 include('layers/CRowAddTable.lua')
+include('layers/CRowSingleTable.lua')
 include('layers/CRowJoinTable.lua')
+
+-- New image/word embedding layers
 include('layers/AddLayer.lua')
+include('layers/SingleAddLayer.lua')
 include('layers/ConcatProjLayer.lua')
 include('layers/ConcatLayer.lua')
 

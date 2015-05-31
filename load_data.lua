@@ -16,7 +16,7 @@ cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
-cmd:option('-mem_dim', 150,'memory dimension of captioner')
+cmd:option('-mem_dim', 100,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
@@ -94,13 +94,15 @@ header('model configuration')
 printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
-print("Predicting on dataset 1")
 prediction = model:predict(train_dataset.image_feats[1], 1)
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%d.%d.th', model.mem_dim, 150)
-model:save(model_save_path)
+  imagelstm.models_dir .. '/image_captioning_lstm.singleaddlayer.%d.%d.th', model.mem_dim, 98)
+
 model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 
-print("Predicting on dataset 2")
-prediction = model:predict(train_dataset.image_feats[1], 1)
+predictions = model:predict_dataset(train_dataset, 5)
+for i = 1, #predictions do
+  prediction = predictions[i]
+  print(vocab:tokens(prediction[1][2]))
+end
