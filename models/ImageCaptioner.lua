@@ -17,10 +17,12 @@ function ImageCaptioner:__init(config)
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-7
   self.emb_vecs                = config.emb_vecs          
-  self.dropout                 = (config.dropout == nil) and false or config.dropout
+  self.dropout                 = (config.dropout == nil) and true or config.dropout
   self.optim_method            = config.optim_method or optim.adagrad
   self.num_classes             = config.num_classes or 2944
   self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
+  self.num_layers              = config.num_layers or 1
+
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
   end
@@ -45,6 +47,7 @@ function ImageCaptioner:__init(config)
     gpu_mode = self.gpu_mode,
     in_dim  = self.combine_layer:getOutputSize(),
     mem_dim = self.mem_dim,
+    num_layers = self.num_layers,
     output_module_fn = self:new_caption_module(),
     criterion = nn.ClassNLLCriterion()
   }
@@ -322,6 +325,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
   printf('%-25s = %d\n', 'number of classes', self.num_classes)
+  printf('%-25s = %d\n', 'number of layers in lstm', self.num_layers)
   printf('%-25s = %s\n', 'module type', self.combine_module_type)
   printf('%-25s = %s\n', 'dropout', tostring(self.dropout))
 end
@@ -338,7 +342,8 @@ function ImageCaptioner:save(path)
     emb_dim           = self.emb_dim,
     emb_vecs          = self.emb_vecs,
     optim_method      = self.optim_method,
-    combine_module    = self.combine_module_type
+    combine_module    = self.combine_module_type,
+    num_layers        = self.num_layers
   }
 
   torch.save(path, {
