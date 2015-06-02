@@ -12,12 +12,12 @@ function ImageCaptioner:__init(config)
   self.image_dim               = config.image_dim         or 1024
   self.combine_module_type     = config.combine_module    or "addlayer"
   self.mem_dim                 = config.mem_dim           or 150
-  self.emb_dim                 = config.emb_dim           or 10
+  self.emb_dim                 = config.emb_dim           or 50
   self.learning_rate           = config.learning_rate     or 0.01
   self.batch_size              = config.batch_size        or 100
   self.reg                     = config.reg               or 1e-7
   self.emb_vecs                = config.emb_vecs          
-  self.dropout                 = (config.dropout == nil) and true or config.dropout
+  self.dropout                 = (config.dropout == nil) and false or config.dropout
   self.optim_method            = config.optim_method or optim.adagrad
   self.num_classes             = config.num_classes or 2944
   self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
@@ -346,16 +346,9 @@ function ImageCaptioner:save(path)
     num_layers        = self.num_layers
   }
 
-  new_optim_state = self.optim_state
-  if self.optim_state.paramVariance ~= nil then 
-    new_optim_state.paramVariance = self.optim_state.paramVariance:float()
-  end
-  if self.optim_state.paramStd ~= nil then
-    new_optim_state.paramStd = self.optim_state.paramStd:float()
-  end
   torch.save(path, {
-    params = self.params:float(),
-    optim_state = new_optim_state,
+    params = self.params,
+    optim_state = self.optim_state,
     config = config,
   })
 end
