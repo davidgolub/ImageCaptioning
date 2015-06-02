@@ -142,7 +142,11 @@ header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
   
+<<<<<<< HEAD
   local train_predictions = model:predict_dataset(train_dataset, 1)
+=======
+  local train_predictions = model:predict_dataset(train_dataset, 5)
+>>>>>>> 2ee6bc393a80e98aba4fa40bf08fdfeb0107549c
   printf('-- predicting sentences on a sample set of 100\n')
 
     -- save them to disk for later use
