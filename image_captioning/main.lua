@@ -116,9 +116,7 @@ printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
-  model.combine_module_type,
-  model.mem_dim, params.model_epoch)
+  imagelstm.models_dir .. model:getPath(num_epochs))
 
 if params.load_model then
 --if true then
@@ -149,8 +147,7 @@ for i = 1, num_epochs do
 
     -- save them to disk for later use
   local predictions_save_path = string.format(
-  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.%d.pred', 
-  model.combine_module_type, model.num_layers, model.mem_dim, i)
+  imagelstm.predictions_dir .. model:getPath(i))
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, train_predictions)
@@ -162,25 +159,11 @@ for i = 1, num_epochs do
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
   model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%s.num_layers_%d.%d.%d.th', 
-  model.combine_module_type,
-  model.num_layers,
-  model.mem_dim, i)
+  imagelstm.models_dir .. model:getPath(i))
 
   print("Model save path is", model_save_path)
   model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
-  -- get training predictions
-  local train_predictions = model:predict_dataset(train_dataset, 5)
-  printf('-- predicting sentences on a sample set of 100\n')
-
-  -- save them to disk for later use
-  local predictions_save_path = string.format(
-  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
-  model.combine_module_type, model.mem_dim, i)
-
-  print("Saving predictions to ", predictions_save_path)
-  model:save_predictions(predictions_save_path, loss, train_predictions)
 
 end
 
@@ -197,10 +180,7 @@ local test_predictions = model:predict_dataset(train_dataset)
 
   
 local model_save_path = string.format(
-  imagelstm.models_dir .. '/image_captioning_lstm.%s.num_layers_%d.%d.%d.th', 
-  model.combine_module_type,
-  model.num_layers,
-  model.mem_dim, params.model_epoch)
+  imagelstm.models_dir .. model:getPath(params.model_epoch))
 print('writing model to ' .. model_save_path)
 model:save(model_save_path)
 

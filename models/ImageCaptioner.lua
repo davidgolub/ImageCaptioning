@@ -347,17 +347,28 @@ function ImageCaptioner:save(path)
   }
 
   torch.save(path, {
-    params = self.params,
+    params = self.params:float(),
     optim_state = self.optim_state,
     config = config,
   })
 end
 
+-- returns model path representation based on the model configuration
+-- epoch: model epoch to return
+function ImageCaptioner:getPath(epoch) 
+  local model_save_path = string.format(
+  '/image_captioning_lstm.%s.emb_dim_%d.num_layers_%d.mem_dim_%d.epoch_%d.th', 
+  self.combine_module_type,
+  self.emb_dim, self.num_layers,
+  self.mem_dim, epoch)
+  return model_save_path
+end
+
 function ImageCaptioner.load(path)
-  print(path)
+  print("Path loader" .. path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
-  model.params:copy(state.params)
+  model.params:copy(state.params:float())
   model.optim_state = state.optim_state
   return model
 end
