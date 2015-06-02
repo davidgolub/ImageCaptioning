@@ -40,14 +40,22 @@ function LSTM:__init(config)
       ctable_grad[i] = torch.zeros(self.mem_dim)
       htable_grad[i] = torch.zeros(self.mem_dim)
     end
+    if self.gpu_mode then 
+      for i = 1, self.num_layers do
+        ctable_init[i]:cuda()
+        htable_init[i]:cuda()
+        ctable_grad[i]:cuda()
+        htable_grad[i]:cuda()
+      end
+    end
   end
 
   if self.gpu_mode then
-    self.initial_values = {ctable_init:cuda(), htable_init:cuda()}
+    self.initial_values = {ctable_init, htable_init}
     self.gradInput = {
       torch.zeros(self.in_dim):cuda(),
-      ctable_grad:cuda(),
-      htable_grad:cuda()
+      ctable_grad,
+      htable_grad
     }
   else 
     self.initial_values = {ctable_init, htable_init}
