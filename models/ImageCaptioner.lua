@@ -305,7 +305,8 @@ function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predi
   print('writing predictions to ' .. predictions_save_path)
   predictions_file:write("LOSS " .. loss .. '\n')
   for i = 1, #test_predictions do
-    local test_prediction = test_predictions[i][1]
+    local test_prediction = test_predictions[i]
+    --local test_prediction = test_predictions[i][1]
     local likelihood = test_prediction[1]
     local tokens = test_prediction[2]
     local sentence = table.concat(vocab:tokens(tokens), ' ')
