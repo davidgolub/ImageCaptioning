@@ -347,8 +347,12 @@ function ImageCaptioner:save(path)
   }
 
   new_optim_state = self.optim_state
-  new_optim_state.paramVariance = self.optim_state.paramVariance:float()
-  new_optim_state.paramStd = self.optim_state.paramStd:float()
+  if self.optim_state.paramVariance ~= nil then 
+    new_optim_state.paramVariance = self.optim_state.paramVariance:float()
+  end
+  if self.optim_state.paramStd ~= nil then
+    new_optim_state.paramStd = self.optim_state.paramStd:float()
+  end
   torch.save(path, {
     params = self.params:float(),
     optim_state = new_optim_state,
