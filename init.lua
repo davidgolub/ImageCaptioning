@@ -33,6 +33,7 @@ include('models/ImageCaptioner.lua')
 include('models/ImageCaptionerLSTM.lua')
 include('models/LSTM.lua')
 include('models/LSTM_Full.lua')
+include('models/LSTM_Multilayered.lua')
 
 printf = utils.printf
 

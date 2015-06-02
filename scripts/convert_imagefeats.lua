@@ -21,4 +21,8 @@ end
   
 print('Done reading image features from ' .. feature_path)
 torch.save(save_path, vecs)
+print('Done saving image features')
+
+
+
 

@@ -48,7 +48,9 @@ if __name__ == '__main__':
     base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
     # data
-    data_dir = os.path.join(base_dir, 'data/coco')
-    convert_imagefeats(data_dir, "train.cPickle", "train.txt")
-    convert_imagefeats(data_dir, "test.cPickle", "test.txt")
+    train_dir = os.path.join(base_dir, 'data/coco/train')
+    test_dir = os.path.join(base_dir, 'data/coco/test')
+
+    convert_imagefeats(train_dir, "googlenet_feats.cPickle", "googlenet_feats.txt")
+    convert_imagefeats(test_dir, "googlenet_feats.cPickle", "googlenet_feats.txt")
 

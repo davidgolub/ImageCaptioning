@@ -1,7 +1,9 @@
 --[[
 
-  An ImageCaptionerLSTM takes in two things as input: an LSTM cell and an output
-  function for that cell that is the criterion.
+  An ImageCaptionerLSTM takes in three things as input: 
+  1) an LSTM cell 
+  2) an output function for that cell that is the criterion.
+  3) an input function that converts input to one that can go into LSTM cell
 
 --]]
 
@@ -12,7 +14,7 @@ function ImageCaptionerLSTM:__init(config)
   self.gpu_mode = config.gpu_mode
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
-  self.lstm_layer =  imagelstm.LSTM_Full(config)
+  self.lstm_layer =  imagelstm.LSTM_Multilayered(config)
   self.train_mode = true
 
   local modules = nn.Parallel()
@@ -58,7 +60,12 @@ end
 function ImageCaptionerLSTM:tick(inputs, states)
     local lstm_output = self.lstm_layer:tick(inputs, states)
     local ctable, htable = unpack(lstm_output)
-    local hidden_state = htable
+    local hidden_state
+    if self.lstm_layer.num_layers > 1 then 
+      hidden_state = htable[self.lstm_layer.num_layers]
+    else
+      hidden_state = htable
+    end
     local class_predictions = self.output_module_fn:forward(hidden_state)
     return lstm_output, class_predictions
 end
