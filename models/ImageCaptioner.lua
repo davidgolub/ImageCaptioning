@@ -346,9 +346,12 @@ function ImageCaptioner:save(path)
     num_layers        = self.num_layers
   }
 
+  new_optim_state = self.optim_state
+  new_optim_state.paramVariance = self.optim_state.paramVariance:float()
+  new_optim_state.paramStd = self.optim_state.paramStd:float()
   torch.save(path, {
     params = self.params:float(),
-    optim_state = self.optim_state,
+    optim_state = new_optim_state,
     config = config,
   })
 end
@@ -369,6 +372,6 @@ function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params:float())
-  model.optim_state = state.optim_state
+  new_state.paramVariance = model.optim_state.paramVariance:float()
   return model
 end
