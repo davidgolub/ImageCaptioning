@@ -14,7 +14,6 @@ cmd:text('Options')
 cmd:option('-gpu_mode', false, 'gpu mode')
 cmd:option('-optim', 'rmsprop', 'optimization type')
 cmd:option('-epochs', 10,'number of epochs')
-cmd:option('-dropout', false, 'use dropout')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
@@ -26,7 +25,6 @@ cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', '[addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
 cmd:option('-model_epoch', 98, 'epoch to load model from')
-cmd:option('-num_layers', 4, 'number of layers in lstm network')
 cmd:text()
 
 -- parse input params
@@ -97,8 +95,6 @@ local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = optim_method,
   --emb_vecs = vecs,
-  dropout = params.dropout,
-  num_layers = params.num_layers,
   num_classes = vocab.size,
   emb_dim = params.emb_dim,
   combine_module = params.combine_module,
@@ -106,7 +102,7 @@ local model = imagelstm.ImageCaptioner{
   emb_learning_rate = params.emb_learning_rate,
   image_dim = params.image_dim,
   mem_dim = params.mem_dim,
-  num_classes = vocab.size, --For start, end and unk tokens
+  num_classes = vocab.size + 3, --For start, end and unk tokens
   gpu_mode = use_gpu_mode -- Set to true for GPU mode
 }
 
@@ -116,7 +112,9 @@ printf('max epochs = %d\n', num_epochs)
 model:print_config()
 
 local model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(num_epochs))
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, params.model_epoch)
 
 if params.load_model then
 --if true then
@@ -142,16 +140,6 @@ header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
   
-  local train_predictions = model:predict_dataset(train_dataset, 1)
-  printf('-- predicting sentences on a sample set of 100\n')
-
-    -- save them to disk for later use
-  local predictions_save_path = string.format(
-  imagelstm.predictions_dir .. model:getPath(i))
-
-  print("Saving predictions to ", predictions_save_path)
-  model:save_predictions(predictions_save_path, loss, train_predictions)
-
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -159,11 +147,24 @@ for i = 1, num_epochs do
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
   model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(i))
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, i)
 
   print("Model save path is", model_save_path)
   model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
+  -- get training predictions
+  local train_predictions = model:predict_dataset(train_dataset, 5)
+  printf('-- predicting sentences on a sample set of 100\n')
+
+  -- save them to disk for later use
+  local predictions_save_path = string.format(
+  imagelstm.predictions_dir .. '/image_captioning_lstm.%s.%d.%d.pred', 
+  model.combine_module_type, model.mem_dim, i)
+
+  print("Saving predictions to ", predictions_save_path)
+  model:save_predictions(predictions_save_path, loss, train_predictions)
 
 end
 
@@ -180,7 +181,10 @@ local test_predictions = model:predict_dataset(train_dataset)
 
   
 local model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(params.model_epoch))
+  imagelstm.models_dir .. '/image_captioning_lstm.%s.%d.%d.th', 
+  model.combine_module_type,
+  model.mem_dim, params.model_epoch)
+
 print('writing model to ' .. model_save_path)
 model:save(model_save_path)
 

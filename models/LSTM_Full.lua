@@ -11,7 +11,7 @@ function LSTM:__init(config)
 
   self.in_dim = config.in_dim
   self.mem_dim = config.mem_dim or 150
-  self.num_layers = config.num_layers or 4
+  self.num_layers = config.num_layers or 1
   self.gate_output = config.gate_output
   self.gpu_mode = config.gpu_mode or false
 
@@ -22,7 +22,6 @@ function LSTM:__init(config)
   self.cells = {}  -- table of cells in a roll-out
   self.tensors = {}  -- table of tensors for faster lookup
   self.back_tensors = {} -- table of tensors for backprop
-  self.predict_cell = self:new_cell()
 
   -- initial (t = 0) states for forward propagation and initial error signals
   -- for backpropagation
@@ -40,22 +39,14 @@ function LSTM:__init(config)
       ctable_grad[i] = torch.zeros(self.mem_dim)
       htable_grad[i] = torch.zeros(self.mem_dim)
     end
-    if self.gpu_mode then 
-      for i = 1, self.num_layers do
-        ctable_init[i]:cuda()
-        htable_init[i]:cuda()
-        ctable_grad[i]:cuda()
-        htable_grad[i]:cuda()
-      end
-    end
   end
 
   if self.gpu_mode then
-    self.initial_values = {ctable_init, htable_init}
+    self.initial_values = {ctable_init:cuda(), htable_init:cuda()}
     self.gradInput = {
       torch.zeros(self.in_dim):cuda(),
-      ctable_grad,
-      htable_grad
+      ctable_grad:cuda(),
+      htable_grad:cuda()
     }
   else 
     self.initial_values = {ctable_init, htable_init}
@@ -145,8 +136,7 @@ end
 -- Forward propagate.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- reverse: if true, read the input from right to left (useful for bidirectional LSTMs).
--- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM. If multilayered,
--- returns output only of last memory layer
+-- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
 function LSTM:forward(inputs, reverse)
   local size = inputs:size(1)
   
@@ -185,7 +175,9 @@ function LSTM:forward(inputs, reverse)
     if self.num_layers == 1 then
       self.outputs[t] = htable
     else
-      self.outputs[t] = htable[self.num_layers]
+      for i = 1, self.num_layers do
+        self.outputs[t] = htable[i]
+      end
     end
   end
   return self.outputs
@@ -197,20 +189,14 @@ end
 -- prev_states: previous states of the lstm (hidden, cell_state array)
 -- Returns cell_state, hidden_state of LSTM, both mem_dim tensors
 function LSTM:tick(input, prev_outputs)
+  local cell = self:new_cell()
+
   if prev_outputs == nil then
     prev_outputs= self.initial_values
   end
 
-  local outputs = self.predict_cell:forward({input, prev_outputs[1], prev_outputs[2]})
-  local ctable, htable = unpack(outputs)
-
-  local hidden_state
-  if self.num_layers > 1 then 
-     hidden_state = htable[self.num_layers]
-  else
-    hidden_state = htable
-  end
-  return hidden_state
+  local outputs = cell:forward({input, prev_outputs[1], prev_outputs[2]})
+  return outputs
 end
 
 -- Backpropagate. forward() must have been called previously on the same input.
@@ -242,7 +228,9 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     if self.num_layers == 1 then
       grads[2]:add(grad_output)
     else
-        grads[2][self.num_layers]:add(grad_output)
+      for i = 1, self.num_layers do
+        grads[2][i]:add(grad_output[i])
+      end
     end
 
     local prev_output = (self.depth > 1) and self.cells[self.depth - 1].output

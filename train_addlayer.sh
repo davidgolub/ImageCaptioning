@@ -1,15 +1,14 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
 th image_captioning/main.lua \
+-load_model \
+-model_epoch 20 \
+-optim rmsprop \
 -batch_size 33 \
 -mem_dim 150 \
--emb_dim 50 \
--combine_module singleaddlayer \
+-epochs 300 \
+-combine_module addlayer \
 -learning_rate 0.1 \
--num_layers 3 \
--gpu_mode \
--optim rmsprop \
-| tee -a "log_singeaddlayer.txt"
-
-#-load_model \
-#-epochs 288 \
+-emb_learning_rate 0.001 
+# -gpu_mode
+| tee -a "log_addlayer_gpu.txt"

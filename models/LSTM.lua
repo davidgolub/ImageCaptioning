@@ -106,7 +106,9 @@ end
 function LSTM:forward(inputs, reverse)
   print("Forwarding the inputs")
   local size = inputs:size(1)
+  print("Size is" .. size)
   for t = 1, size do
+    print("on iteration" .. t)
     local input = reverse and inputs[size - t + 1] or inputs[t]
     self.depth = self.depth + 1
     local cell = self.cells[self.depth]

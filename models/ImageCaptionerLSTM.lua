@@ -12,8 +12,7 @@ function ImageCaptionerLSTM:__init(config)
   self.gpu_mode = config.gpu_mode
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
-  --self.lstm_layer =  imagelstm.LSTM_Full(config)
-  self.lstm_layer  = imagelstm.LSTM_Full(config)
+  self.lstm_layer =  imagelstm.LSTM_Full(config)
   self.train_mode = true
 
   local modules = nn.Parallel()
@@ -57,7 +56,9 @@ end
 -- labels: T x 1 tensor of desired indeces
 -- Returns lstm output, class predictions, and error if train, else not error 
 function ImageCaptionerLSTM:tick(inputs, states)
-    local hidden_state = self.lstm_layer:tick(inputs, states)
+    local lstm_output = self.lstm_layer:tick(inputs, states)
+    local ctable, htable = unpack(lstm_output)
+    local hidden_state = htable
     local class_predictions = self.output_module_fn:forward(hidden_state)
     return lstm_output, class_predictions
 end
