@@ -199,7 +199,8 @@ function LSTM:tick(input, prev_outputs)
     prev_outputs= self.initial_values
   end
 
-  local outputs = cell:forward({input, prev_outputs[1], prev_outputs[2]})
+  local outputs = cell:forward({input, prev_outputs[1], 
+    prev_outputs[2]})
   return outputs
 end
 
