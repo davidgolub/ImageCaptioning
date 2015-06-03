@@ -147,7 +147,7 @@ header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
   
-  local test_predictions = model:predict_dataset(test_dataset, 5)
+  local test_predictions = model:predict_dataset(test_dataset, 1)
   printf('-- predicting sentences on a sample set of 100\n')
 
     -- save them to disk for later use
@@ -178,7 +178,7 @@ local gold_save_path = string.format(
 -- evaluate
 header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
-local test_predictions = model:predict_dataset(test_dataset, 5, test_dataset.size)
+local test_predictions = model:predict_dataset(test_dataset, 1, test_dataset.size)
 
 -- write model to disk
   
