@@ -60,6 +60,16 @@ local data_dir = params.data_dir
 -- load vocab
 vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
 
+-- load datasets
+local train_dir = data_dir
+local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
+  'train')
+
+-- load train dataset
+local test_dir = data_dir
+local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
+  'test')
+
 -- load embeddings
 print('loading word embeddings')
 local emb_dir = params.emb_dir
@@ -83,11 +93,6 @@ end
 print('unk count = ' .. num_unk)
 emb_vocab = nil
 emb_vecs = nil
-collectgarbage()
-
--- load datasets
-local train_dir = data_dir
-local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode)
 
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
@@ -142,7 +147,7 @@ header('Training Image Captioning LSTM')
 for i = 1, num_epochs do
   curr_epoch = i
   
-  local train_predictions = model:predict_dataset(train_dataset, 5)
+  local test_predictions = model:predict_dataset(test_dataset, 5)
   printf('-- predicting sentences on a sample set of 100\n')
 
     -- save them to disk for later use
@@ -150,7 +155,7 @@ for i = 1, num_epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   print("Saving predictions to ", predictions_save_path)
-  model:save_predictions(predictions_save_path, loss, train_predictions)
+  model:save_predictions(predictions_save_path, loss, test_predictions)
 
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -170,14 +175,12 @@ end
 local gold_save_path = string.format(
   imagelstm.predictions_dir .. '/gold_standard.txt')
 
-
 -- evaluate
 header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
-local test_predictions = model:predict_dataset(train_dataset)
+local test_predictions = model:predict_dataset(test_dataset, 5, test_dataset.size)
 
 -- write model to disk
-
   
 local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(params.model_epoch))

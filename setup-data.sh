@@ -3,12 +3,33 @@ wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/download
 wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/downloads/googlenet_feats.json
 
 # Download coco data train
-wget -P data/coco/train -O dataset.json https://softmaxstorage.blob.core.windows.net/coco_feats/coco_dataset_train.json
-wget -P data/coco/train -O googlenet_feats.cPickle ttps://softmaxstorage.blob.core.windows.net/coco_feats/googlenet_feats_train.cPickle
+wget -O data/coco/train/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_train.json
+wget -O data/coco/train/googlenet_feats.cPickle https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_features_train.cPickle
 
 # Download coco data test
-wget -P data/coco/test -O dataset.json https://softmaxstorage.blob.core.windows.net/coco_feats/coco_dataset_test.json
-wget -P data/coco/test -O googlenet_feats.cPickle ttps://softmaxstorage.blob.core.windows.net/coco_feats/googlenet_feats_test.cPickle
+wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_val.json
+wget -O data/coco/test/googlenet_feats.cPickle https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_features_val.cPickle
+
+# Convert coco dataset from cPickle to .txt
+python scripts/imagefeats_to_torch.py
+
+# Convert coco train dataset from .txt to .th
+image_dir="data/coco/train"
+image_pre="googlenet_feats"
+
+if [ ! -f $image_dir/$image_pre.th ]; then
+    th scripts/convert_imagefeats_txt.lua $image_dir/$image_pre.txt \
+        $image_dir/$image_pre.th
+fi
+
+# Convert coco test dataset from .txt to .th
+image_dir="data/coco/test"
+image_pre="googlenet_feats"
+
+if [ ! -f $image_dir/$image_pre.th ]; then
+    th scripts/convert_imagefeats_txt.lua $image_dir/$image_pre.txt \
+        $image_dir/$image_pre.th
+fi
 
 # Preprocess captioning data
 python scripts/download.py

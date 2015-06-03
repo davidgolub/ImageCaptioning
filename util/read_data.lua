@@ -77,7 +77,11 @@ end
  Read captions dataset
 
 --]]
-function imagelstm.read_caption_sentences(dir, vocab)
+
+-- reads caption sentences from directory
+-- dir: where caption sentences are
+-- desired_split: whether to read train, test sentences
+function imagelstm.read_caption_sentences(dir, desired_split)
   local caption_dataset = {}
 
   local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
@@ -85,26 +89,36 @@ function imagelstm.read_caption_sentences(dir, vocab)
 
   -- get input and output sentences
   local sentences = {}
-  local out_sentences = {}
-  local image_ids = {}
+
+  -- min number of references
+  local min_references = 10
   for i = 1, num_images do
-    local curr_image = annotation_dataset[i]
+    curr_image = annotation_dataset[i]
+    local split = curr_image['split']
 
-    -- dataset is zero indexed, torch is 1 indexed
-    local curr_imgid = curr_image['imgid'] + 1
-    local curr_sentences = curr_image['sentences']
-
-    local tokens = curr_sentences[1]['tokens']
-    table.insert(tokens, "</s>")
-    table.insert(sentences, tokens)
+    if split == desired_split then 
+      local curr_sentences = {}
+      local curr_sentences = curr_image['sentences']
+      for j = 1, #curr_sentences do
+          min_references = math.min(#curr_sentences, min_references)
+          local tokens = curr_sentences[j]['tokens']
+          table.insert(curr_sentences, tokens)
+      end
+      table.insert(sentences, curr_sentences)
+    end
   end
   
   caption_dataset.sentences = sentences
   caption_dataset.size = #sentences
-  return caption_dataset
+  return caption_dataset, min_references
 end
 
-function imagelstm.read_caption_dataset(dir, vocab, gpu_mode)
+-- Reads caption dataset from specified file
+-- Directory is where caption dataset resides
+-- Vocabulary maps tokens to ids
+-- Gpu_mode determines whether to load the tensors as float or Cuda
+-- Desired split: Whether to load the train or validation
+function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   local caption_dataset = {}
 
   local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
@@ -116,27 +130,30 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode)
   local image_ids = {}
   for i = 1, num_images do
     local curr_image = annotation_dataset[i]
-
+    local split = curr_image['split']
     -- dataset is zero indexed, torch is 1 indexed
     local curr_imgid = curr_image['imgid'] + 1
     local curr_sentences = curr_image['sentences']
 
-    for j = 1, #curr_sentences do
-      local tokens = curr_sentences[j]['tokens']
-      table.insert(tokens, "</s>")
+    if split == desired_split then
+      for j = 1, #curr_sentences do
+        local split = curr_sentences[j]['split']
+        local tokens = curr_sentences[j]['tokens']
+        table.insert(tokens, "</s>")
 
-      -- first get labels for sentence
-      local out_ids = vocab:map(tokens)
+        -- first get labels for sentence
+        local out_ids = vocab:map(tokens)
 
-      -- then get input sentence stuff: off by one language model
-      table.insert(tokens, 1, "<s>")
-      table.remove(tokens)
-      local in_ids = vocab:map(tokens)
-      
-      -- then make a new one with special start symbol
-      table.insert(image_ids, curr_imgid)
-      table.insert(out_sentences, out_ids)
-      table.insert(sentences, in_ids)
+        -- then get input sentence stuff: off by one language model
+        table.insert(tokens, 1, "<s>")
+        table.remove(tokens)
+        local in_ids = vocab:map(tokens)
+        
+        -- then make a new one with special start symbol
+        table.insert(image_ids, curr_imgid)
+        table.insert(out_sentences, out_ids)
+        table.insert(sentences, in_ids)
+      end
     end
   end
 
@@ -151,5 +168,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode)
   caption_dataset.pred_sentences = out_sentences
   caption_dataset.sentences = sentences
   caption_dataset.size = #sentences
+
+  print(caption_dataset.size)
   return caption_dataset
 end

@@ -286,10 +286,10 @@ function ImageCaptioner:predict(image_features, beam_size)
 end
 
 
-function ImageCaptioner:predict_dataset(dataset, beam_size)
+function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
   local beam_size = beam_size or 1
   local predictions = {}
-  num_predictions = 30 -- = dataset.size
+  num_predictions = num_predictions or 30
   for i = 1, num_predictions do
     xlua.progress(i, dataset.size)
     prediction = self:predict(dataset.image_feats[i], beam_size)
