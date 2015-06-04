@@ -74,20 +74,20 @@ local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_
 print('loading word embeddings')
 local emb_dir = params.emb_dir
 local emb_prefix = emb_dir .. 'glove.840B'
-local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')
-local emb_dim = emb_vecs:size(2)
+--local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')
+--local emb_dim = emb_vecs:size(2)
 
 -- use only vectors in vocabulary (not necessary, but gives faster training)
 local num_unk = 0
-local vecs = torch.Tensor(vocab.size, emb_dim)
+local vecs = torch.Tensor(vocab.size, params.emb_dim)
 for i = 1, vocab.size do
   local w = string.gsub(vocab:token(i), '\\', '') -- remove escape characters
-  if emb_vocab:contains(w) then
-    vecs[i] = emb_vecs[emb_vocab:index(w)]
-  else
+  -- if emb_vocab:contains(w) then
+     -- vecs[i] = emb_vecs[emb_vocab:index(w)]
+  -- else
     num_unk = num_unk + 1
     vecs[i]:uniform(-0.05, 0.05)
-  end
+  --end
 end
 
 print('unk count = ' .. num_unk)
@@ -144,7 +144,7 @@ local best_train_model = model
 
 local loss = 0.0
 header('Training Image Captioning LSTM')
-for i = 1, num_epochs do
+for i = 1, params.epochs do
   curr_epoch = i
   
   local test_predictions = model:predict_dataset(test_dataset, 1)
@@ -172,13 +172,14 @@ for i = 1, num_epochs do
 
 end
 
-local gold_save_path = string.format(
-  imagelstm.predictions_dir .. '/gold_standard.txt')
-
 -- evaluate
 header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
-local test_predictions = model:predict_dataset(test_dataset, 1, test_dataset.size)
+local test_predictions = model:predict_dataset(test_dataset, 5, test_dataset.size)
+
+predictions_save_path = 'predictions/bleu/output.pred'
+print("Saving predictions to ", predictions_save_path)
+model:save_predictions(predictions_save_path, loss, test_predictions)
 
 -- write model to disk
   
