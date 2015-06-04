@@ -303,7 +303,7 @@ function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predi
   local predictions_file, err = io.open(predictions_save_path,"w")
 
   print('writing predictions to ' .. predictions_save_path)
-  predictions_file:write("LOSS " .. loss .. '\n')
+  --predictions_file:write("LOSS " .. loss .. '\n')
   for i = 1, #test_predictions do
     local test_prediction = test_predictions[i]
     local test_prediction = test_predictions[i][1]
