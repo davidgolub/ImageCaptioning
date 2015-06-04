@@ -8,5 +8,6 @@ th image_captioning/main.lua \
 -num_layers 1 \
 -combine_module singleaddlayer \
 -learning_rate 0.1 \
+-gpu_mode \
 -optim rmsprop \
 | tee -a "log_singeaddlayer.txt"
