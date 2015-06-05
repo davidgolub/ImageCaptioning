@@ -65,12 +65,6 @@ function imagelstm.read_image_features(feature_path)
   return vecs
 end
 
---[[
-
- Read captions dataset
-
---]]
-
 
 --[[
 
@@ -157,6 +151,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
     end
   end
 
+  print("Number of image ids", #image_ids)
   image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   if gpu_mode then
     image_feats:cuda()

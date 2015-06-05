@@ -92,6 +92,7 @@ function ImageCaptioner:new_caption_module()
 end
 
 function ImageCaptioner:train(dataset)
+  self.image_captioner:enable_dropouts()
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
@@ -287,6 +288,7 @@ end
 
 
 function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
+  self.image_captioner:disable_dropouts()
   local beam_size = beam_size or 1
   local predictions = {}
   num_predictions = num_predictions or 30

@@ -15,6 +15,7 @@ function ImageCaptionerLSTM:__init(config)
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
   self.lstm_layer =  imagelstm.LSTM_Multilayered(config)
+  self.p = 0.6 -- for dropouts
   self.train_mode = true
 
   local modules = nn.Parallel()
@@ -28,6 +29,27 @@ function ImageCaptionerLSTM:__init(config)
 
   self.params, self.grad_params = modules:getParameters()
 end
+
+-- Enable Dropouts
+function ImageCaptionerLSTM:enable_dropouts()
+   self.sequential = self:change_sequential_dropouts(self.output_module_fn, self.p)
+end
+
+-- Disable Dropouts
+function ImageCaptionerLSTM:disable_dropouts()
+   self.sequential = self:change_sequential_dropouts(self.output_module_fn,0)
+end
+
+-- Change dropouts
+function ImageCaptionerLSTM:change_sequential_dropouts(model,p)
+   for i,m in ipairs(model.modules) do
+      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
+    m.p = p
+      end
+   end
+   return model
+end
+
 
 function ImageCaptionerLSTM:zeroGradParameters()
   self.grad_params:zero()

@@ -108,7 +108,6 @@ local model = imagelstm.ImageCaptioner{
   emb_dim = params.emb_dim,
   combine_module = params.combine_module,
   learning_rate = params.learning_rate,
-  emb_learning_rate = params.emb_learning_rate,
   image_dim = params.image_dim,
   mem_dim = params.mem_dim,
   num_classes = vocab.size, --For start, end and unk tokens

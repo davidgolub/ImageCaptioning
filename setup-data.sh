@@ -70,3 +70,6 @@ luarocks install optim
 luarocks install cutorch
 luarocks install cunn
 luarocks install json
+
+# For loading vision modules
+luarocks install loadcaffe
