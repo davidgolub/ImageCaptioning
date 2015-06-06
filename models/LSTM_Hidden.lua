@@ -31,6 +31,13 @@ function LSTM:__init(config)
     htable_init = torch.zeros(self.mem_dim)
     ctable_grad = torch.zeros(self.mem_dim)
     htable_grad = torch.zeros(self.mem_dim)
+
+    if self.gpu_mode then
+      ctable_init:cuda()
+      htable_init:cuda()
+      ctable_grad:cuda()
+      htable_grad:cuda()
+    end
   else
     ctable_init, ctable_grad, htable_init, htable_grad = {}, {}, {}, {}
     for i = 1, self.num_layers do
@@ -220,9 +227,7 @@ function LSTM:backward(inputs, hidden_inputs, grad_outputs, reverse)
 
   
   local input_grads = self.back_tensors[size]
-  local hidden_grad, cell_grad = torch.Tensor(self.mem_dim)
-  local cell_grad = torch.Tensor(self.mem_dim)
-
+ 
   if input_grads == nil then
     if self.gpu_mode then
       self.back_tensors[size] = torch.FloatTensor(inputs:size()):cuda()
@@ -240,7 +245,7 @@ function LSTM:backward(inputs, hidden_inputs, grad_outputs, reverse)
     if self.num_layers == 1 then
       grads[2]:add(grad_output)
     else
-        grads[2][self.num_layers]:add(grad_output)
+      grads[2][self.num_layers]:add(grad_output)
     end
 
     local prev_output = (self.depth > 1) and self.cells[self.depth - 1].output
@@ -252,13 +257,20 @@ function LSTM:backward(inputs, hidden_inputs, grad_outputs, reverse)
       input_grads[t] = self.gradInput[1]
     end
     if self.depth == 1 then
-      cell_grad:copy(self.gradInput[2])
-      hidden_grad:copy(self.gradInput[3])
+      if self.num_layers == 1 then
+        self.initial_values[1]:copy(self.gradInput[2])
+        self.initial_values[2]:copy(self.gradInput[3])
+      else 
+        for i = 1, self.num_layers do 
+          self.initial_values[i][1]:copy(self.gradInput[i][2])
+          self.initial_values[i][2]:copy(self.gradInput[i][3])
+        end
+      end
     end
     self.depth = self.depth - 1
   end
   self:forget() -- important to clear out state
-  return input_grads, {cell_grad, hidden_grad}
+  return input_grads, self.initial_values
 end
 
 function LSTM:share(lstm, ...)
