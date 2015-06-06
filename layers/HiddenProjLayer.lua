@@ -65,6 +65,8 @@ function HiddenProjLayer:backward(image_feats, cell_errors)
 
    -- feed them backward
    print(image_feats)
+   print(cell_image_emb_errors)
+   print(hidden_image_emb_errors)
    self.cell_image_emb:backward(image_feats, cell_image_emb_errors)
    self.hidden_image_emb:backward(image_feats, hidden_image_emb_errors)
 end
