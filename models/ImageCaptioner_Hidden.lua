@@ -30,11 +30,13 @@ function ImageCaptioner_Hidden:__init(config)
   self.combine_layer = imagelstm.EmbedLayer{  
     emb_dim = self.emb_dim,
     num_classes = self.num_classes,
+    gpu_mode = self.gpu_mode,
   }
   
   self.hidden_layer = imagelstm.HiddenProjLayer{
     image_dim = self.image_dim, 
-    mem_dim = self.mem_dim}
+    mem_dim = self.mem_dim,
+    gpu_mode = self.gpu_mode}
  
   self.in_zeros = torch.zeros(self.emb_dim)
   self.optim_state = { learningRate = self.learning_rate }
