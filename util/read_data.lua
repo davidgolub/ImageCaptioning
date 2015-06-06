@@ -164,6 +164,5 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   caption_dataset.sentences = sentences
   caption_dataset.size = #sentences
 
-  print(caption_dataset.size)
   return caption_dataset
 end

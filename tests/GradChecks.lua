@@ -103,7 +103,7 @@ function GradChecks:add_modules(parallel_net, module_list)
 end
 
 function GradChecks:check_lstm_captioner_hidden()
-  self.image_captioner = imagelstm.ImageCaptionerLSTM_Hidden{
+  self.image_captioner = imagelstm.ImageCaptionerLSTM{
     in_dim  = self.in_dim,
     mem_dim = self.mem_dim,
     output_module_fn = self:new_caption_module(),

@@ -45,12 +45,12 @@ end
 
 -- Does a single forward step of concat layer, concatenating
 -- Input 
-function EmbedLayer:forward(word_indeces)
+function EmbedLayer:forward(word_indeces, image_feats)
    self.word_proj = self.emb:forward(word_indeces)
    return self.word_proj
 end
 
-function EmbedLayer:backward(word_indices, err)
+function EmbedLayer:backward(word_indices, image_feats, err)
    self.emb:backward(word_indices, err)
 end
 
@@ -76,7 +76,3 @@ function EmbedLayer:normalizeGrads(batch_size)
   self.emb.gradWeight:div(batch_size)
 end
 
-function EmbedLayer:updateParameters()
-  -- normalize gradients by batch size
-  self.emb:updateParameters(self.emb_learning_rate)
-end

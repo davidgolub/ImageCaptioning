@@ -103,9 +103,3 @@ function ConcatProjLayer:normalizeGrads(batch_size)
   self.emb.gradWeight:div(batch_size)
   self.image_emb.gradWeight:div(batch_size)
 end
-
-function ConcatProjLayer:updateParameters()
-    -- normalize gradients by batch size
-  self.emb:updateParameters(self.emb_learning_rate)
-  self.image_emb:updateParameters(self.emb_learning_rate)
-end

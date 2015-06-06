@@ -1,7 +1,6 @@
 --[[
-
  Long Short-Term Memory that returns hidden states on ALL input, not just final state.
-
+ You're responsible for putting in input to hidden states
 --]]
 
 local LSTM, parent = torch.class('imagelstm.LSTM_Full', 'nn.Module')
@@ -22,6 +21,7 @@ function LSTM:__init(config)
   self.cells = {}  -- table of cells in a roll-out
   self.tensors = {}  -- table of tensors for faster lookup
   self.back_tensors = {} -- table of tensors for backprop
+  self.predict_cell = self:new_cell()
 
   -- initial (t = 0) states for forward propagation and initial error signals
   -- for backpropagation
@@ -31,6 +31,13 @@ function LSTM:__init(config)
     htable_init = torch.zeros(self.mem_dim)
     ctable_grad = torch.zeros(self.mem_dim)
     htable_grad = torch.zeros(self.mem_dim)
+
+    if self.gpu_mode then
+      ctable_init:cuda()
+      htable_init:cuda()
+      ctable_grad:cuda()
+      htable_grad:cuda()
+    end
   else
     ctable_init, ctable_grad, htable_init, htable_grad = {}, {}, {}, {}
     for i = 1, self.num_layers do
@@ -39,14 +46,22 @@ function LSTM:__init(config)
       ctable_grad[i] = torch.zeros(self.mem_dim)
       htable_grad[i] = torch.zeros(self.mem_dim)
     end
+    if self.gpu_mode then 
+      for i = 1, self.num_layers do
+        ctable_init[i]:cuda()
+        htable_init[i]:cuda()
+        ctable_grad[i]:cuda()
+        htable_grad[i]:cuda()
+      end
+    end
   end
 
   if self.gpu_mode then
-    self.initial_values = {ctable_init:cuda(), htable_init:cuda()}
+    self.initial_values = {ctable_init, htable_init}
     self.gradInput = {
       torch.zeros(self.in_dim):cuda(),
-      ctable_grad:cuda(),
-      htable_grad:cuda()
+      ctable_grad,
+      htable_grad
     }
   else 
     self.initial_values = {ctable_init, htable_init}
@@ -136,10 +151,10 @@ end
 -- Forward propagate.
 -- inputs: T x in_dim tensor, where T is the number of time steps.
 -- reverse: if true, read the input from right to left (useful for bidirectional LSTMs).
--- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM
-function LSTM:forward(inputs, reverse)
+-- Returns T x mem_dim tensor, all the intermediate hidden states of the LSTM. If multilayered,
+-- returns output only of last memory layer
+function LSTM:forward(inputs, hidden_inputs, reverse)
   local size = inputs:size(1)
-  
   self.outputs = self.tensors[size]
   if self.outputs == nil then
     if self.gpu_mode then
@@ -166,7 +181,7 @@ function LSTM:forward(inputs, reverse)
     if self.depth > 1 then
       prev_output = self.cells[self.depth - 1].output
     else
-      prev_output = self.initial_values
+      prev_output = hidden_inputs
     end
     local cell_inputs = {input, prev_output[1], prev_output[2]}
 
@@ -175,27 +190,23 @@ function LSTM:forward(inputs, reverse)
     if self.num_layers == 1 then
       self.outputs[t] = htable
     else
-      for i = 1, self.num_layers do
-        self.outputs[t] = htable[i]
-      end
+      self.outputs[t] = htable[self.num_layers]
     end
   end
   return self.outputs
 end
-
 
 -- Does a single tick of lstm layer, used in beam search
 -- input: in_dim tensor, in_dim is input to the LSTM.
 -- prev_states: previous states of the lstm (hidden, cell_state array)
 -- Returns cell_state, hidden_state of LSTM, both mem_dim tensors
 function LSTM:tick(input, prev_outputs)
+  assert(input ~= nil)
+  assert(prev_outputs ~= nil)
+
   local cell = self:new_cell()
-
-  if prev_outputs == nil then
-    prev_outputs= self.initial_values
-  end
-
-  local outputs = cell:forward({input, prev_outputs[1], prev_outputs[2]})
+  local outputs = cell:forward({input, prev_outputs[1], 
+    prev_outputs[2]})
   return outputs
 end
 
@@ -204,13 +215,19 @@ end
 -- grad_outputs: T x num_layers x mem_dim tensor.
 -- reverse: if true, read the input from right to left.
 -- Returns the gradients with respect to the inputs (in the same order as the inputs).
-function LSTM:backward(inputs, grad_outputs, reverse)
+function LSTM:backward(inputs, hidden_inputs, grad_outputs, reverse)
+  assert(inputs ~= nil)
+  assert(hidden_inputs ~= nil)
+  assert(grad_outputs ~= nil)
+
   local size = inputs:size(1)
   if self.depth == 0 then
     error("No cells to backpropagate through")
   end
 
+  
   local input_grads = self.back_tensors[size]
+ 
   if input_grads == nil then
     if self.gpu_mode then
       self.back_tensors[size] = torch.FloatTensor(inputs:size()):cuda()
@@ -228,23 +245,32 @@ function LSTM:backward(inputs, grad_outputs, reverse)
     if self.num_layers == 1 then
       grads[2]:add(grad_output)
     else
-      for i = 1, self.num_layers do
-        grads[2][i]:add(grad_output[i])
-      end
+      grads[2][self.num_layers]:add(grad_output)
     end
 
     local prev_output = (self.depth > 1) and self.cells[self.depth - 1].output
-                                         or self.initial_values
+                                         or hidden_inputs
     self.gradInput = cell:backward({input, prev_output[1], prev_output[2]}, grads)
     if reverse then
       input_grads[size - t + 1] = self.gradInput[1]
     else
       input_grads[t] = self.gradInput[1]
     end
+    if self.depth == 1 then
+      if self.num_layers == 1 then
+        self.initial_values[1]:copy(self.gradInput[2])
+        self.initial_values[2]:copy(self.gradInput[3])
+      else 
+        for i = 1, self.num_layers do 
+          self.initial_values[i][1]:copy(self.gradInput[i][2])
+          self.initial_values[i][2]:copy(self.gradInput[i][3])
+        end
+      end
+    end
     self.depth = self.depth - 1
   end
   self:forget() -- important to clear out state
-  return input_grads
+  return input_grads, self.initial_values
 end
 
 function LSTM:share(lstm, ...)
@@ -275,3 +301,5 @@ function LSTM:forget()
     end
   end
 end
+
+

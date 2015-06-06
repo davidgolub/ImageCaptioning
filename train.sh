@@ -14,7 +14,8 @@ th image_captioning/main.lua \
 -emb_dim $emb_dim \
 -epochs 100 \
 -num_layers $num_layers \
--combine_module singleaddlayer \
+-combine_module embedlayer \
+-hidden_module projlayer \
 -learning_rate $learning_rate \
 $dropout $gpu_mode \
 -optim rmsprop \

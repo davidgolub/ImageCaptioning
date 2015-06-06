@@ -8,10 +8,10 @@ local AddLayer = torch.class('imagelstm.AddLayer')
 
 function AddLayer:__init(config)
    self.gpu_mode = config.gpu_mode or false
-   self.emb_learning_rate  = config.emb_learning_rate or 0.01
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
    self.vocab_size = config.num_classes or 300
+
    if config.emb_vecs ~= nil then
     self.vocab_size = config.emb_vecs:size(1)
    end
@@ -67,6 +67,8 @@ function AddLayer:getModules()
 end
 
 -- Does a single forward step of add layer
+-- Word indeces: input tensor of word indeces
+-- image_feats: Image features tensor
 function AddLayer:forward(word_indeces, image_feats)
     self.text_inputs = self.emb:forward(word_indeces)
     self.image_inputs = self.image_emb:forward(image_feats)
@@ -105,7 +107,3 @@ function AddLayer:normalizeGrads(batch_size)
   self.emb.gradWeight:div(batch_size)
 end
 
-function AddLayer:updateParameters()
-    self.emb:updateParameters(self.emb_learning_rate)
-    self.image_emb:updateParameters(self.emb_learning_rate)
-end

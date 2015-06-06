@@ -7,7 +7,6 @@
 local HiddenProjLayer = torch.class('imagelstm.HiddenProjLayer')
 
 function HiddenProjLayer:__init(config)
-   self.emb_learning_rate       = config.emb_learning_rate or 0.01
    self.gpu_mode = config.gpu_mode or false
    self.image_dim = config.image_dim or 1024
    self.proj_dim = config.mem_dim or 300
@@ -88,8 +87,3 @@ function HiddenProjLayer:normalizeGrads(batch_size)
   self.hidden_image_emb.gradWeight:div(batch_size)
 end
 
-function HiddenProjLayer:updateParameters()
-    -- normalize gradients by batch size
-  self.cell_image_emb:updateParameters(self.emb_learning_rate)
-  self.hidden_image_emb:updateParameters(self.emb_learning_rate)
-end

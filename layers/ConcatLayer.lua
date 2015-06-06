@@ -8,7 +8,6 @@
 local ConcatLayer = torch.class('imagelstm.ConcatLayer')
 
 function ConcatLayer:__init(config)
-   self.emb_learning_rate       = config.emb_learning_rate or 0.01
    self.gpu_mode = config.gpu_mode or false
    self.emb_dim = config.emb_dim or 300
    self.image_dim = config.image_dim or 1024
@@ -93,7 +92,3 @@ function ConcatLayer:normalizeGrads(batch_size)
   self.emb.gradWeight:div(batch_size)
 end
 
-function ConcatLayer:updateParameters()
-  -- normalize gradients by batch size
-  self.emb:updateParameters(self.emb_learning_rate)
-end

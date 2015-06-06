@@ -24,7 +24,8 @@ cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
-cmd:option('-combine_module', 'addlayer', '[addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
+cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
+cmd:option('-hidden_module', 'hiddenlayer', '[hiddenlayer]')
 cmd:option('-model_epoch', 98, 'epoch to load model from')
 cmd:option('-num_layers', 4, 'number of layers in lstm network')
 cmd:text()
@@ -98,7 +99,7 @@ collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
-local model = imagelstm.ImageCaptioner_Hidden{
+local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = optim_method,
   --emb_vecs = vecs,
@@ -145,7 +146,6 @@ local loss = 0.0
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
-  
 
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -153,6 +153,7 @@ for i = 1, params.epochs do
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
+    
   local test_predictions = model:predict_dataset(test_dataset, 1)
   printf('-- predicting sentences on a sample set of 100\n')
 
@@ -168,7 +169,7 @@ for i = 1, params.epochs do
 
   print("Model save path is", model_save_path)
   model:save(model_save_path)
-  --model = imagelstm.ImageCaptioner.load(model_save_path)
+  model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
 
