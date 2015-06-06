@@ -64,13 +64,14 @@ function HiddenProjLayer:backward(image_feats, cell_errors)
    hidden_image_emb_errors = cell_errors[2]
 
    -- feed them backward
+   print(image_feats)
    self.cell_image_emb:backward(image_feats, cell_image_emb_errors)
    self.hidden_image_emb:backward(image_feats, hidden_image_emb_errors)
 end
 
 -- Returns size of outputs of this combine module
 function HiddenProjLayer:getOutputSize()
-  return self.emb_dim + self.proj_dim
+  return self.mem_dim * 2
 end
 
 function HiddenProjLayer:getParameters()
