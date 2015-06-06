@@ -168,7 +168,7 @@ function ImageCaptioner:train(dataset)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
   --dataset.size
-  for i = 1, 1000, self.batch_size do
+  for i = 1, --dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
     
