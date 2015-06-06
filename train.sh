@@ -4,6 +4,7 @@ th image_captioning/main.lua \
 -batch_size 33 \
 -mem_dim 250 \
 -emb_dim 250 \
+-gpu_mode \
 -epochs 100 \
 -num_layers 1 \
 -combine_module singleaddlayer \
