@@ -86,6 +86,7 @@ end
 function ImageCaptioner_Hidden:set_gpu_mode()
   self.image_captioner:set_gpu_mode()
   self.combine_layer:set_gpu_mode()
+  self.hidden_layer:set_gpu_mode()
 end
 
 function ImageCaptioner_Hidden:new_caption_module()
