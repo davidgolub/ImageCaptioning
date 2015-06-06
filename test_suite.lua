@@ -22,6 +22,7 @@ include('tests/GpuChecks.lua')
 
 -- grad checks
 grad_checker = imagelstm.GradChecks{}
+grad_checker:check_lstm_captioner_hidden()
 grad_checker:check_lstm_captioner()
 grad_checker:check_add_module()
 grad_checker:check_single_add_module()

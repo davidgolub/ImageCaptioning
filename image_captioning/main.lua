@@ -98,7 +98,7 @@ collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
-local model = imagelstm.ImageCaptioner{
+local model = imagelstm.ImageCaptioner_Hidden{
   batch_size = params.batch_size,
   optim_method = optim_method,
   --emb_vecs = vecs,
@@ -146,6 +146,13 @@ header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
   
+
+  local start = sys.clock()
+  printf('-- epoch %d\n', i)
+  loss = model:train(train_dataset)
+  printf("Average loss %.4f \n", loss)
+  printf('-- finished epoch in %.2fs\n', sys.clock() - start)
+  
   local test_predictions = model:predict_dataset(test_dataset, 1)
   printf('-- predicting sentences on a sample set of 100\n')
 
@@ -156,12 +163,6 @@ for i = 1, params.epochs do
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
 
-  local start = sys.clock()
-  printf('-- epoch %d\n', i)
-  loss = model:train(train_dataset)
-  printf("Average loss %.4f \n", loss)
-  printf('-- finished epoch in %.2fs\n', sys.clock() - start)
-  
   model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
 

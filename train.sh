@@ -5,11 +5,10 @@ th image_captioning/main.lua \
 -mem_dim 250 \
 -emb_dim 150 \
 -epochs 100 \
--dropout \
 -num_layers 1 \
 -combine_module singleaddlayer \
 -learning_rate 0.1 \
--gpu_mode \
 -optim rmsprop \
 | tee -a "log_singeaddlayer.txt"
-
+# -dropout \
+# -gpu_mode \

@@ -27,13 +27,17 @@ include('layers/AddLayer.lua')
 include('layers/SingleAddLayer.lua')
 include('layers/ConcatProjLayer.lua')
 include('layers/ConcatLayer.lua')
+include('layers/HiddenProjLayer.lua')
+include('layers/EmbedLayer.lua')
 
 -- models
 include('models/ImageCaptioner.lua')
 include('models/ImageCaptionerLSTM.lua')
 include('models/LSTM.lua')
 include('models/LSTM_Full.lua')
-include('models/LSTM_Multilayered.lua')
+include('models/LSTM_Hidden.lua')
+include('models/ImageCaptioner_Hidden.lua')
+include('models/ImageCaptionerLSTM_Hidden.lua')
 
 printf = utils.printf
 
