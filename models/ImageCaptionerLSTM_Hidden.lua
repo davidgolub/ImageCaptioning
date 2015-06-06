@@ -15,7 +15,7 @@ function ImageCaptionerLSTM_Hidden:__init(config)
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
   self.lstm_layer =  imagelstm.LSTM_Hidden(config)
-  self.p = 0.6 -- for dropouts
+  self.p = 0.5 -- for dropouts
 
   local modules = nn.Parallel()
     :add(self.lstm_layer)
