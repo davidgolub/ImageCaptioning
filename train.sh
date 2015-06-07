@@ -12,7 +12,7 @@ th image_captioning/main.lua \
 -batch_size 33 \
 -mem_dim $mem_dim \
 -emb_dim $emb_dim \
--epochs 2 \
+-epochs 100 \
 -num_layers $num_layers \
 -combine_module embedlayer \
 -hidden_module projlayer \
