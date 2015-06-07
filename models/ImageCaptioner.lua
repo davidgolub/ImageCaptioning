@@ -168,7 +168,7 @@ function ImageCaptioner:train(dataset)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
   --dataset.size
-  for i = 1, --dataset.size, self.batch_size do
+  for i = 1, dataset.size, self.batch_size do --dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
     local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
     
@@ -238,6 +238,63 @@ function ImageCaptioner:train(dataset)
   average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
 
+  return average_loss
+end
+
+-- Evaluates model on dataset
+-- Returns average loss
+function ImageCaptioner:eval(dataset)
+  self.image_captioner:enable_dropouts()
+  local indices = torch.randperm(dataset.size)
+  local zeros = torch.zeros(self.mem_dim)
+  local tot_loss = 0
+  --dataset.size
+  for i = 1, dataset.size, self.batch_size do --dataset.size, self.batch_size do
+    xlua.progress(i, dataset.size)
+    local batch_size = math.min(i + self.batch_size - 1, dataset.size) - i + 1
+    
+    currIndex = 0
+    local feval = function(x)
+      self.grad_params:zero()
+      local start = sys.clock()
+      local loss = 0
+      for j = 1, batch_size do
+        local idx = indices[i + j - 1]
+        
+        --local idx = i + j - 1
+        -- get the image features
+        local imgid = dataset.image_ids[idx]
+        local image_feats = dataset.image_feats[imgid]
+
+        -- get input and output sentences
+        local sentence = dataset.sentences[idx]
+        local out_sentence = dataset.pred_sentences[idx]
+
+
+        if self.gpu_mode then
+          sentence = sentence:cuda()
+          out_sentence = out_sentence:cuda()
+          image_feats = image_feats:cuda()
+        end
+
+        -- get text/image inputs
+        local inputs = self.combine_layer:forward(sentence, image_feats)
+        local hidden_inputs = self.hidden_layer:forward(image_feats)
+
+        local lstm_output, class_predictions, caption_loss = 
+        self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
+        self.image_captioner:reset_depth()
+        loss = loss + caption_loss
+      end
+
+      tot_loss = tot_loss + loss
+      loss = loss / batch_size
+      return loss
+    end
+    feval()
+  end
+  average_loss = tot_loss / dataset.size
+  xlua.progress(dataset.size, dataset.size)
   return average_loss
 end
 

@@ -204,7 +204,8 @@ function LSTM:tick(input, prev_outputs)
   assert(input ~= nil)
   assert(prev_outputs ~= nil)
 
-  local cell = self:new_cell()
+  --local cell = self:new_cell()
+  local cell = self.predict_cell
   local outputs = cell:forward({input, prev_outputs[1], 
     prev_outputs[2]})
   return outputs

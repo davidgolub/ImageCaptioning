@@ -62,11 +62,17 @@ local data_dir = params.data_dir
 vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
 
 -- load datasets
+
+-- load train dataset
 local train_dir = data_dir
 local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
   'train')
 
--- load train dataset
+-- load val dataset
+local val_dir = data_dir
+local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, params.gpu_mode, 'val')
+
+-- load test dataset
 local test_dir = data_dir
 local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
   'test')
@@ -153,16 +159,23 @@ for i = 1, params.epochs do
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
   
-    
-  local test_predictions = model:predict_dataset(test_dataset, 1)
   printf('-- predicting sentences on a sample set of 100\n')
+
+
+  local test_loss = model:eval(test_dataset)
+  print("Test loss is ", test_loss)
+
+  local val_loss = model:eval(val_dataset)
+  print("Val loss is ", val_loss)
 
     -- save them to disk for later use
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  print("Saving predictions to ", predictions_save_path)
-  model:save_predictions(predictions_save_path, loss, test_predictions)
+  --local test_predictions = model:predict_dataset(test_dataset, 5, 30)
+
+  --print("Saving predictions to ", predictions_save_path)
+  --model:save_predictions(predictions_save_path, loss, test_predictions)
 
   model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))

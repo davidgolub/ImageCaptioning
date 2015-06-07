@@ -49,6 +49,11 @@ function ImageCaptionerLSTM:change_sequential_dropouts(model,p)
    return model
 end
 
+-- Resets depth to 1
+function ImageCaptionerLSTM:reset_depth()
+  self.lstm_layer.depth = 1
+end
+
 
 function ImageCaptionerLSTM:zeroGradParameters()
   self.grad_params:zero()
