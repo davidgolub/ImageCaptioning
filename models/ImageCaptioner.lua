@@ -260,7 +260,7 @@ end
 -- Returns average loss
 function ImageCaptioner:eval(dataset)
   self:disable_dropouts()
-  
+
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
@@ -271,7 +271,7 @@ function ImageCaptioner:eval(dataset)
     
     currIndex = 0
     local feval = function(x)
-      self.grad_params:zero()
+      self.image_captioner:reset_depth()
       local start = sys.clock()
       local loss = 0
       for j = 1, batch_size do
@@ -302,12 +302,7 @@ function ImageCaptioner:eval(dataset)
         
         loss = loss + caption_loss
 
-        local input_grads, hidden_grads = 
-        self.image_captioner:backward(inputs, hidden_inputs, lstm_output, class_predictions, out_sentence)
         
-        -- do backward through input to lstm
-        self.hidden_layer:backward(image_feats, hidden_grads)
-        self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
       tot_loss = tot_loss + loss
