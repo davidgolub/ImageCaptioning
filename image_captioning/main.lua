@@ -21,7 +21,7 @@ cmd:option('-image_dim', 1024, 'input image size into captioner')
 cmd:option('-emb_dim', 100, 'embedding size')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
-cmd:option('-emb_learning_rate', 0.005, 'embedding learning rate')
+cmd:option('-reg', 1e-5, 'regularization strength')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
@@ -115,6 +115,7 @@ local model = imagelstm.ImageCaptioner{
   emb_dim = params.emb_dim,
   combine_module = params.combine_module,
   learning_rate = params.learning_rate,
+  reg = params.reg,
   image_dim = params.image_dim,
   mem_dim = params.mem_dim,
   num_classes = vocab.size, --For start, end and unk tokens

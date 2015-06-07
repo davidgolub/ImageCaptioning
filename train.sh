@@ -4,9 +4,10 @@ emb_dim=${2-250}
 mem_dim=${1-300}
 num_layers=${3-1}
 
-learning_rate=${4-0.1}
-dropout=${5-}
-gpu_mode=${6-}
+learning_rate=${5-0.1}
+regularization=${4-1e-5}
+dropout=${6-}
+gpu_mode=${7-}
 
 th image_captioning/main.lua \
 -batch_size 33 \
@@ -17,6 +18,7 @@ th image_captioning/main.lua \
 -combine_module embedlayer \
 -hidden_module projlayer \
 -learning_rate $learning_rate \
+-reg $regularization \
 $dropout $gpu_mode \
 -optim rmsprop \
 | tee -a "log_singeaddlayer.txt"

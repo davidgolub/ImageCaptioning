@@ -218,8 +218,8 @@ function ImageCaptioner:train(dataset)
       self.grad_params:div(batch_size)
 
       -- regularization
-      --loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      --self.grad_params:add(self.reg, self.params)
+      loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      self.grad_params:add(self.reg, self.params)
 
       print("Caption loss is:")
       print(loss)
@@ -458,6 +458,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'LSTM memory dim', self.mem_dim)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
+  printf('%-25s = %.2e\n', 'regularization strength', self.reg)
   printf('%-25s = %d\n', 'number of classes', self.num_classes)
   printf('%-25s = %d\n', 'number of layers in lstm', self.num_layers)
   printf('%-25s = %s\n', 'combine module type', self.combine_module_type)
