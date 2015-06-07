@@ -182,7 +182,7 @@ for i = 1, params.epochs do
 
   print("Model save path is", model_save_path)
   model:save(model_save_path)
-  model = imagelstm.ImageCaptioner.load(model_save_path)
+  --model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
 
