@@ -163,11 +163,14 @@ for i = 1, params.epochs do
   printf('-- predicting sentences on a sample set of 100\n')
 
 
+  local train_loss = model:eval(train_dataset)
+  printf("Train loss is %.4f \n", train_loss)
+  
   local test_loss = model:eval(test_dataset)
-  print("Test loss is ", test_loss)
+  printf("Test loss is %.4f \n", test_loss)
 
   local val_loss = model:eval(val_dataset)
-  print("Val loss is ", val_loss)
+  printf("Val loss is %.4f \n", val_loss)
 
     -- save them to disk for later use
   local predictions_save_path = string.format(
