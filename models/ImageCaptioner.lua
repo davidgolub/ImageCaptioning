@@ -244,7 +244,7 @@ end
 -- Evaluates model on dataset
 -- Returns average loss
 function ImageCaptioner:eval(dataset)
-  self.image_captioner:enable_dropouts()
+  self.image_captioner:disable_dropouts()
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
