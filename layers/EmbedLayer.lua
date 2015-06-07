@@ -51,12 +51,12 @@ end
 
 -- Enable Dropouts
 function EmbedLayer:enable_dropouts()
-   enable_sequential_dropouts(self.output_module_fn)
+   enable_sequential_dropouts(self.emb)
 end
 
 -- Disable Dropouts
 function EmbedLayer:disable_dropouts()
-   disable_sequential_dropouts(self.output_module_fn)
+   disable_sequential_dropouts(self.emb)
 end
 
 
