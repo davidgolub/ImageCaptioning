@@ -10,10 +10,18 @@ function HiddenProjLayer:__init(config)
    self.gpu_mode = config.gpu_mode or false
    self.image_dim = config.image_dim or 1024
    self.proj_dim = config.mem_dim or 300
+   self.dropout = config.dropout and false or config.dropout
 
    -- image feature embedding
-   self.cell_image_emb = nn.Linear(self.image_dim, self.proj_dim)
-   self.hidden_image_emb = nn.Linear(self.image_dim, self.proj_dim)
+   self.cell_image_emb = nn.Sequential()
+      :add(nn.Linear(self.image_dim, self.proj_dim))
+   self.hidden_image_emb = nn.Sequential() 
+      :add(nn.Linear(self.image_dim, self.proj_dim))
+
+   if self.dropout then
+    self.cell_image_emb:add(nn.Dropout(0.2))
+    self.hidden_image_emb:add(nn.Dropout(0.2))
+   end
 
    local modules = nn.Parallel()
     :add(self.cell_image_emb)
@@ -46,6 +54,17 @@ function HiddenProjLayer:set_gpu_mode()
   self.hidden_image_emb:cuda()
 end
 
+-- Enable Dropouts
+function HiddenProjLayer:enable_dropouts()
+   enable_sequential_dropouts(self.cell_image_emb)
+   enable_sequential_dropouts(self.hidden_image_emb)
+end
+
+-- Disable Dropouts
+function HiddenProjLayer:disable_dropouts()
+   disable_sequential_dropouts(self.hidden_image_emb)
+   disable_sequential_dropouts(self.cell_image_emb)
+end
 
 -- Does a single forward step of concat layer, concatenating
 -- 

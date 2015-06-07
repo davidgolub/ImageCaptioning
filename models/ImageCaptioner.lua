@@ -130,6 +130,7 @@ function ImageCaptioner:get_hidden_layer(hidden_module_type)
       gpu_mode = self.gpu_mode,
       image_dim = self.image_dim,
       mem_dim = self.mem_dim,
+      dropout = self.dropout
     }
   else 
     error("Did not recognize hidden module type", hidden_module_type)
@@ -171,12 +172,14 @@ end
 function ImageCaptioner:enable_dropouts()
   self.image_captioner:enable_dropouts()
   self.combine_layer:enable_dropouts()
+  self.hidden_layer:enable_dropouts()
 end
 
 -- disables dropouts on all layers
 function ImageCaptioner:disable_dropouts()
   self.image_captioner:disable_dropouts()
   self.combine_layer:disable_dropouts()
+  self.hidden_layer:disable_dropouts()
 end
 
 function ImageCaptioner:train(dataset)

@@ -20,7 +20,7 @@ function EmbedLayer:__init(config)
             :add(nn.LookupTable(self.vocab_size, self.emb_dim))
 
   if self.dropout then
-    self.emb:add(nn.Dropout())
+    self.emb:add(nn.Dropout(0.2))
   end
 
   self.params, self.grad_params = self.emb:getParameters()
