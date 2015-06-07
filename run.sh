@@ -2,4 +2,4 @@
 ./test.sh
 
 
-# ./train.sh 100 150 1 0 0.05 -gpu_mode -dropout 
+# ./train.sh 100 150 1 0 0.05 -dropout
