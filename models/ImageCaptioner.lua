@@ -16,7 +16,7 @@ function ImageCaptioner:__init(config)
   self.emb_dim                 = config.emb_dim           or 50
   self.learning_rate           = config.learning_rate     or 0.01
   self.batch_size              = config.batch_size        or 100
-  self.reg                     = config.reg               or 1e-7
+  self.reg                     = config.reg               or 1e-6
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
   self.optim_method            = config.optim_method or optim.adagrad
@@ -218,8 +218,8 @@ function ImageCaptioner:train(dataset)
       self.grad_params:div(batch_size)
 
       -- regularization
-      -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      -- self.grad_params:add(self.reg, self.params)
+      --loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      --self.grad_params:add(self.reg, self.params)
 
       print("Caption loss is:")
       print(loss)
@@ -244,7 +244,7 @@ end
 -- Evaluates model on dataset
 -- Returns average loss
 function ImageCaptioner:eval(dataset)
-  self.image_captioner:disable_dropouts()
+  self.image_captioner:enable_dropouts()
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0

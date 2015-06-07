@@ -198,7 +198,7 @@ end
 
 -- Does a single tick of lstm layer, used in beam search
 -- input: in_dim tensor, in_dim is input to the LSTM.
--- prev_states: previous states of the lstm (hidden, cell_state array)
+-- prev_states: previous states of the lstm (cell_state, hidden array)
 -- Returns cell_state, hidden_state of LSTM, both mem_dim tensors
 function LSTM:tick(input, prev_outputs)
   assert(input ~= nil)
