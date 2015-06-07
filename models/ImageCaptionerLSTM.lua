@@ -31,22 +31,30 @@ end
 
 -- Enable Dropouts
 function ImageCaptionerLSTM:enable_dropouts()
-   self.sequential = self:change_sequential_dropouts(self.output_module_fn, self.p)
+   self:enable_sequential_dropouts(self.output_module_fn)
 end
 
 -- Disable Dropouts
 function ImageCaptionerLSTM:disable_dropouts()
-   self.sequential = self:change_sequential_dropouts(self.output_module_fn,0)
+   self:disable_sequential_dropouts(self.output_module_fn)
 end
 
--- Change dropouts
-function ImageCaptionerLSTM:change_sequential_dropouts(model,p)
+-- Enable dropouts
+function ImageCaptionerLSTM:enable_sequential_dropouts(model)
    for i,m in ipairs(model.modules) do
       if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
-    m.p = p
+        m:training()
       end
    end
-   return model
+end
+
+-- Disable dropouts
+function ImageCaptionerLSTM:disable_sequential_dropouts(model)
+   for i,m in ipairs(model.modules) do
+      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
+        m:evaluate()
+      end
+   end
 end
 
 -- Resets depth to 1
