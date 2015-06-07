@@ -19,8 +19,8 @@ function HiddenProjLayer:__init(config)
       :add(nn.Linear(self.image_dim, self.proj_dim))
 
    if self.dropout then
-    self.cell_image_emb:add(nn.Dropout(0.2))
-    self.hidden_image_emb:add(nn.Dropout(0.2))
+    self.cell_image_emb:add(nn.Dropout(0.5))
+    self.hidden_image_emb:add(nn.Dropout(0.5))
    end
 
    local modules = nn.Parallel()
