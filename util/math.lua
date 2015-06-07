@@ -4,6 +4,24 @@
 
 --]]
   
+-- Enable dropouts
+function enable_sequential_dropouts(model)
+   for i,m in ipairs(model.modules) do
+      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
+        m:training()
+      end
+   end
+end
+
+-- Disable dropouts
+function disable_sequential_dropouts(model)
+   for i,m in ipairs(model.modules) do
+      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
+        m:evaluate()
+      end
+   end
+end
+
 -- Sorts tables by first value
 -- first_entry, second_entry are tables
 function min_sort_function(first_table, second_table)

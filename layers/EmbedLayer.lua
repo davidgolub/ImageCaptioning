@@ -7,16 +7,23 @@
 local EmbedLayer = torch.class('imagelstm.EmbedLayer')
 
 function EmbedLayer:__init(config)
-   self.emb_learning_rate       = config.emb_learning_rate or 0.01
-   self.gpu_mode = config.gpu_mode or false
-   self.emb_dim = config.emb_dim or 300
-   self.vocab_size = config.num_classes or 300
-   if config.emb_vecs ~= nil then
+  self.emb_learning_rate       = config.emb_learning_rate or 0.01
+  self.gpu_mode = config.gpu_mode or false
+  self.emb_dim = config.emb_dim or 300
+  self.vocab_size = config.num_classes or 300
+  if config.emb_vecs ~= nil then
     self.vocab_size = config.emb_vecs:size(1)
-   end
+  end
+  self.dropout = config.dropout and false or config.dropout
 
-   self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
-   self.params, self.grad_params = self.emb:getParameters()
+  self.emb = nn.Sequential()
+            :add(nn.LookupTable(self.vocab_size, self.emb_dim))
+
+  if self.dropout then
+    self.emb:add(nn.Dropout())
+  end
+
+  self.params, self.grad_params = self.emb:getParameters()
 
   if gpu_mode then
     self:set_gpu_mode()
@@ -40,6 +47,16 @@ end
 -- Sets gpu mode
 function EmbedLayer:set_gpu_mode()
   self.emb:cuda()
+end
+
+-- Enable Dropouts
+function EmbedLayer:enable_dropouts()
+   enable_sequential_dropouts(self.output_module_fn)
+end
+
+-- Disable Dropouts
+function EmbedLayer:disable_dropouts()
+   disable_sequential_dropouts(self.output_module_fn)
 end
 
 

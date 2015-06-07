@@ -25,37 +25,20 @@ function ImageCaptionerLSTM:__init(config)
     modules:cuda()
     self.criterion:cuda()
   end
-
   self.params, self.grad_params = modules:getParameters()
 end
 
 -- Enable Dropouts
 function ImageCaptionerLSTM:enable_dropouts()
-   self:enable_sequential_dropouts(self.output_module_fn)
+   enable_sequential_dropouts(self.output_module_fn)
 end
 
 -- Disable Dropouts
 function ImageCaptionerLSTM:disable_dropouts()
-   self:disable_sequential_dropouts(self.output_module_fn)
+   disable_sequential_dropouts(self.output_module_fn)
 end
 
--- Enable dropouts
-function ImageCaptionerLSTM:enable_sequential_dropouts(model)
-   for i,m in ipairs(model.modules) do
-      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
-        m:training()
-      end
-   end
-end
 
--- Disable dropouts
-function ImageCaptionerLSTM:disable_sequential_dropouts(model)
-   for i,m in ipairs(model.modules) do
-      if m.module_name == "nn.Dropout" or torch.typename(m) == "nn.Dropout" then
-        m:evaluate()
-      end
-   end
-end
 
 -- Resets depth to 1
 function ImageCaptionerLSTM:reset_depth()
@@ -78,15 +61,11 @@ function ImageCaptionerLSTM:forward(inputs, hidden_inputs, labels)
     assert(hidden_inputs ~= nil)
     assert(labels ~= nil)
 
-    local start1 = sys.clock()
-    local lstm_output = self.lstm_layer:forward(inputs, hidden_inputs, self.reverse)
-    local end1 = sys.clock()
-    local class_predictions = self.output_module_fn:forward(lstm_output)
-    local end2 = sys.clock()
-    local err = self.criterion:forward(class_predictions, labels)
-    local end3 = sys.clock()
 
-    --print("Forward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
+    local lstm_output = self.lstm_layer:forward(inputs, hidden_inputs, self.reverse)
+    local class_predictions = self.output_module_fn:forward(lstm_output)
+    local err = self.criterion:forward(class_predictions, labels)
+
     return lstm_output, class_predictions, err
 end
 
@@ -126,13 +105,9 @@ function ImageCaptionerLSTM:backward(inputs, hidden_inputs, lstm_output, class_p
   assert(class_predictions ~= nil)
   assert(labels ~= nil)
 
-  local start1 = sys.clock()
   output_module_derivs = self.criterion:backward(class_predictions, labels)
-  local end1 = sys.clock()
   lstm_output_derivs = self.output_module_fn:backward(lstm_output, output_module_derivs)
-  local end2 = sys.clock()
   lstm_input_derivs, hidden_derivs = self.lstm_layer:backward(inputs, hidden_inputs, lstm_output_derivs, self.reverse)
-  local end3 = sys.clock()
 
   --print("Backward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
   return lstm_input_derivs, hidden_derivs

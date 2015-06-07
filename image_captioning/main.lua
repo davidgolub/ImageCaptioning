@@ -159,13 +159,10 @@ for i = 1, params.epochs do
   loss = model:train(train_dataset)
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
-  
-  printf('-- predicting sentences on a sample set of 100\n')
-
 
   local train_loss = model:eval(train_dataset)
   printf("Train loss is %.4f \n", train_loss)
-  
+
   local test_loss = model:eval(test_dataset)
   printf("Test loss is %.4f \n", test_loss)
 

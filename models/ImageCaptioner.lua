@@ -79,6 +79,7 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
+      dropout = self.dropout
     }
   elseif combine_module_type == "concatlayer" then
     layer = imagelstm.ConcatLayer{
@@ -86,6 +87,7 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
+      dropout = self.dropout
     }
   elseif combine_module_type == "singleaddlayer" then
     layer = imagelstm.SingleAddLayer{
@@ -93,6 +95,7 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
+      dropout = self.dropout
     }
   elseif combine_module_type == "concatprojlayer" then
     layer = imagelstm.ConcatProjLayer{
@@ -100,12 +103,14 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
+      dropout = self.dropout
     }
   elseif combine_module_type == "embedlayer" then
     layer = imagelstm.EmbedLayer{  
     emb_dim = self.emb_dim,
     num_classes = self.num_classes,
     gpu_mode = self.gpu_mode,
+    dropout = self.dropout
     }
   else -- module not recognized
     error("Did not recognize input module type", combine_module_type)
@@ -162,8 +167,21 @@ function ImageCaptioner:new_caption_module()
   return caption_module
 end
 
-function ImageCaptioner:train(dataset)
+-- enables dropouts on all layers
+function ImageCaptioner:enable_dropouts()
   self.image_captioner:enable_dropouts()
+  self.combine_layer:enable_dropouts()
+end
+
+-- disables dropouts on all layers
+function ImageCaptioner:disable_dropouts()
+  self.image_captioner:disable_dropouts()
+  self.combine_layer:disable_dropouts()
+end
+
+function ImageCaptioner:train(dataset)
+  self:enable_dropouts()
+
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
@@ -241,7 +259,8 @@ end
 -- Evaluates model on dataset
 -- Returns average loss
 function ImageCaptioner:eval(dataset)
-  self.image_captioner:disable_dropouts()
+  self:disable_dropouts()
+  
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
@@ -280,13 +299,27 @@ function ImageCaptioner:eval(dataset)
 
         local lstm_output, class_predictions, caption_loss = 
         self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
-        self.image_captioner:reset_depth()
+        
         loss = loss + caption_loss
+
+        local input_grads, hidden_grads = 
+        self.image_captioner:backward(inputs, hidden_inputs, lstm_output, class_predictions, out_sentence)
+        
+        -- do backward through input to lstm
+        self.hidden_layer:backward(image_feats, hidden_grads)
+        self.combine_layer:backward(sentence, image_feats, input_grads)
       end
 
       tot_loss = tot_loss + loss
       loss = loss / batch_size
-      return loss
+      self.grad_params:div(batch_size)
+
+      -- regularization
+      loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      self.grad_params:add(self.reg, self.params)
+      --print(currIndex, " of ", self.params:size(1))
+      --currIndex = currIndex + 1
+      return loss, self.grad_params
     end
     feval()
   end
@@ -480,8 +513,6 @@ function ImageCaptioner:save(path)
     num_layers        = self.num_layers
   }
 
-  print(self.optim_state)
-
   torch.save(path, {
     params = self.params,
     optim_state = self.optim_state,
@@ -502,7 +533,6 @@ function ImageCaptioner:getPath(epoch)
 end
 
 function ImageCaptioner.load(path)
-  print("Path loader " .. path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)
