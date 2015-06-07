@@ -271,10 +271,10 @@ function ImageCaptioner:eval(dataset)
     
     currIndex = 0
     local feval = function(x)
-      self.image_captioner:reset_depth()
       local start = sys.clock()
       local loss = 0
       for j = 1, batch_size do
+        self.image_captioner:reset_depth()
         local idx = indices[i + j - 1]
         
         --local idx = i + j - 1

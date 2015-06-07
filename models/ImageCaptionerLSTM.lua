@@ -42,7 +42,7 @@ end
 
 -- Resets depth to 1
 function ImageCaptionerLSTM:reset_depth()
-  self.lstm_layer:forget()
+  self.lstm_layer.depth = 0
 end
 
 
