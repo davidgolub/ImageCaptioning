@@ -241,7 +241,7 @@ function ImageCaptioner:train(dataset)
       -- regularization
       loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       self.grad_params:add(self.reg, self.params)
-      print("Current loss", loss)
+      --print("Current loss", loss)
       --print(currIndex, " of ", self.params:size(1))
       --currIndex = currIndex + 1
       return loss, self.grad_params
