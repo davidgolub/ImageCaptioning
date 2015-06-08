@@ -20,6 +20,7 @@ th image_captioning/main.lua \
 -learning_rate $learning_rate \
 -reg $regularization \
 $dropout $gpu_mode \
+-load_model -model_epoch 98\
 -optim rmsprop \
 | tee -a "log_singeaddlayer.txt"
 
