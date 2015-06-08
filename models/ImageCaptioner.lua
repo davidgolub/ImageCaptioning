@@ -19,7 +19,7 @@ function ImageCaptioner:__init(config)
   self.reg                     = config.reg               or 1e-6
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
-  self.optim_method            = config.optim_method or optim.adagrad
+  self.optim_method            = config.optim_method or optim.rmsprop
   self.num_classes             = config.num_classes or 2944
   self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
   self.num_layers              = config.num_layers or 1
