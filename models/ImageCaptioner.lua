@@ -490,6 +490,22 @@ function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predi
   predictions_file:close()
 end
 
+-- gets sentences from predictions
+-- test predictions: predictions to get sentences from
+function ImageCaptioner:get_sentences(test_predictions)
+  local sentences = {}
+  --predictions_file:write("LOSS " .. loss .. '\n')
+  for i = 1, #test_predictions do
+    local test_prediction = test_predictions[i]
+    local test_prediction = test_predictions[i][1]
+    local likelihood = test_prediction[1]
+    local tokens = test_prediction[2]
+    local sentence = table.concat(vocab:tokens(tokens), ' ')
+    table.insert(sentences, sentence)
+  end
+  return sentences
+end
+
 function ImageCaptioner:print_config()
   local num_params = self.params:size(1)
   local num_caption_params = self:new_caption_module():getParameters():size(1)

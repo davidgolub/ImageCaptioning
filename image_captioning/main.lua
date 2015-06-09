@@ -177,7 +177,7 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  local test_predictions = model:predict_dataset(test_dataset, 10, 30)
+  local test_predictions = model:predict_dataset(test_dataset, 5, 30)
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
@@ -196,7 +196,7 @@ end
 -- evaluate
 header('Evaluating on test set')
 printf('-- using model with train score = %.4f\n', loss)
-local test_predictions = model:predict_dataset(test_dataset, 1, test_dataset.size)
+local test_predictions = model:predict_dataset(test_dataset, 10, test_dataset.size)
 
 predictions_save_path = 'predictions/bleu/output.pred'
 print("Saving predictions to ", predictions_save_path)

@@ -126,3 +126,7 @@ if params.load_model then
   print("Loading model from file " .. model_save_path)
   model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
 end
+
+--train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
+--test_predictions = model:get_sentences(model:predict_ataset(test_dataset, 5, 30))
+--val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
