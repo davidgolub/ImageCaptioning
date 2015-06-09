@@ -155,7 +155,6 @@ imagelstm.predictions_dir .. model:getPath(2))
 
 local loss = 0.0
 
-assert(false)
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i

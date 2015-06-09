@@ -1,7 +1,7 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
 emb_dim=${2-50}
-mem_dim=${1-50}
+mem_dim=${1-100}
 num_layers=${3-1}
 
 learning_rate=${5-0.05}
