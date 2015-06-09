@@ -450,6 +450,12 @@ function ImageCaptioner:copy(prev_outputs)
   local copied_prev_outputs = {}
   local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
   local second_input = torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
+
+  if self.gpu_mode then
+    first_input:cuda()
+    second_input:cuda()
+  end
+  
   local copied_prev_outputs = {}
   table.insert(copied_prev_outputs, first_input)
   table.insert(copied_prev_outputs, second_input)
