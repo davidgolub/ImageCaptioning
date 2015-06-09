@@ -16,7 +16,6 @@ function ImageCaptioner:__init(config)
   self.emb_dim                 = config.emb_dim           or 50
   self.learning_rate           = config.learning_rate     or 0.01
   self.batch_size              = config.batch_size        or 100
-  self.reg                     = config.reg               or 1e-6
   self.emb_vecs                = config.emb_vecs          
   self.dropout                 = (config.dropout == nil) and false or config.dropout
   self.optim_method            = config.optim_method or optim.rmsprop
@@ -238,9 +237,9 @@ function ImageCaptioner:train(dataset)
       loss = loss / batch_size
       self.grad_params:div(batch_size)
 
-      -- regularization
-      loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      self.grad_params:add(self.reg, self.params)
+      -- regularization: BAD BAD BAD
+      -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      -- self.grad_params:add(self.reg, self.params)
       --print("Current loss", loss)
       --print(currIndex, " of ", self.params:size(1))
       --currIndex = currIndex + 1
@@ -305,7 +304,6 @@ function ImageCaptioner:eval(dataset)
         self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
         
         loss = loss + caption_loss
-
         
       end
 
@@ -313,9 +311,9 @@ function ImageCaptioner:eval(dataset)
       loss = loss / batch_size
       self.grad_params:div(batch_size)
 
-      -- regularization
-      loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
-      self.grad_params:add(self.reg, self.params)
+      -- regularization: BAD BAD BAD
+      -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
+      -- self.grad_params:add(self.reg, self.params)
       --print(currIndex, " of ", self.params:size(1))
       --currIndex = currIndex + 1
       return loss, self.grad_params
@@ -455,7 +453,7 @@ function ImageCaptioner:copy(prev_outputs)
     first_input:cuda()
     second_input:cuda()
   end
-  
+
   local copied_prev_outputs = {}
   table.insert(copied_prev_outputs, first_input)
   table.insert(copied_prev_outputs, second_input)

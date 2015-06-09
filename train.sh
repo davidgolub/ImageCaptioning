@@ -4,7 +4,7 @@ emb_dim=${2-50}
 mem_dim=${1-100}
 num_layers=${3-1}
 
-learning_rate=${5-0.05}
+learning_rate=${5-0.1}
 regularization=${4-1e-5}
 dropout=${6-}
 gpu_mode=${7-}

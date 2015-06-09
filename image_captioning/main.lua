@@ -21,7 +21,6 @@ cmd:option('-image_dim', 1024, 'input image size into captioner')
 cmd:option('-emb_dim', 100, 'embedding size')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
-cmd:option('-reg', 1e-5, 'regularization strength')
 cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
@@ -178,13 +177,15 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  local test_predictions = model:predict_dataset(test_dataset, 1, 30)
+  local test_predictions = model:predict_dataset(test_dataset, 10, 30)
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
 
+
   model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
+
 
   print("Model save path is", model_save_path)
   model:save(model_save_path)
