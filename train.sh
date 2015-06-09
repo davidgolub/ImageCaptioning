@@ -18,10 +18,9 @@ th image_captioning/main.lua \
 -combine_module embedlayer \
 -hidden_module projlayer \
 -learning_rate $learning_rate \
--reg $regularization \
 $dropout $gpu_mode \
--optim adagrad \
-| tee -a "log_singeaddlayer.txt"
+-optim adagrad 
+#| tee -a "log_singeaddlayer.txt"
 
 # First argument is memory dimensions
 # Second argument is embed dimensions
