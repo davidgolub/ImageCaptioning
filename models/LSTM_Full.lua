@@ -92,8 +92,13 @@ end
 -- Instantiate a new LSTM cell.
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
+
 function LSTM:new_cell()
-  local input = nn.Identity()()
+ return self:old_lstm()
+end
+
+function LSTM:old_lstm()
+   local input = nn.Identity()()
   local ctable_p = nn.Identity()()
   local htable_p = nn.Identity()()
 
@@ -137,11 +142,45 @@ function LSTM:new_cell()
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
 
-  if self.gpu_mode then
-    cell:cuda()
-  end
-
   -- share parameters
+  if self.master_cell then
+    share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
+  end
+  return cell
+end
+
+--[[ 
+Efficient LSTM in Torch using nngraph library. This code was optimized 
+by Justin Johnson (@jcjohnson) based on the trick of batching up the 
+LSTM GEMMs, as also seen in my efficient Python LSTM gist.
+--]]
+ 
+ function LSTM:fast_lstm(input_size, rnn_size)
+  local x = nn.Identity()()
+  local prev_c = nn.Identity()()
+  local prev_h = nn.Identity()()
+ 
+  local i2h = nn.Linear(input_size, 4 * rnn_size)(x)
+  local h2h = nn.Linear(rnn_size, 4 * rnn_size)(prev_h)
+  local all_input_sums = nn.CAddTable()({i2h, h2h})
+ 
+  local sigmoid_chunk = nn.Narrow(2, 1, 3 * rnn_size)(all_input_sums)
+  sigmoid_chunk = nn.Sigmoid()(sigmoid_chunk)
+  local in_gate = nn.Narrow(2, 1, rnn_size)(sigmoid_chunk)
+  local forget_gate = nn.Narrow(2, rnn_size + 1, rnn_size)(sigmoid_chunk)
+  local out_gate = nn.Narrow(2, 2 * rnn_size + 1, rnn_size)(sigmoid_chunk)
+ 
+  local in_transform = nn.Narrow(2, 3 * rnn_size + 1, rnn_size)(all_input_sums)
+  in_transform = nn.Tanh()(in_transform)
+ 
+  local next_c           = nn.CAddTable()({
+      nn.CMulTable()({forget_gate, prev_c}),
+      nn.CMulTable()({in_gate,     in_transform})
+    })
+  local next_h           = nn.CMulTable()({out_gate, nn.Tanh()(next_c)})
+ 
+  local cell = nn.gModule({x, prev_c, prev_h}, {next_c, next_h})
+    -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
   end
@@ -203,10 +242,10 @@ function LSTM:tick(input, prev_outputs)
   assert(input ~= nil)
   assert(prev_outputs ~= nil)
 
-  local cell = self:new_cell()
-  --local cell = self.predict_cell
-  local outputs = cell:forward({input, prev_outputs[1], 
-    prev_outputs[2]})
+  --local in_val = {input, copied_prev_outputs[1], copied_prev_outputs[2]}
+  local in_val = {input, prev_outputs[1], prev_outputs[2]}
+  local cell = self.master_cell
+  local outputs = cell:forward(in_val)
   return outputs
 end
 

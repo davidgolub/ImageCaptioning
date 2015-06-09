@@ -399,13 +399,13 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- then initialize our tokens list
     for i = 1, beam_size do
       local next_token = best_indices[i]
-      local curr_beam = {class_predictions[next_token], {next_token}, next_outputs}
+      local copied_outputs = self:copy(next_outputs)
+      local curr_beam = {class_predictions[next_token], {next_token}, copied_outputs}
       table.insert(beams, curr_beam)
     end
 
     -- now do the general beam search algorithm
     while num_iter < 20 do
-
       local next_beams = {}
 
       for i = 1, #beams do
@@ -417,15 +417,14 @@ function ImageCaptioner:predict(image_features, beam_size)
 
         -- If the next token is the end token, just add prediction to list
         if next_token[1] == 2 then
-           -- hack: 
            table.insert(next_beams, curr_beam)
         else 
           local log_likelihood = curr_beam[1]
-          local prev_outputs = curr_beam[3]
+          local prev_output = curr_beam[3]
 
           -- first get initial predictions
-          local pred_token, likelihood, next_outputs, class_predictions = 
-          lstm_tick(next_token, prev_outputs, num_iter)
+          local pred_token, likelihood, next_out, class_pred = 
+          lstm_tick(next_token, prev_output, num_iter)
 
           -- hack: for some reason tokens repeat on first iteration
           if num_iter > 0 then 
@@ -433,8 +432,8 @@ function ImageCaptioner:predict(image_features, beam_size)
           end
 
           local next_ll = log_likelihood + likelihood
-
-          local next_beam = {next_ll, curr_tokens_list, next_outputs}
+          local copied_next_out = self:copy(next_out)
+          local next_beam = {next_ll, curr_tokens_list, copied_next_out}
           table.insert(next_beams, next_beam)
         end
       end
@@ -447,9 +446,18 @@ function ImageCaptioner:predict(image_features, beam_size)
   end
 end
 
+function ImageCaptioner:copy(prev_outputs)
+  local copied_prev_outputs = {}
+  local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
+  local second_input = torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
+  local copied_prev_outputs = {}
+  table.insert(copied_prev_outputs, first_input)
+  table.insert(copied_prev_outputs, second_input)
+  return copied_prev_outputs
+end
 
 function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
-  self.image_captioner:disable_dropouts()
+  self:disable_dropouts()
   local beam_size = beam_size or 1
   local predictions = {}
   num_predictions = num_predictions or 30

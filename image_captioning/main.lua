@@ -149,7 +149,13 @@ local train_start = sys.clock()
 local best_train_score = -1.0
 local best_train_model = model
 
+    -- save them to disk for later use
+local predictions_save_path = string.format(
+imagelstm.predictions_dir .. model:getPath(2))
+
 local loss = 0.0
+
+assert(false)
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
@@ -173,10 +179,10 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  --local test_predictions = model:predict_dataset(test_dataset, 5, 30)
+  local test_predictions = model:predict_dataset(test_dataset, 5, 30)
 
-  --print("Saving predictions to ", predictions_save_path)
-  --model:save_predictions(predictions_save_path, loss, test_predictions)
+  print("Saving predictions to ", predictions_save_path)
+  model:save_predictions(predictions_save_path, loss, test_predictions)
 
   model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))

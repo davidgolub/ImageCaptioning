@@ -1,10 +1,10 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
-emb_dim=${2-250}
-mem_dim=${1-300}
+emb_dim=${2-50}
+mem_dim=${1-50}
 num_layers=${3-1}
 
-learning_rate=${5-0.01}
+learning_rate=${5-0.05}
 regularization=${4-1e-5}
 dropout=${6-}
 gpu_mode=${7-}
@@ -20,7 +20,7 @@ th image_captioning/main.lua \
 -learning_rate $learning_rate \
 -reg $regularization \
 $dropout $gpu_mode \
--optim rmsprop \
+-optim adagrad \
 | tee -a "log_singeaddlayer.txt"
 
 # First argument is memory dimensions
