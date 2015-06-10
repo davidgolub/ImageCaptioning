@@ -20,7 +20,6 @@ th image_captioning/main.lua \
 -learning_rate $learning_rate \
 $dropout $gpu_mode \
 -optim adagrad 
-| tee -a "log_singeaddlayer.txt"
 
 # First argument is memory dimensions
 # Second argument is embed dimensions

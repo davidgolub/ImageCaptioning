@@ -76,6 +76,7 @@ local test_dir = data_dir
 local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
   'test')
 
+
 -- load embeddings
 print('loading word embeddings')
 local emb_dir = params.emb_dir
@@ -121,6 +122,32 @@ local model = imagelstm.ImageCaptioner{
   gpu_mode = use_gpu_mode -- Set to true for GPU mode
 }
 
+local loss = 0.0
+
+-- evaluates the model on the test set
+function evaluate(model, beam_size, dataset, save_path)
+  printf('-- using model with train score = %.4f\n', loss)
+  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.size)
+
+  print("Saving predictions to ", save_path)
+  model:save_predictions(save_path, loss, test_predictions)
+end
+
+-- Calculates BLEU scores on train, test and val sets
+function evaluate_results()
+    -- evaluate
+  header('Evaluating on test set')
+  evaluate(model, 5, test_dataset, 'predictions/bleu/output_test.pred')
+
+  header('Evaluating on train set')
+  evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
+
+  header('Evaluating on val set')
+  evaluate(model, 5, val_dataset, 'predictions/bleu/output_val.pred')
+
+  os.execute("./test.sh")
+end
+
 -- print information
 header('model configuration')
 printf('max epochs = %d\n', num_epochs)
@@ -152,11 +179,13 @@ local best_train_model = model
 local predictions_save_path = string.format(
 imagelstm.predictions_dir .. model:getPath(2))
 
-local loss = 0.0
-
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
+
+  if curr_epoch % 20 == 0 then
+    evaluate_results()
+  end
 
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -192,15 +221,6 @@ for i = 1, params.epochs do
   --model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
-
--- evaluate
-header('Evaluating on test set')
-printf('-- using model with train score = %.4f\n', loss)
-local test_predictions = model:predict_dataset(test_dataset, 10, test_dataset.size)
-
-predictions_save_path = 'predictions/bleu/output.pred'
-print("Saving predictions to ", predictions_save_path)
-model:save_predictions(predictions_save_path, loss, test_predictions)
 
 -- write model to disk
   

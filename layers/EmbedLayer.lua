@@ -15,9 +15,14 @@ function EmbedLayer:__init(config)
     self.vocab_size = config.emb_vecs:size(1)
   end
   self.dropout = config.dropout and false or config.dropout
+  self.emb_table = nn.LookupTable(self.vocab_size, self.emb_dim)
+    -- Copy embedding weights
+  if config.emb_vecs ~= nil then
+    self.emb_table.weight:copy(config.emb_vecs)
+  end
 
   self.emb = nn.Sequential()
-            :add(nn.LookupTable(self.vocab_size, self.emb_dim))
+            :add(self.emb_table)
 
   if self.dropout then
     self.emb:add(nn.Dropout(0.5))
@@ -29,10 +34,7 @@ function EmbedLayer:__init(config)
     self:set_gpu_mode()
   end
 
-  -- Copy embedding weights
-  if config.emb_vecs ~= nil then
-    self.emb.weight:copy(config.emb_vecs)
-  end
+
   -- Copy the image embedding vectors
   if config.combine_weights ~= nil then
     self.params:copy(config.combine_weights)
