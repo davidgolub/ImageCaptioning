@@ -128,7 +128,7 @@ local loss = 0.0
 function evaluate(model, beam_size, dataset, save_path)
   printf('-- using model with train score = %.4f\n', loss)
   --if model.gpu_mode then
-     model:set_cpu_mode()
+  --   model:set_cpu_mode()
   --end
 
   local test_predictions = model:predict_dataset(dataset, beam_size, dataset.size)
