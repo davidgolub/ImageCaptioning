@@ -332,10 +332,6 @@ function ImageCaptioner:eval(dataset)
 end
 
 function ImageCaptioner:predict(image_features, beam_size)
-  if self.gpu_mode then
-    image_features = image_features:cuda()
-  end
-
   -- Keep track of tokens predicted
   local num_iter = 0
   local tokens = {}
