@@ -51,6 +51,10 @@ function EmbedLayer:set_gpu_mode()
   self.emb:cuda()
 end
 
+function EmbedLayer:set_cpu_mode()
+  self.emb:double()
+end
+
 -- Enable Dropouts
 function EmbedLayer:enable_dropouts()
    enable_sequential_dropouts(self.emb)

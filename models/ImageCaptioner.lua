@@ -156,6 +156,12 @@ function ImageCaptioner:set_gpu_mode()
   self.hidden_layer:set_gpu_mode()
 end
 
+function ImageCaptioner:set_cpu_mode()
+  self.image_captioner:set_cpu_mode()
+  self.combine_layer:set_cpu_mode()
+  self.hidden_layer:set_cpu_mode()
+end
+
 function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then

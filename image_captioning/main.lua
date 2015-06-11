@@ -127,8 +127,15 @@ local loss = 0.0
 -- evaluates the model on the test set
 function evaluate(model, beam_size, dataset, save_path)
   printf('-- using model with train score = %.4f\n', loss)
+  --if model.gpu_mode then
+     model:set_cpu_mode()
+  --end
+
   local test_predictions = model:predict_dataset(dataset, beam_size, dataset.size)
 
+  if model.gpu_mode then
+    model:set_gpu_mode()
+  end
   print("Saving predictions to ", save_path)
   model:save_predictions(save_path, loss, test_predictions)
 end
@@ -183,7 +190,7 @@ header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
 
-  if curr_epoch % 20 == 0 then
+  if curr_epoch % 20 == 1 then
     evaluate_results()
   end
 

@@ -122,7 +122,9 @@ end
 
 -- Sets all networks to cpu mode
 function ImageCaptionerLSTM:set_cpu_mode()
-  print("TODO")
+  self.criterion:double()
+  self.output_module_fn:double()
+  self.lstm_layer:double()
 end
 
 function ImageCaptionerLSTM:getModules() 

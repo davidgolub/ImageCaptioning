@@ -54,6 +54,11 @@ function HiddenProjLayer:set_gpu_mode()
   self.hidden_image_emb:cuda()
 end
 
+function HiddenProjLayer:set_cpu_mode()
+  self.cell_image_emb:double()
+  self.hidden_image_emb:double()
+end
+
 -- Enable Dropouts
 function HiddenProjLayer:enable_dropouts()
    enable_sequential_dropouts(self.cell_image_emb)
