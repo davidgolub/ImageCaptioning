@@ -133,9 +133,9 @@ function evaluate(model, beam_size, dataset, save_path)
 
   local test_predictions = model:predict_dataset(dataset, beam_size, dataset.size)
 
-  if model.gpu_mode then
-    model:set_gpu_mode()
-  end
+  --if model.gpu_mode then
+  --  model:set_gpu_mode()
+  --end
   print("Saving predictions to ", save_path)
   model:save_predictions(save_path, loss, test_predictions)
 end
