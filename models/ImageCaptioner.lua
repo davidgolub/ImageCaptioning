@@ -529,6 +529,7 @@ function ImageCaptioner:print_config()
 end
 
 function ImageCaptioner:save(path)
+  self:set_cpu_mode()
   local config = {
     reverse           = self.reverse,
     batch_size        = self.batch_size,
@@ -545,11 +546,18 @@ function ImageCaptioner:save(path)
     num_layers        = self.num_layers
   }
 
+  if self.optim_state.paramStd ~= nil then
+    self.optim_state.paramStd = self.optim_state.paramStd:double()
+    self.optim_state.paramVariance = self.optim_state.paramVariance:double()
+  end
   torch.save(path, {
-    params = self.params,
+    params = self.params:double(),
     optim_state = self.optim_state,
     config = config,
   })
+  if self.gpu_mode then 
+    self:set_gpu_mode()
+  end
 end
 
 -- returns model path representation based on the model configuration
@@ -567,8 +575,8 @@ end
 function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
-  print(state.optim_state)
   model.params:copy(state.params)
   model.optim_state = state.optim_state
+
   return model
 end

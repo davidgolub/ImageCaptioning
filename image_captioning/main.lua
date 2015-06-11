@@ -144,13 +144,13 @@ end
 function evaluate_results()
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, 5, test_dataset, 'predictions/bleu/output_test.pred')
+  evaluate(model, 2, test_dataset, 'predictions/bleu/output_test.pred')
 
   header('Evaluating on train set')
-  evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
+  evaluate(model, 2, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, 5, val_dataset, 'predictions/bleu/output_val.pred')
+  evaluate(model, 2, val_dataset, 'predictions/bleu/output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -190,7 +190,7 @@ header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
 
-  if curr_epoch % 20 == 1 then
+  if curr_epoch % 20 == 0 then
     evaluate_results()
   end
 
