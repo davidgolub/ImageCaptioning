@@ -218,13 +218,6 @@ for i = 1, params.epochs do
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
-
-  model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(i))
-
-
-  print("Model save path is", model_save_path)
-  model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
@@ -232,7 +225,7 @@ end
 -- write model to disk
   
 local model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(params.model_epoch))
+  imagelstm.models_dir .. model:getPath(params.epochs))
 print('writing model to ' .. model_save_path)
 model:save(model_save_path)
 
