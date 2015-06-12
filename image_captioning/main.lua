@@ -109,6 +109,7 @@ local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
   --emb_vecs = vecs,
+  vocab = vocab,
   dropout = params.dropout,
   num_layers = params.num_layers,
   num_classes = vocab.size,
@@ -131,7 +132,7 @@ function evaluate(model, beam_size, dataset, save_path)
   --   model:set_cpu_mode()
   --end
 
-  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.size)
+  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.num_images)
 
   --if model.gpu_mode then
   --  model:set_gpu_mode()
@@ -144,13 +145,13 @@ end
 function evaluate_results()
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, 2, test_dataset, 'predictions/bleu/output_test.pred')
+  evaluate(model, 5, test_dataset, 'predictions/bleu/output_test.pred')
 
   header('Evaluating on train set')
-  evaluate(model, 2, train_dataset, 'predictions/bleu/output_train.pred')
+  --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, 2, val_dataset, 'predictions/bleu/output_val.pred')
+  evaluate(model, 5, val_dataset, 'predictions/bleu/output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -190,7 +191,7 @@ header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   curr_epoch = i
 
-  if curr_epoch % 20 == 0 then
+  if curr_epoch % 20 == 2 then
     evaluate_results()
   end
 
@@ -217,7 +218,6 @@ for i = 1, params.epochs do
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
-
 
   model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))

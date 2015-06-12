@@ -22,7 +22,7 @@ function ImageCaptioner:__init(config)
   self.num_classes             = config.num_classes or 2944
   self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
   self.num_layers              = config.num_layers or 1
-
+  self.vocab                   = config.vocab
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
   end
@@ -472,8 +472,10 @@ function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
   local predictions = {}
   num_predictions = num_predictions or 30
   for i = 1, num_predictions do
-    xlua.progress(i, dataset.size)
-    prediction = self:predict(dataset.image_feats[i], beam_size)
+    xlua.progress(i, num_predictions)
+    local imgid = dataset.image_ids[i]
+    local image_feats = dataset.image_feats[imgid]
+    prediction = self:predict(image_feats, beam_size)
     table.insert(predictions, prediction)
   end
   return predictions
@@ -485,13 +487,14 @@ function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predi
 
   print('writing predictions to ' .. predictions_save_path)
   --predictions_file:write("LOSS " .. loss .. '\n')
-  for i = 1, #test_predictions do
-    local test_prediction = test_predictions[i]
-    local test_prediction = test_predictions[i][1]
-    local likelihood = test_prediction[1]
-    local tokens = test_prediction[2]
-    local sentence = table.concat(vocab:tokens(tokens), ' ')
-    predictions_file:write(sentence .. '\n')
+  local sentences = self:get_sentences(test_predictions)
+  for i = 1, #sentences do
+    local sentence = sentences[i]
+    if i < #sentences then 
+      predictions_file:write(sentence .. '\n')
+    else
+      predictions_file:write(sentence)
+    end
   end
   predictions_file:close()
 end
@@ -506,7 +509,9 @@ function ImageCaptioner:get_sentences(test_predictions)
     local test_prediction = test_predictions[i][1]
     local likelihood = test_prediction[1]
     local tokens = test_prediction[2]
+    -- Remove tokens
     local sentence = table.concat(vocab:tokens(tokens), ' ')
+    local sentence = string.gsub(sentence, "</s>", "")
     table.insert(sentences, sentence)
   end
   return sentences
@@ -543,7 +548,8 @@ function ImageCaptioner:save(path)
     optim_method      = self.optim_method,
     combine_module    = self.combine_module_type,
     hidden_module     = self.hidden_module_type,
-    num_layers        = self.num_layers
+    num_layers        = self.num_layers,
+    vocab             = self.vocab
   }
 
   if self.optim_state.paramStd ~= nil then

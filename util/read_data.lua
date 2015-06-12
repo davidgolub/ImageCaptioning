@@ -65,7 +65,6 @@ function imagelstm.read_image_features(feature_path)
   return vecs
 end
 
-
 --[[
 
  Read captions dataset
@@ -80,7 +79,7 @@ function imagelstm.read_caption_sentences(dir, desired_split)
 
   local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
   local num_images = #annotation_dataset
-
+  local num_desired_images = 0
   -- get input and output sentences
   local sentences = {}
 
@@ -89,8 +88,8 @@ function imagelstm.read_caption_sentences(dir, desired_split)
   for i = 1, num_images do
     curr_image = annotation_dataset[i]
     local split = curr_image['split']
-
     if split == desired_split then 
+      num_desired_images = num_desired_images + 1
       local curr_sentences = {}
       local curr_sentences = curr_image['sentences']
       for j = 1, #curr_sentences do
@@ -103,7 +102,8 @@ function imagelstm.read_caption_sentences(dir, desired_split)
   end
   
   caption_dataset.sentences = sentences
-  caption_dataset.size = #sentences
+  caption_dataset.num_images = num_desired_images
+  caption_dataset.size = num_desired_images
   return caption_dataset, min_references
 end
 
@@ -117,7 +117,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
 
   local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
   local num_images = #annotation_dataset
-
+  local num_desired_images = 0 -- Only include images that are in the split
   -- get input and output sentences
   local sentences = {}
   local out_sentences = {}
@@ -130,6 +130,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
     local curr_sentences = curr_image['sentences']
 
     if split == desired_split then
+      num_desired_images = num_desired_images + 1
       for j = 1, #curr_sentences do
         local split = curr_sentences[j]['split']
         local tokens = curr_sentences[j]['tokens']
@@ -163,6 +164,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   caption_dataset.pred_sentences = out_sentences
   caption_dataset.sentences = sentences
   caption_dataset.size = #sentences
+  caption_dataset.num_images = num_desired_images
 
   return caption_dataset
 end

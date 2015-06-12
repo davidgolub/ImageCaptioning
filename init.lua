@@ -17,18 +17,23 @@ include('util/math.lua')
 include('util/Vocab.lua')
 include('util/read_data.lua') 
 
--- New forward/backward layers
-include('layers/CRowAddTable.lua')
-include('layers/CRowSingleTable.lua')
-include('layers/CRowJoinTable.lua')
+-- New forward/backward modules
+include('modules/CRowAddTable.lua')
+include('modules/CRowSingleTable.lua')
+include('modules/CRowJoinTable.lua')
 
--- New image/word embedding layers
-include('layers/AddLayer.lua')
-include('layers/SingleAddLayer.lua')
-include('layers/ConcatProjLayer.lua')
-include('layers/ConcatLayer.lua')
-include('layers/HiddenProjLayer.lua')
-include('layers/EmbedLayer.lua')
+-- New input layers
+include('input_layers/InputLayer.lua')
+include('input_layers/AddLayer.lua')
+include('input_layers/SingleAddLayer.lua')
+include('input_layers/ConcatProjLayer.lua')
+include('input_layers/ConcatLayer.lua')
+include('input_layers/EmbedLayer.lua')
+
+-- New hidden layers
+include('hidden_layers/HiddenLayer.lua')
+include('hidden_layers/HiddenProjLayer.lua')
+
 
 -- models
 include('models/ImageCaptioner.lua')

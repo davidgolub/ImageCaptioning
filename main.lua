@@ -20,7 +20,10 @@ function save_bleu(data_split)
 	  for j = 1, min_size do
 	  	local tokens = sentences[j]['tokens']
 	  	local sentence = table.concat(tokens, ' ')
-	  	train_files[j]:write(sentence .. '\n')
+	  	train_files[j]:write(sentence)
+	  	if i < train_sentences.size then 
+	  		train_files[j]:write('\n')
+	  	end
 	  end
 	end
 
