@@ -166,7 +166,7 @@ end
 function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
-    caption_module:add(nn.Dropout())
+    caption_module:add(nn.Dropout(0.3))
   end
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
