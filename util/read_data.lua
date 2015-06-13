@@ -122,6 +122,9 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   local sentences = {}
   local out_sentences = {}
   local image_ids = {}
+
+  -- single image ids with no duplicates
+  local single_image_ids = {}
   for i = 1, num_images do
     local curr_image = annotation_dataset[i]
     local split = curr_image['split']
@@ -131,6 +134,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
 
     if split == desired_split then
       num_desired_images = num_desired_images + 1
+      table.insert(single_image_ids, curr_imgid)
       for j = 1, #curr_sentences do
         local split = curr_sentences[j]['split']
         local tokens = curr_sentences[j]['tokens']
@@ -161,6 +165,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   caption_dataset.vocab = vocab
   caption_dataset.image_feats = image_feats
   caption_dataset.image_ids = image_ids
+  caption_dataset.single_image_ids = single_image_ids
   caption_dataset.pred_sentences = out_sentences
   caption_dataset.sentences = sentences
   caption_dataset.size = #sentences

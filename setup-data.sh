@@ -74,6 +74,7 @@ if [ ! -f $image_dir/$image_pre.th ]; then
 fi
 
 # Install dependencies
+luarocks install torch
 luarocks install torch7
 luarocks install nn
 luarocks install nngraph
@@ -81,6 +82,13 @@ luarocks install optim
 luarocks install cutorch
 luarocks install cunn
 luarocks install json
+luarocks install dkjson
+
+# Server info
+luarocks install async
+luarocks install buffer
+luarocks install http
+luarocks install luasocket
 
 # For loading vision modules
 luarocks install loadcaffe

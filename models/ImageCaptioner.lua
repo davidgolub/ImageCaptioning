@@ -470,10 +470,9 @@ function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
   self:disable_dropouts()
   local beam_size = beam_size or 1
   local predictions = {}
-  num_predictions = num_predictions or 30
   for i = 1, num_predictions do
     xlua.progress(i, num_predictions)
-    local imgid = dataset.image_ids[i]
+    local imgid = dataset.single_image_ids[i]
     local image_feats = dataset.image_feats[imgid]
     prediction = self:predict(image_feats, beam_size)
     table.insert(predictions, prediction)
