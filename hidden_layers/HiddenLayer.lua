@@ -11,6 +11,7 @@ function HiddenLayer:__init(config)
    self.image_dim = config.image_dim or 1024
    self.proj_dim = config.mem_dim or 300
    self.dropout = config.dropout and false or config.dropout
+   self.num_layers = config.num_layers or 1 -- how many layers in the lstm
 end
 
 -- Returns all of the weights of this module

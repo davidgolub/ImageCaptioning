@@ -302,8 +302,8 @@ function LSTM:backward(inputs, hidden_inputs, grad_outputs, reverse)
         self.initial_values[2]:copy(self.gradInput[3])
       else 
         for i = 1, self.num_layers do 
-          self.initial_values[i][1]:copy(self.gradInput[i][2])
-          self.initial_values[i][2]:copy(self.gradInput[i][3])
+          self.initial_values[1][i]:copy(self.gradInput[2][i])
+          self.initial_values[2][i]:copy(self.gradInput[3][i])
         end
       end
     end

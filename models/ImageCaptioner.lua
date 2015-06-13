@@ -129,6 +129,7 @@ function ImageCaptioner:get_hidden_layer(hidden_module_type)
       gpu_mode = self.gpu_mode,
       image_dim = self.image_dim,
       mem_dim = self.mem_dim,
+      num_layers = self.num_layers,
       dropout = self.dropout
     }
   else 
@@ -188,6 +189,7 @@ function ImageCaptioner:disable_dropouts()
 end
 
 function ImageCaptioner:train(dataset)
+  assert(dataset ~= nil)
   self:enable_dropouts()
 
   local indices = torch.randperm(dataset.size)
@@ -246,16 +248,16 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      --print("Current loss", loss)
-      --print(currIndex, " of ", self.params:size(1))
-      --currIndex = currIndex + 1
+      -- print("Current loss", loss)
+      -- print(currIndex, " of ", self.params:size(1))
+      -- currIndex = currIndex + 1
       return loss, self.grad_params
     end
     -- check gradients for lstm layer
-    --diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
-    --print("Gradient error for lstm captioner is")
-    --print(diff)
-    --assert(diff < 1e-5, "Gradient is greater than tolerance")
+    -- diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
+    -- print("Gradient error for lstm captioner is")
+    -- print(diff)
+    -- assert(diff < 1e-5, "Gradient is greater than tolerance")
 
     self.optim_method(feval, self.params, self.optim_state)
   end
@@ -268,6 +270,7 @@ end
 -- Evaluates model on dataset
 -- Returns average loss
 function ImageCaptioner:eval(dataset)
+  assert(dataset ~= nil)
   self:disable_dropouts()
 
   local indices = torch.randperm(dataset.size)
@@ -332,6 +335,9 @@ function ImageCaptioner:eval(dataset)
 end
 
 function ImageCaptioner:predict(image_features, beam_size)
+  assert(image_features ~= nil)
+  assert(beam_size > 0)
+
   if self.gpu_mode then
     image_features = image_features:cuda()
   end
@@ -347,6 +353,9 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- returns predicted token, its log likelihood, state of lstm, and all predictions
 
   local function lstm_tick(next_token, prev_outputs, curr_iter)
+   assert(next_token ~= nil)
+   assert(prev_outputs ~= nil)
+
    local inputs = self.combine_layer:forward(next_token)
 
    -- feed forward to predictions
