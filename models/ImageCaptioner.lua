@@ -462,7 +462,6 @@ function ImageCaptioner:predict(image_features, beam_size)
 end
 
 function ImageCaptioner:copy(prev_outputs)
-  print(prev_outputs)
   local copied_prev_outputs = {}
   if self.num_layers == 1 then 
     local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
