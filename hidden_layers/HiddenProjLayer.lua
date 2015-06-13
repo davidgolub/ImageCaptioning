@@ -130,13 +130,18 @@ function HiddenProjLayer:forward(image_feats)
      self.hidden_image_proj = self.hidden_image_emb:forward(image_feats)
      return {self.cell_image_proj, self.hidden_image_proj}
    else
-     local output_val = {}
+     local cell_vals = {}
+     local hidden_vals = {}
+
      for i = 1, self.num_layers do
       local cell_image_proj = self.cell_image_emb[i]:forward(image_feats)
       local hidden_image_proj = self.hidden_image_emb[i]:forward(image_feats)
-      table.insert(output_val, {cell_image_proj, hidden_image_proj})
+
+      table.insert(cell_vals, cell_image_proj)
+      table.insert(hidden_vals, hidden_image_proj)
      end
-     return output_val
+
+     return {cell_vals, hidden_vals}
    end
    
 end
@@ -162,8 +167,8 @@ function HiddenProjLayer:backward(image_feats, cell_errors)
    else
      for i = 1, self.num_layers do
         -- get the image and word projection errors
-       local cell_image_emb_errors = cell_errors[i][1]
-       local hidden_image_emb_errors = cell_errors[i][2]
+       local cell_image_emb_errors = cell_errors[1][i]
+       local hidden_image_emb_errors = cell_errors[2][i]
 
        assert(cell_image_emb_errors:size(1) == self.proj_dim)
        assert(hidden_image_emb_errors:size(1) == self.proj_dim)

@@ -61,6 +61,8 @@ function ImageCaptioner:__init(config)
   self:add_modules(modules, combine_modules)
   self:add_modules(modules, hidden_modules)
 
+  print("==== Modules we're optimizing === ")
+  print(modules)
   self.params, self.grad_params = modules:getParameters()
 end
 
@@ -460,18 +462,39 @@ function ImageCaptioner:predict(image_features, beam_size)
 end
 
 function ImageCaptioner:copy(prev_outputs)
+  print(prev_outputs)
   local copied_prev_outputs = {}
-  local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
-  local second_input = torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
+  if self.num_layers == 1 then 
+    local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
+    local second_input = torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
 
-  if self.gpu_mode then
-    first_input = first_input:cuda()
-    second_input = second_input:cuda()
+    if self.gpu_mode then
+      first_input = first_input:cuda()
+      second_input = second_input:cuda()
+    end
+    
+    table.insert(copied_prev_outputs, first_input)
+    table.insert(copied_prev_outputs, second_input)
+  else 
+    local curr_cells = {}
+    local curr_hiddens = {}
+    for i = 1, self.num_layers do 
+      local curr_outputs = {}
+      local first_input = torch.Tensor(prev_outputs[1][i]:size()):copy(prev_outputs[1][i])
+      local second_input = torch.Tensor(prev_outputs[2][i]:size()):copy(prev_outputs[2][i])
+
+      if self.gpu_mode then
+        first_input = first_input:cuda()
+        second_input = second_input:cuda()
+      end
+      
+      table.insert(curr_cells, first_input)
+      table.insert(curr_hiddens, second_input)
+    end
+
+    table.insert(copied_prev_outputs, curr_cells)
+    table.insert(copied_prev_outputs, curr_hiddens)
   end
-
-  local copied_prev_outputs = {}
-  table.insert(copied_prev_outputs, first_input)
-  table.insert(copied_prev_outputs, second_input)
   return copied_prev_outputs
 end
 
