@@ -63,3 +63,6 @@ function header(s)
   print(s)
   print(string.rep('-', 80))
 end
+
+print("Done loading modules for image captioner")
+

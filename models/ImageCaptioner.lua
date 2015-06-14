@@ -540,7 +540,7 @@ function ImageCaptioner:get_sentences(test_predictions)
     local likelihood = test_prediction[1]
     local tokens = test_prediction[2]
     -- Remove tokens
-    local sentence = table.concat(vocab:tokens(tokens), ' ')
+    local sentence = table.concat(self.vocab:tokens(tokens), ' ')
     local sentence = string.gsub(sentence, "</s>", "")
     table.insert(sentences, sentence)
   end
@@ -564,7 +564,7 @@ function ImageCaptioner:print_config()
 end
 
 function ImageCaptioner:save(path)
-  self:set_cpu_mode()
+
   local config = {
     reverse           = self.reverse,
     batch_size        = self.batch_size,
@@ -582,23 +582,22 @@ function ImageCaptioner:save(path)
     vocab             = self.vocab
   }
 
-  if self.optim_state.paramStd ~= nil then
-    self.optim_state.paramStd = self.optim_state.paramStd:double()
-    self.optim_state.paramVariance = self.optim_state.paramVariance:double()
+  local params = self.params
+  local optim_state = self.optim_state
+
+  if self.gpu_mode then 
+    optim_state.paramStd = self.optim_state.paramStd:double()
+    optim_state.paramVariance = self.optim_state.paramVariance:double()
+    params = self.params:double()
   end
+
   torch.save(path, {
-    params = self.params:double(),
-    optim_state = self.optim_state,
+    params = params,
+    optim_state = optim_state,
     config = config,
   })
-  if self.gpu_mode then 
-    self:set_gpu_mode()
-    if self.optim_state.paramStd ~= nil then
-      self.optim_state.paramStd = self.optim_state.paramStd:cuda()
-      self.optim_state.paramVariance = self.optim_state.paramVariance:cuda()
-    end
-    self.params:cuda()
-  end
+
+
 end
 
 -- returns model path representation based on the model configuration
