@@ -221,8 +221,8 @@ for i = 1, params.epochs do
 
   local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
-  print('writing model to ' .. model_save_path)
-  model:save(model_save_path)
+  -- print('writing model to ' .. model_save_path)
+  -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
