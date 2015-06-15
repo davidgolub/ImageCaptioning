@@ -18,7 +18,7 @@ function EmbedLayer:__init(config)
             :add(self.emb_table)
 
   if self.dropout then
-    self.emb:add(nn.Dropout(0.2))
+    self.emb:add(nn.Dropout(0.5))
   end
 
   self.params, self.grad_params = self.emb:getParameters()

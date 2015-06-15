@@ -5,9 +5,10 @@ mem_dim=${1-100}
 num_layers=${3-1}
 
 learning_rate=${5-0.1}
+optim_method=${6-adagrad}
 regularization=${4-1e-5}
-dropout=${6-}
-gpu_mode=${7-}
+dropout=${7-}
+gpu_mode=${8-}
 
 th image_captioning/main.lua \
 -batch_size 33 \
@@ -19,7 +20,7 @@ th image_captioning/main.lua \
 -hidden_module projlayer \
 -learning_rate $learning_rate \
 $dropout $gpu_mode \
--optim adagrad 
+-optim $optim_method
 
 # First argument is memory dimensions
 # Second argument is embed dimensions

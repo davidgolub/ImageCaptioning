@@ -168,7 +168,7 @@ end
 function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
-    caption_module:add(nn.Dropout(0.3))
+    caption_module:add(nn.Dropout(0.5))
   end
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
@@ -556,6 +556,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'LSTM memory dim', self.mem_dim)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
+  printf('%-25s = %s\n', 'optim method', self.optim_method)
   printf('%-25s = %d\n', 'number of classes', self.num_classes)
   printf('%-25s = %d\n', 'number of layers in lstm', self.num_layers)
   printf('%-25s = %s\n', 'combine module type', self.combine_module_type)
@@ -596,8 +597,6 @@ function ImageCaptioner:save(path)
     optim_state = optim_state,
     config = config,
   })
-
-
 end
 
 -- returns model path representation based on the model configuration
