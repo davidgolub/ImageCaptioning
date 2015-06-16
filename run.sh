@@ -1,4 +1,4 @@
-./train.sh 256 256 3 0 0.01 rmsprop -gpu_mode -dropout | tee -a "log_emblayer.txt"
+./train.sh 256 256 1 0 0.01 rmsprop -gpu_mode -dropout | tee -a "log_emblayer.txt"
 ./test.sh
 
 # ./train.sh 256 256 3 0 0.005 rmsprop -gpu_mode -dropout | tee -a "log_emblayer.txt"
