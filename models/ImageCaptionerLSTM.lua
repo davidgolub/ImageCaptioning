@@ -14,7 +14,7 @@ function ImageCaptionerLSTM:__init(config)
   self.gpu_mode = config.gpu_mode
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
-  self.lstm_layer =  imagelstm.LSTM_Full(config)
+  self.lstm_layer =  imagelstm.LSTM_Decoder(config)
   self.p = 0.3 -- for dropouts
 
   local modules = nn.Parallel()

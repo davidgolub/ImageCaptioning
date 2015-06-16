@@ -39,7 +39,7 @@ include('hidden_layers/HiddenProjLayer.lua')
 include('models/ImageCaptioner.lua')
 include('models/ImageCaptionerLSTM.lua')
 include('models/LSTM.lua')
-include('models/LSTM_Full.lua')
+include('models/LSTM_Decoder.lua')
 
 printf = utils.printf
 

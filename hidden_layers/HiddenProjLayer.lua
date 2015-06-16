@@ -45,8 +45,8 @@ function HiddenProjLayer:new_hidden_module()
         :add(nn.Linear(self.image_dim, self.proj_dim))
 
   if self.dropout then
-      cell_image_emb:add(nn.Dropout(0.4))
-      hidden_image_emb:add(nn.Dropout(0.4))
+      cell_image_emb:add(nn.Dropout(0.2))
+      hidden_image_emb:add(nn.Dropout(0.2))
   end
   return cell_image_emb, hidden_image_emb
 end
