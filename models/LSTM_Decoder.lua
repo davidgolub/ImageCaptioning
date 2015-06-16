@@ -181,9 +181,9 @@ LSTM GEMMs, as also seen in my efficient Python LSTM gist.
  
   local cell = nn.gModule({x, prev_c, prev_h}, {next_c, next_h})
     -- share parameters
-  if self.master_cell then
-    share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
-  end
+  --if self.master_cell then
+  --  share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
+  -- end
   return cell
 end
 
