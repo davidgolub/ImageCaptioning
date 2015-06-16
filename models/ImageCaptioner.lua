@@ -256,10 +256,10 @@ function ImageCaptioner:train(dataset)
       return loss, self.grad_params
     end
     -- check gradients for lstm layer
-    -- diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
-    -- print("Gradient error for lstm captioner is")
-    -- print(diff)
-    -- assert(diff < 1e-5, "Gradient is greater than tolerance")
+    --diff, DC, DC_est = optim.checkgrad(feval, self.params, 1e-7)
+    --print("Gradient error for lstm captioner is")
+    --print(diff)
+    --assert(diff < 1e-5, "Gradient is greater than tolerance")
 
     self.optim_method(feval, self.params, self.optim_state)
   end

@@ -11,7 +11,7 @@ function LSTM:__init(config)
   self.in_dim = config.in_dim
   self.mem_dim = config.mem_dim or 150
   self.num_layers = config.num_layers or 1
-  self.gate_output = config.gate_output
+  self.gate_output = config.gate_output or true
   self.gpu_mode = config.gpu_mode or false
 
   if self.gate_output == nil then self.gate_output = true end
@@ -94,11 +94,12 @@ end
 -- layers differ.
 
 function LSTM:new_cell()
- return self:old_lstm()
+ return self:fast_lstm(self.in_dim, self.mem_dim)
+ --return self:old_lstm()
 end
 
 function LSTM:old_lstm()
-   local input = nn.Identity()()
+  local input = nn.Identity()()
   local ctable_p = nn.Identity()()
   local htable_p = nn.Identity()()
 
@@ -156,34 +157,52 @@ LSTM GEMMs, as also seen in my efficient Python LSTM gist.
 --]]
  
  function LSTM:fast_lstm(input_size, rnn_size)
-  local x = nn.Identity()()
-  local prev_c = nn.Identity()()
-  local prev_h = nn.Identity()()
+  local input = nn.Identity()()
+  local ctable_p = nn.Identity()()
+  local htable_p = nn.Identity()()
+
+  -- multilayer LSTM
+  local htable, ctable = {}, {}
+  for layer = 1, self.num_layers do
+    local h_p = (self.num_layers == 1) and htable_p or nn.SelectTable(layer)(htable_p)
+    local c_p = (self.num_layers == 1) and ctable_p or nn.SelectTable(layer)(ctable_p)
+
+    local new_gate = function()
+      local in_module = (layer == 1)
+        and nn.Linear(input_size, 4 * rnn_size)(input)
+        or  nn.Linear(rnn_size, 4 * rnn_size)(htable[layer - 1])
+      return nn.CAddTable(){
+        in_module,
+        nn.Linear(rnn_size, 4 * rnn_size)(h_p)
+      }
+    end
+
+    local all_input_sums = new_gate()
+    local sigmoid_chunk = nn.Narrow(1, 1, 3 * rnn_size)(all_input_sums)
+    sigmoid_chunk = nn.Sigmoid()(sigmoid_chunk)
+    local in_gate = nn.Narrow(1, 1, rnn_size)(sigmoid_chunk)
+    local forget_gate = nn.Narrow(1, rnn_size + 1, rnn_size)(sigmoid_chunk)
+    local out_gate = nn.Narrow(1, 2 * rnn_size + 1, rnn_size)(sigmoid_chunk)
  
-  local i2h = nn.Linear(input_size, 4 * rnn_size)(x)
-  local h2h = nn.Linear(rnn_size, 4 * rnn_size)(prev_h)
-  local all_input_sums = nn.CAddTable()({i2h, h2h})
+    local in_transform = nn.Narrow(1, 3 * rnn_size + 1, rnn_size)(all_input_sums)
+    in_transform = nn.Tanh()(in_transform)
  
-  local sigmoid_chunk = nn.Narrow(2, 1, 3 * rnn_size)(all_input_sums)
-  sigmoid_chunk = nn.Sigmoid()(sigmoid_chunk)
-  local in_gate = nn.Narrow(2, 1, rnn_size)(sigmoid_chunk)
-  local forget_gate = nn.Narrow(2, rnn_size + 1, rnn_size)(sigmoid_chunk)
-  local out_gate = nn.Narrow(2, 2 * rnn_size + 1, rnn_size)(sigmoid_chunk)
- 
-  local in_transform = nn.Narrow(2, 3 * rnn_size + 1, rnn_size)(all_input_sums)
-  in_transform = nn.Tanh()(in_transform)
- 
-  local next_c           = nn.CAddTable()({
-      nn.CMulTable()({forget_gate, prev_c}),
+    ctable[layer] = nn.CAddTable()({
+      nn.CMulTable()({forget_gate, c_p}),
       nn.CMulTable()({in_gate,     in_transform})
     })
-  local next_h           = nn.CMulTable()({out_gate, nn.Tanh()(next_c)})
- 
-  local cell = nn.gModule({x, prev_c, prev_h}, {next_c, next_h})
-    -- share parameters
-  --if self.master_cell then
-  --  share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
-  -- end
+    htable[layer] = nn.CMulTable()({out_gate, nn.Tanh()(ctable[layer])})
+  end
+
+  -- if LSTM is single-layered, this makes htable/ctable Tensors (instead of tables).
+  -- this avoids some quirks with nngraph involving tables of size 1.
+  htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
+  local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
+
+  -- share parameters
+  if self.master_cell then
+    share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
+  end
   return cell
 end
 
@@ -222,7 +241,6 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
       prev_output = hidden_inputs
     end
     local cell_inputs = {input, prev_output[1], prev_output[2]}
-
     local outputs = cell:forward(cell_inputs)
     local ctable, htable = unpack(outputs)
     if self.num_layers == 1 then

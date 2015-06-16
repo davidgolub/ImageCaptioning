@@ -191,7 +191,7 @@ header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
 
-  if curr_epoch % 20 == 2 then
+  if curr_epoch % 20 == 10 then
     evaluate_results()
   end
 
