@@ -25,7 +25,7 @@ th image_captioning/main.lua \
 -in_dropout_prob $in_dropout_prob \
 -hidden_dropout_prob $hidden_dropout_prob \
 -learning_rate $learning_rate \
--beam_size $beam_size
+-beam_size $beam_size \
 $dropout $gpu_mode \
 -optim $optim_method
 
