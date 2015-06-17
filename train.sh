@@ -9,9 +9,9 @@ optim_method=${6-adagrad}
 regularization=${4-1e-5}
 in_dropout_prob=${7-0.2}
 hidden_dropout_prob=${8-0.5}
-
-dropout=${9-}
-gpu_mode=${10-}
+beam_size=${9-6}
+dropout=${10-}
+gpu_mode=${11-}
 
 
 th image_captioning/main.lua \
@@ -25,6 +25,7 @@ th image_captioning/main.lua \
 -in_dropout_prob $in_dropout_prob \
 -hidden_dropout_prob $hidden_dropout_prob \
 -learning_rate $learning_rate \
+-beam_size $beam_size
 $dropout $gpu_mode \
 -optim $optim_method
 
