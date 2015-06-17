@@ -17,6 +17,7 @@ cmd:option('-epochs', 10,'number of epochs')
 cmd:option('-dropout', false, 'use dropout')
 cmd:option('-load_model', false, 'load model')
 cmd:option('-batch_size', 33, 'batch_size')
+cmd:option('-beam_size', 3, 'beam size for predictions')
 cmd:option('-image_dim', 1024, 'input image size into captioner')
 cmd:option('-emb_dim', 100, 'embedding size')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
@@ -142,16 +143,16 @@ function evaluate(model, beam_size, dataset, save_path)
 end
 
 -- Calculates BLEU scores on train, test and val sets
-function evaluate_results()
+function evaluate_results(beam_size)
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, 5, test_dataset, 'predictions/bleu/output_test.pred')
+  evaluate(model, beam_size, test_dataset, 'predictions/bleu/output_test.pred')
 
   header('Evaluating on train set')
   --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, 5, val_dataset, 'predictions/bleu/output_val.pred')
+  evaluate(model, beam_size, val_dataset, 'predictions/bleu/output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -190,8 +191,8 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-  if curr_epoch % 20 == 10 then
-    evaluate_results()
+  if curr_epoch % 20 == 5 then
+    evaluate_results(params.beam_size)
   end
 
   local start = sys.clock()
@@ -213,7 +214,7 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  local test_predictions = model:predict_dataset(test_dataset, 5, 30)
+  local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
