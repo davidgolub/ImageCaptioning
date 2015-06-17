@@ -15,7 +15,7 @@ gpu_mode=${11-}
 
 
 th image_captioning/main.lua \
--batch_size 33 \
+-batch_size 100 \
 -mem_dim $mem_dim \
 -emb_dim $emb_dim \
 -epochs 100 \
