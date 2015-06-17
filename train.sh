@@ -7,8 +7,12 @@ num_layers=${3-1}
 learning_rate=${5-0.1}
 optim_method=${6-adagrad}
 regularization=${4-1e-5}
-dropout=${7-}
-gpu_mode=${8-}
+in_dropout_prob=${7-0.2}
+hidden_dropout_prob=${8-0.5}
+
+dropout=${9-}
+gpu_mode=${10-}
+
 
 th image_captioning/main.lua \
 -batch_size 33 \
@@ -18,6 +22,8 @@ th image_captioning/main.lua \
 -num_layers $num_layers \
 -combine_module embedlayer \
 -hidden_module projlayer \
+-in_dropout_prob $in_dropout_prob \
+-hidden_dropout_prob $hidden_dropout_prob \
 -learning_rate $learning_rate \
 $dropout $gpu_mode \
 -optim $optim_method

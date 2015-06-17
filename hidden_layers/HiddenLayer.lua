@@ -7,11 +7,17 @@
 local HiddenLayer = torch.class('imagelstm.HiddenLayer')
 
 function HiddenLayer:__init(config)
+   assert(config.image_dim ~= nil)
+   assert(config.mem_dim ~= nil)
+   assert(config.dropout_prob ~= nil)
+   assert(config.num_layers ~= nil)
+
    self.gpu_mode = config.gpu_mode or false
-   self.image_dim = config.image_dim or 1024
-   self.proj_dim = config.mem_dim or 300
+   self.image_dim = config.image_dim
+   self.proj_dim = config.mem_dim
+   self.dropout_prob = config.dropout_prob
    self.dropout = config.dropout and false or config.dropout
-   self.num_layers = config.num_layers or 1 -- how many layers in the lstm
+   self.num_layers = config.num_layers
 end
 
 -- Returns all of the weights of this module

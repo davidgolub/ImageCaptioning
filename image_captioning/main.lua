@@ -28,6 +28,8 @@ cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlay
 cmd:option('-hidden_module', 'hiddenlayer', '[hiddenlayer]')
 cmd:option('-model_epoch', 98, 'epoch to load model from')
 cmd:option('-num_layers', 4, 'number of layers in lstm network')
+cmd:option('-in_dropout_prob', 0.5, 'probability of input dropout')
+cmd:option('-hidden_dropout_prob', 0.5, 'probability of hidden dropout')
 cmd:text()
 
 -- parse input params
@@ -111,6 +113,8 @@ local model = imagelstm.ImageCaptioner{
   optim_method = opt_method,
   --emb_vecs = vecs,
   vocab = vocab,
+  hidden_dropout_prob = params.hidden_dropout_prob,
+  in_dropout_prob = params.in_dropout_prob,
   dropout = params.dropout,
   num_layers = params.num_layers,
   num_classes = vocab.size,

@@ -7,9 +7,14 @@
 local InputLayer = torch.class('imagelstm.InputLayer')
 
 function InputLayer:__init(config)
+  assert(config.emb_dim ~= nil)
+  assert(config.num_classes ~= nil)
+  assert(config.dropout_prob ~= nil)
+
   self.gpu_mode = config.gpu_mode or false
   self.emb_dim = config.emb_dim or 300
   self.vocab_size = config.num_classes or 300
+  self.dropout_prob = config.dropout_prob or 0.5
   if config.emb_vecs ~= nil then
     self.vocab_size = config.emb_vecs:size(1)
   end

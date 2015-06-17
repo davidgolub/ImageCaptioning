@@ -23,6 +23,9 @@ function ImageCaptioner:__init(config)
   self.optim_state             = config.optim_state or {learning_rate = self.learning_rate}
   self.num_layers              = config.num_layers or 1
   self.vocab                   = config.vocab
+  self.in_dropout_prob         = config.in_dropout_prob
+  self.hidden_dropout_prob     = config.hidden_dropout_prob
+
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
   end
@@ -46,6 +49,7 @@ function ImageCaptioner:__init(config)
     output_module_fn = self:new_caption_module(),
     criterion = nn.ClassNLLCriterion()
   }
+
 
   -- set gpu mode
   if self.gpu_mode then
@@ -80,7 +84,8 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
-      dropout = self.dropout
+      dropout = self.dropout,
+      dropout_prob = self.in_dropout_prob
     }
   elseif combine_module_type == "concatlayer" then
     layer = imagelstm.ConcatLayer{
@@ -88,7 +93,8 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
-      dropout = self.dropout
+      dropout = self.dropout,
+      dropout_prob = self.in_dropout_prob
     }
   elseif combine_module_type == "singleaddlayer" then
     layer = imagelstm.SingleAddLayer{
@@ -96,7 +102,8 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
-      dropout = self.dropout
+      dropout = self.dropout,
+      dropout_prob = self.in_dropout_prob
     }
   elseif combine_module_type == "concatprojlayer" then
     layer = imagelstm.ConcatProjLayer{
@@ -104,14 +111,16 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
       emb_dim = self.emb_dim,
       image_dim = self.image_dim,
       vocab_size = self.num_classes,
-      dropout = self.dropout
+      dropout = self.dropout,
+      dropout_prob = self.in_dropout_prob
     }
   elseif combine_module_type == "embedlayer" then
     layer = imagelstm.EmbedLayer{  
     emb_dim = self.emb_dim,
     num_classes = self.num_classes,
     gpu_mode = self.gpu_mode,
-    dropout = self.dropout
+    dropout = self.dropout,
+    dropout_prob = self.in_dropout_prob
     }
   else -- module not recognized
     error("Did not recognize input module type", combine_module_type)
@@ -132,7 +141,8 @@ function ImageCaptioner:get_hidden_layer(hidden_module_type)
       image_dim = self.image_dim,
       mem_dim = self.mem_dim,
       num_layers = self.num_layers,
-      dropout = self.dropout
+      dropout = self.dropout,
+      dropout_prob = self.hidden_dropout_prob
     }
   else 
     error("Did not recognize hidden module type", hidden_module_type)
@@ -556,6 +566,8 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'LSTM memory dim', self.mem_dim)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
+  printf('%-25s = %.2e\n', 'input layer dropout prob', self.in_dropout_prob)
+  printf('%-25s = %.2e\n', 'hidden layer dropout prob', self.hidden_dropout_prob)
   printf('%-25s = %s\n', 'optim method', self.optim_method)
   printf('%-25s = %d\n', 'number of classes', self.num_classes)
   printf('%-25s = %d\n', 'number of layers in lstm', self.num_layers)
@@ -580,7 +592,9 @@ function ImageCaptioner:save(path)
     combine_module    = self.combine_module_type,
     hidden_module     = self.hidden_module_type,
     num_layers        = self.num_layers,
-    vocab             = self.vocab
+    vocab             = self.vocab,
+    in_dropout_prob   = self.in_dropout_prob,
+    hidden_dropout_prob = self.hidden_dropout_prob,
   }
 
   local params = self.params

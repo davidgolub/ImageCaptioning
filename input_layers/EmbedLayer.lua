@@ -14,11 +14,12 @@ function EmbedLayer:__init(config)
     self.emb_table.weight:copy(config.emb_vecs)
   end
 
+  print("Embed layer ", self.dropout_prob)
   self.emb = nn.Sequential()
             :add(self.emb_table)
 
   if self.dropout then
-    self.emb:add(nn.Dropout(0.2))
+    self.emb:add(nn.Dropout(self.dropout_prob))
   end
 
   self.params, self.grad_params = self.emb:getParameters()

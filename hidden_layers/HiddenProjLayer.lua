@@ -31,6 +31,7 @@ function HiddenProjLayer:__init(config)
     end
    end
 
+   print("Hidden layer", self.dropout_prob)
    self.params, self.grad_params = modules:getParameters()
 
   if gpu_mode then
@@ -45,8 +46,8 @@ function HiddenProjLayer:new_hidden_module()
         :add(nn.Linear(self.image_dim, self.proj_dim))
 
   if self.dropout then
-      cell_image_emb:add(nn.Dropout(0.2))
-      hidden_image_emb:add(nn.Dropout(0.2))
+      cell_image_emb:add(nn.Dropout(self.dropout_prob))
+      hidden_image_emb:add(nn.Dropout(self.dropout_prob))
   end
   return cell_image_emb, hidden_image_emb
 end
