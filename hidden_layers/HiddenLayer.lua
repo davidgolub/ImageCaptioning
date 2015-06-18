@@ -22,25 +22,31 @@ end
 
 -- Returns all of the weights of this module
 function HiddenLayer:getWeights()
+   error("Get weights not implemented!")
 end
 
 -- Returns all the nn modules of this layer as an array
 function HiddenLayer:getModules() 
+   error("Get modules not implemented!")
 end
 
 -- Sets gpu mode
 function HiddenLayer:set_gpu_mode()
+   error("Set gpu mode not implemented!")
 end
 
 function HiddenLayer:set_cpu_mode()
+   error("Set cpu mode not implemented!")
 end
 
 -- Enable Dropouts
 function HiddenLayer:enable_dropouts()
+   error("Enable dropouts not implemented!")
 end
 
 -- Disable Dropouts
 function HiddenLayer:disable_dropouts()
+   error("Disable dropouts not implemented!")
 end
 
 -- Does a single forward step of hidden layer, which
@@ -48,6 +54,7 @@ end
 -- Where first state corresponds to cell state, second state
 -- corresponds to first hidden state
 function HiddenLayer:forward(inputs)
+   error("Forward not implemented!")
 end
 
 -- Does a single backward step of hidden layer
@@ -55,20 +62,25 @@ end
 -- cell inputs of lstm, second input is error with respect to hidden inputs
 -- of lstm
 function HiddenLayer:backward(inputs, cell_errors)
+   error("Backward not implemented!")
 end
 
 -- Returns size of outputs of this hidden module
 function HiddenLayer:getOutputSize()
+   error("Get output size not implemented!")
 end
 
 -- Returns parameters of this model: parameters and gradients
 function HiddenLayer:getParameters()
+   error("Get parameters not implemented!")
 end
 
 -- zeros out the gradients
 function HiddenLayer:zeroGradParameters() 
+   error("Zero grad parameters not implemented!")
 end
 
 function HiddenLayer:normalizeGrads(batch_size)
+   error("Normalize gradients not implemented!")
 end
 

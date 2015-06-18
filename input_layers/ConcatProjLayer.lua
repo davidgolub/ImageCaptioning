@@ -5,15 +5,13 @@
 
 --]]
 
-local ConcatProjLayer, parent = torch.class('imagelstm.ConcatProjLayer, imagelstm.InputLayer')
+local ConcatProjLayer, parent = torch.class('imagelstm.ConcatProjLayer', 'imagelstm.InputLayer')
 
 function ConcatProjLayer:__init(config)
    parent.__init(self, config)
-   self.proj_dim = config.proj_dim or 300
-
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
    -- image feature embedding
-   self.image_emb = nn.Linear(self.image_dim, self.proj_dim)
+   self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
    self.combine_model = nn.Sequential()
                       :add(imagelstm.CRowJoinTable(2))
    if self.dropout then
@@ -97,11 +95,15 @@ end
 
 -- Returns size of outputs of this combine module
 function ConcatProjLayer:getOutputSize()
-  return self.emb_dim + self.proj_dim
+  return self.emb_dim + self.emb_dim
 end
 
 function ConcatProjLayer:getParameters()
   return self.params, self.grad_params
+end
+
+function ConcatProjLayer:getModules() 
+  return {self.emb, self.image_emb}
 end
 
 -- zeros out the gradients

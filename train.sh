@@ -10,8 +10,9 @@ regularization=${4-1e-5}
 in_dropout_prob=${7-0.2}
 hidden_dropout_prob=${8-0.5}
 beam_size=${9-6}
-dropout=${10-}
-gpu_mode=${11-}
+combine_module=${10-embedlayer}
+dropout=${11-}
+gpu_mode=${12-}
 
 
 th image_captioning/main.lua \
@@ -20,7 +21,7 @@ th image_captioning/main.lua \
 -emb_dim $emb_dim \
 -epochs 100 \
 -num_layers $num_layers \
--combine_module embedlayer \
+-combine_module $combine_module \
 -hidden_module projlayer \
 -in_dropout_prob $in_dropout_prob \
 -hidden_dropout_prob $hidden_dropout_prob \

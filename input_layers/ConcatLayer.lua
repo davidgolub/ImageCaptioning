@@ -5,7 +5,7 @@
 
 --]]
 
-local ConcatLayer, parent = torch.class('imagelstm.ConcatLayer, imagelstm.InputLayer')
+local ConcatLayer, parent = torch.class('imagelstm.ConcatLayer', 'imagelstm.InputLayer')
 
 function ConcatLayer:__init(config)
    parent.__init(self, config)

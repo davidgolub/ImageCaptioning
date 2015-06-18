@@ -79,40 +79,40 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
   assert(combine_module_type ~= nil)
   local layer
   if combine_module_type == "addlayer" then
-    layer = imagelstm.AddLayer{
-      gpu_mode = self.gpu_mode,
+      layer = imagelstm.AddLayer{
       emb_dim = self.emb_dim,
-      image_dim = self.image_dim,
-      vocab_size = self.num_classes,
+      num_classes = self.num_classes,
+      gpu_mode = self.gpu_mode,
       dropout = self.dropout,
-      dropout_prob = self.in_dropout_prob
+      dropout_prob = self.in_dropout_prob,
+      image_dim = self.image_dim
     }
   elseif combine_module_type == "concatlayer" then
     layer = imagelstm.ConcatLayer{
-      gpu_mode = self.gpu_mode,
       emb_dim = self.emb_dim,
-      image_dim = self.image_dim,
-      vocab_size = self.num_classes,
+      num_classes = self.num_classes,
+      gpu_mode = self.gpu_mode,
       dropout = self.dropout,
-      dropout_prob = self.in_dropout_prob
+      dropout_prob = self.in_dropout_prob,
+      image_dim = self.image_dim  
     }
   elseif combine_module_type == "singleaddlayer" then
     layer = imagelstm.SingleAddLayer{
-      gpu_mode = self.gpu_mode,
       emb_dim = self.emb_dim,
-      image_dim = self.image_dim,
-      vocab_size = self.num_classes,
+      num_classes = self.num_classes,
+      gpu_mode = self.gpu_mode,
       dropout = self.dropout,
-      dropout_prob = self.in_dropout_prob
+      dropout_prob = self.in_dropout_prob,
+      image_dim = self.image_dim
     }
   elseif combine_module_type == "concatprojlayer" then
     layer = imagelstm.ConcatProjLayer{
-      gpu_mode = self.gpu_mode,
       emb_dim = self.emb_dim,
-      image_dim = self.image_dim,
-      vocab_size = self.num_classes,
+      num_classes = self.num_classes,
+      gpu_mode = self.gpu_mode,
       dropout = self.dropout,
-      dropout_prob = self.in_dropout_prob
+      dropout_prob = self.in_dropout_prob,
+      image_dim = self.image_dim
     }
   elseif combine_module_type == "embedlayer" then
     layer = imagelstm.EmbedLayer{  
@@ -120,7 +120,8 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
     num_classes = self.num_classes,
     gpu_mode = self.gpu_mode,
     dropout = self.dropout,
-    dropout_prob = self.in_dropout_prob
+    dropout_prob = self.in_dropout_prob,
+    image_dim = self.image_dim
     }
   else -- module not recognized
     error("Did not recognize input module type", combine_module_type)
@@ -264,7 +265,7 @@ function ImageCaptioner:train(dataset)
       -- self.grad_params:add(self.reg, self.params)
       -- print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
-      -- currIndex = currIndex + 1
+      currIndex = currIndex + 1
       return loss, self.grad_params
     end
     -- check gradients for lstm layer
