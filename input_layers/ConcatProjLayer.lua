@@ -45,7 +45,7 @@ function ConcatProjLayer:getWeights()
 end
 
 function ConcatProjLayer:getModules() 
-  return {self.emb, self.image_emb, self.combine_model}
+  return {self.emb, self.image_emb}
 end
 
 -- Sets gpu mode

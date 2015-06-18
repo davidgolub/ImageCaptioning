@@ -371,7 +371,7 @@ function ImageCaptioner:predict(image_features, beam_size)
    assert(next_token ~= nil)
    assert(prev_outputs ~= nil)
 
-   local inputs = self.combine_layer:forward(next_token)
+   local inputs = self.combine_layer:forward(next_token, image_features)
    local inputs = torch.squeeze(inputs)
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
