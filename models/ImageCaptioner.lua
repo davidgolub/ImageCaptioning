@@ -257,6 +257,8 @@ function ImageCaptioner:train(dataset)
       loss = loss / batch_size
       self.grad_params:div(batch_size)
 
+      -- clamp grad params in accordance to karpathy from -5 to 5
+      self.grad_params:clamp(-5, 5)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)

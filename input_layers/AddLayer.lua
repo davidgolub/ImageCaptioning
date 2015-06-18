@@ -4,17 +4,12 @@
   at each step
 --]]
 
-local AddLayer = torch.class('imagelstm.AddLayer')
+local AddLayer, parent = torch.class('imagelstm.AddLayer', 'imagelstm.InputLayer')
 
 function AddLayer:__init(config)
-   self.gpu_mode = config.gpu_mode or false
-   self.emb_dim = config.emb_dim or 300
-   self.image_dim = config.image_dim or 1024
-   self.vocab_size = config.num_classes or 300
+   parent.__init(self, config)
 
-   if config.emb_vecs ~= nil then
-    self.vocab_size = config.emb_vecs:size(1)
-   end
+   -- word embeddings
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
 
    -- image feature embedding
@@ -25,7 +20,11 @@ function AddLayer:__init(config)
    local x2 = nn.Identity(self.emb_dim)()
    local a = imagelstm.CRowAddTable()({x1, x2})
   
-   self.lstm_emb = nn.gModule({x1, x2}, {a})
+   self.lstm_emb = nn.Sequential()
+              :add(nn.gModule({x1, x2}, {a}))
+   if self.dropout then
+      self.lstm_emb:add(nn.Dropout(self.dropout_prob))
+  end
 
    local modules = nn.Parallel()
     :add(self.image_emb)
@@ -54,7 +53,6 @@ function AddLayer:set_gpu_mode()
   self.image_emb:cuda()
   self.emb:cuda()
   self.lstm_emb:cuda()
-  self.params:cuda()
 end
 
 -- Returns all of the weights of this module
@@ -65,6 +63,23 @@ end
 function AddLayer:getModules() 
   return {self.image_emb, self.emb}
 end
+
+function AddLayer:set_cpu_mode()
+  self.emb:double()
+  self.lstm_emb:double()
+  self.image_emb:double()
+end
+
+-- Enable Dropouts
+function AddLayer:enable_dropouts()
+   enable_sequential_dropouts(self.lstm_emb)
+end
+
+-- Disable Dropouts
+function AddLayer:disable_dropouts()
+   disable_sequential_dropouts(self.lstm_emb)
+end
+
 
 -- Does a single forward step of add layer
 -- Word indeces: input tensor of word indeces

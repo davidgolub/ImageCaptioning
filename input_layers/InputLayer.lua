@@ -18,6 +18,7 @@ function InputLayer:__init(config)
   if config.emb_vecs ~= nil then
     self.vocab_size = config.emb_vecs:size(1)
   end
+  self.image_dim = config.image_dim or 1024
   self.dropout = config.dropout and false or config.dropout
 end
 

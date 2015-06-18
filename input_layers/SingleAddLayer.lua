@@ -4,17 +4,10 @@
   at first time step, then just word embeddings
 --]]
 
-local SingleAddLayer = torch.class('imagelstm.SingleAddLayer')
+local SingleAddLayer, parent = torch.class('imagelstm.SingleAddLayer', 'imagelstm.InputLayer')
 
 function SingleAddLayer:__init(config)
-   self.gpu_mode = config.gpu_mode or false
-   self.emb_learning_rate  = config.emb_learning_rate or 0.01
-   self.emb_dim = config.emb_dim or 300
-   self.image_dim = config.image_dim or 1024
-   self.vocab_size = config.num_classes or 300
-   if config.emb_vecs ~= nil then
-    self.vocab_size = config.emb_vecs:size(1)
-   end
+   parent.__init(self, config)
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
 
    -- image feature embedding
@@ -25,8 +18,12 @@ function SingleAddLayer:__init(config)
    local x2 = nn.Identity(self.emb_dim)()
    local a = imagelstm.CRowSingleTable()({x1, x2})
   
-   self.lstm_emb = nn.gModule({x1, x2}, {a})
+   self.lstm_emb = nn.Sequential():
+                add(nn.gModule({x1, x2}, {a}))
 
+   if self.dropout then
+    self.lstm_emb:add(nn.Dropout(self.dropout_prob))
+   end
    local modules = nn.Parallel()
     :add(self.image_emb)
     :add(self.emb)
@@ -36,17 +33,6 @@ function SingleAddLayer:__init(config)
    if self.gpu_mode then 
     self:set_gpu_mode()
    end
-
-   if config.emb_vecs ~= nil then
-    self.emb.weight:copy(config.emb_vecs)
-   end
-
-   -- Copy the image embedding vectors
-   if config.combine_weights ~= nil then
-     print("Copying combine weights")
-     self.params:copy(config.combine_weights)
-   end
-
 end
 
 -- Sets gpu mode
@@ -55,6 +41,24 @@ function SingleAddLayer:set_gpu_mode()
   self.emb:cuda()
   self.lstm_emb:cuda()
   self.params:cuda()
+end
+
+-- Sets cpu mode
+function SingleAddLayer:set_cpu_mode()
+  self.image_emb:double()
+  self.emb:double()
+  self.lstm_emb:double()
+  self.params:double()
+end
+
+-- Enable Dropouts
+function SingleAddLayer:enable_dropouts()
+   enable_sequential_dropouts(self.lstm_emb)
+end
+
+-- Disable Dropouts
+function SingleAddLayer:disable_dropouts()
+   disable_sequential_dropouts(self.lstm_emb)
 end
 
 -- Returns the trainable modules of this layer

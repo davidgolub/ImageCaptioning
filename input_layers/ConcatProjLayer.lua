@@ -5,24 +5,20 @@
 
 --]]
 
-local ConcatProjLayer = torch.class('imagelstm.ConcatProjLayer')
+local ConcatProjLayer, parent = torch.class('imagelstm.ConcatProjLayer, imagelstm.InputLayer')
 
 function ConcatProjLayer:__init(config)
-   self.emb_learning_rate       = config.emb_learning_rate or 0.01
-   self.gpu_mode = config.gpu_mode or false
-   self.emb_dim = config.emb_dim or 300
-   self.image_dim = config.image_dim or 1024
+   parent.__init(self, config)
    self.proj_dim = config.proj_dim or 300
-   self.vocab_size = config.num_classes or 2944
-
-   if config.emb_vecs ~= nil then
-    self.vocab_size = config.emb_vecs:size(1)
-   end
 
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.proj_dim)
-   self.combine_model = imagelstm.CRowJoinTable(2)
+   self.combine_model = nn.Sequential()
+                      :add(imagelstm.CRowJoinTable(2))
+   if self.dropout then
+     self.combine_model:add(nn.Dropout(self.dropout_prob))
+   end
 
    local modules = nn.Parallel()
     :add(self.image_emb)
@@ -51,7 +47,7 @@ function ConcatProjLayer:getWeights()
 end
 
 function ConcatProjLayer:getModules() 
-  return {self.emb, self.image_emb}
+  return {self.emb, self.image_emb, self.combine_model}
 end
 
 -- Sets gpu mode
@@ -61,6 +57,22 @@ function ConcatProjLayer:set_gpu_mode()
   self.emb:cuda()
 end
 
+-- Sets cpu mode
+function ConcatProjLayer:set_cpu_mode()
+  self.image_emb:double()
+  self.combine_model:double()
+  self.emb:double()
+end
+
+-- Enable Dropouts
+function ConcatProjLayer:enable_dropouts()
+   enable_sequential_dropouts(self.combine_model)
+end
+
+-- Disable Dropouts
+function ConcatProjLayer:disable_dropouts()
+   disable_sequential_dropouts(self.combine_model)
+end
 
 -- Does a single forward step of concat layer, concatenating
 -- Input 
