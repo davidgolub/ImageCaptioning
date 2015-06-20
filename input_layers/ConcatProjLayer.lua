@@ -38,7 +38,6 @@ function ConcatProjLayer:__init(config)
      self.params:copy(config.combine_weights)
    end
 
-  print(gpu_mode)
   if self.gpu_mode then
     self:set_gpu_mode()
   end

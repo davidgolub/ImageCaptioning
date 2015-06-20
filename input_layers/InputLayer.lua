@@ -54,6 +54,7 @@ end
 function InputLayer:forward(word_indices, image_feats)
    assert(word_indices ~= nil)
    assert(image_feats ~= nil)
+    print("Gpu mode for forward step", self.gpu_mode)
 	 local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
    check_type(image_feats, cuda_type)
    check_type(word_indices, 'torch.IntTensor')
