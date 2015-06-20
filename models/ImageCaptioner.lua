@@ -371,7 +371,7 @@ function ImageCaptioner:predict(image_features, beam_size)
   local next_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{1}
 
   -- Terminate when predict the END token
-  local end_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{2}
+  local end_token = self.gpu_mode and torch.CudaTensor{2} or torch.IntTensor{2}
 
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = self.hidden_layer:forward(image_features)
@@ -409,7 +409,8 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- then initialize our tokens list
     for i = 1, beam_size do
       local next_token = best_indices[i]
-      local copied_outputs = self:copy(next_outputs)
+      --local copied_outputs = self:copy(next_outputs)
+      local copied_outputs = next_outputs
       local curr_beam = {class_predictions[next_token], {next_token}, copied_outputs}
       table.insert(beams, curr_beam)
     end
