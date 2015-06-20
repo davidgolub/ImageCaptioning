@@ -184,7 +184,7 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-  if curr_epoch % 10 == 0 then
+  if curr_epoch % 10 == 1 then
     evaluate_results(params.beam_size)
   end
 
