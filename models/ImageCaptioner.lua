@@ -230,13 +230,6 @@ function ImageCaptioner:train(dataset)
         local sentence = dataset.sentences[idx]
         local out_sentence = dataset.pred_sentences[idx]
 
-
-        if self.gpu_mode then
-          sentence = sentence:cuda()
-          out_sentence = out_sentence:cuda()
-          image_feats = image_feats:cuda()
-        end
-
         -- get text/image inputs
         local inputs = self.combine_layer:forward(sentence, image_feats)
         local hidden_inputs = self.hidden_layer:forward(image_feats)
@@ -312,13 +305,6 @@ function ImageCaptioner:eval(dataset)
         -- get input and output sentences
         local sentence = dataset.sentences[idx]
         local out_sentence = dataset.pred_sentences[idx]
-
-
-        if self.gpu_mode then
-          sentence = sentence:cuda()
-          out_sentence = out_sentence:cuda()
-          image_feats = image_feats:cuda()
-        end
 
         -- get text/image inputs
         local inputs = self.combine_layer:forward(sentence, image_feats)
