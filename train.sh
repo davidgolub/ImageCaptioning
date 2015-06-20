@@ -1,7 +1,7 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
-emb_dim=${2-50}
-mem_dim=${1-100}
+emb_dim=${2-2}
+mem_dim=${1-3}
 num_layers=${3-1}
 
 learning_rate=${5-0.1}
@@ -16,7 +16,7 @@ gpu_mode=${12-}
 
 th image_captioning/main.lua \
 -batch_size 100 \
--dataset flickr8k \
+-dataset coco \
 -mem_dim $mem_dim \
 -emb_dim $emb_dim \
 -epochs 100 \

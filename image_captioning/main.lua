@@ -184,9 +184,9 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-
   local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
+  local train_loss = model:eval(train_dataset)
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)

@@ -139,20 +139,24 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
       for j = 1, #curr_sentences do
         local split = curr_sentences[j]['split']
         local tokens = curr_sentences[j]['tokens']
-        table.insert(tokens, "</s>")
 
-        -- first get labels for sentence
-        local out_ids = vocab:map(tokens)
+        if #tokens < 100 then
+          table.insert(tokens, "</s>")
 
-        -- then get input sentence stuff: off by one language model
-        table.insert(tokens, 1, "<s>")
-        table.remove(tokens)
-        local in_ids = vocab:map(tokens)
+          -- first get labels for sentence
+          local out_ids = vocab:map(tokens)
+
+          -- then get input sentence stuff: off by one language model
+          table.insert(tokens, 1, "<s>")
+          table.remove(tokens)
+          local in_ids = vocab:map(tokens)
         
-        -- then make a new one with special start symbol
-        table.insert(image_ids, curr_imgid)
-        table.insert(out_sentences, out_ids)
-        table.insert(sentences, in_ids)
+          -- then make a new one with special start symbol
+          table.insert(image_ids, curr_imgid)
+          table.insert(out_sentences, out_ids)
+          table.insert(sentences, in_ids)
+        end
+        
       end
     end
   end
