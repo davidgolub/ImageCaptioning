@@ -53,8 +53,8 @@ end
 -- projects inputs into hidden state for lstm. Returns an array
 -- Where first state corresponds to cell state, second state
 -- corresponds to first hidden state
-function HiddenLayer:forward(inputs)
-   local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+function HiddenLayer:forward(inputs, gpu_mode)
+   local cuda_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
    check_type(hidden, cuda_type)
 end
 
@@ -62,8 +62,8 @@ end
 -- Cell errors is an array where first input is error with respect to 
 -- cell inputs of lstm, second input is error with respect to hidden inputs
 -- of lstm
-function HiddenLayer:backward(inputs, cell_errors)
-   local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+function HiddenLayer:backward(inputs, gpu_mode)
+   local cuda_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
    check_type(inputs, cuda_type)
 end
 

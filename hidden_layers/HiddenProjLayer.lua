@@ -126,6 +126,8 @@ end
 function HiddenProjLayer:forward(image_feats)
    assert(image_feats ~= nil)
    assert(image_feats:size(1) == self.image_dim)
+   parent:forward(image_feats, self.gpu_mode)
+
    if self.num_layers == 1 then
      self.cell_image_proj = self.cell_image_emb:forward(image_feats)
      self.hidden_image_proj = self.hidden_image_emb:forward(image_feats)
@@ -154,6 +156,8 @@ function HiddenProjLayer:backward(image_feats, cell_errors)
    assert(image_feats ~= nil)
    assert(image_feats:size(1) == self.image_dim)
    assert(cell_errors ~= nil)
+   parent:backward(image_feats, cell_errors, self.gpu_mode)
+   
    if self.num_layers == 1 then
      -- get the image and word projection errors
      local cell_image_emb_errors = cell_errors[1]

@@ -57,13 +57,13 @@ end
 -- Does a single forward step of concat layer, concatenating
 -- Input 
 function EmbedLayer:forward(word_indeces, image_feats)
-   parent:forward(word_indeces, image_feats)
+   parent:forward(word_indeces, image_feats, self.gpu_mode)
    self.word_proj = self.emb:forward(word_indeces)
    return self.word_proj
 end
 
 function EmbedLayer:backward(word_indices, image_feats, err)
-   parent:backward(word_indices, image_feats, err)
+   parent:backward(word_indices, image_feats, err, self.gpu_mode)
    self.emb:backward(word_indices, err)
 end
 

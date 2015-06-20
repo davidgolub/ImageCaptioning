@@ -8,7 +8,7 @@
 local ConcatProjLayer, parent = torch.class('imagelstm.ConcatProjLayer', 'imagelstm.InputLayer')
 
 function ConcatProjLayer:__init(config)
-   parent.__init(self, config)
+   parent__init(self, config)
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
@@ -80,7 +80,7 @@ end
 -- Input 
 function ConcatProjLayer:forward(word_indices, image_feats)
    -- parent does checks
-   parent:forward(word_indices, image_feats)
+   parent:forward(word_indices, image_feats, self.gpu_mode)
 
    self.image_proj = self.image_emb:forward(image_feats)
    self.word_proj = self.emb:forward(word_indices)
@@ -89,7 +89,7 @@ function ConcatProjLayer:forward(word_indices, image_feats)
 end
 
 function ConcatProjLayer:backward(word_indices, image_feats, err)
-   parent:backward(word_indices, image_feats, err)
+   parent:backward(word_indices, image_feats, err, self.gpu_mode)
 
    emb_errors = self.combine_model:backward({self.word_proj, self.image_proj}, err)
 
