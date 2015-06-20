@@ -382,10 +382,10 @@ function ImageCaptioner:predict(image_features, beam_size)
   end
 
   -- Start with special START token:
-  local next_token = torch.IntTensor{1}
+  local next_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{1}
 
   -- Terminate when predict the END token
-  local end_token = torch.IntTensor{2}
+  local end_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{2}
 
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = self.hidden_layer:forward(image_features)
@@ -406,7 +406,7 @@ function ImageCaptioner:predict(image_features, beam_size)
       end
 
       -- convert token into proper format for feed-forwarding
-      next_token = torch.IntTensor{pred_token}
+      next_token = self.gpu_mode and torch.CudaTensor{pred_token} or torch.IntTensor{pred_token}
       prev_outputs = next_outputs
     end
     return {{ll, tokens}}
