@@ -13,8 +13,7 @@ function InputLayer:__init(config)
   assert(config.image_dim ~= nil)
 
   self.gpu_mode = config.gpu_mode or false
-  print("Gpu mode", self.gpu_mode)
-  assert(false)
+  print("Gpu mode for input layer ", self.gpu_mode)
   self.emb_dim = config.emb_dim or 300
   self.vocab_size = config.num_classes or 300
   self.dropout_prob = config.dropout_prob or 0.5
