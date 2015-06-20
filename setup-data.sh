@@ -7,7 +7,7 @@ wget -O data/coco/train/dataset.json https://softmaxstorage.blob.core.windows.ne
 wget -O data/coco/train/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_train.txt
 
 # Download coco data test
-wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_test.json
+wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_val.json
 wget -O data/coco/test/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_test.txt
 
 # Convert coco dataset from cPickle to .txt
