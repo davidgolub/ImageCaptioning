@@ -423,8 +423,9 @@ function ImageCaptioner:predict(image_features, beam_size)
 
         -- get all predicted tokens so far
         local curr_tokens_list = curr_beam[2]
-        local next_token = torch.IntTensor{curr_tokens_list[#curr_tokens_list]}
-
+        local next_token = self.gpu_mode and 
+                          torch.CudaTensor{curr_tokens_list[#curr_tokens_list]} or
+                          torch.IntTensor{curr_tokens_list[#curr_tokens_list]}
         -- If the next token is the end token, just add prediction to list
         if next_token[1] == 2 then
            table.insert(next_beams, curr_beam)
