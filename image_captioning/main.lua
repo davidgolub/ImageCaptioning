@@ -184,15 +184,8 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-  if curr_epoch % 10 == 1 then
-    evaluate_results(params.beam_size)
-  end
 
-  local start = sys.clock()
-  printf('-- epoch %d\n', i)
-  loss = model:train(train_dataset)
-  printf("Average loss %.4f \n", loss)
-  printf('-- finished epoch in %.2fs\n', sys.clock() - start)
+
 
   local train_loss = model:eval(train_dataset)
   printf("Train loss is %.4f \n", train_loss)
@@ -206,6 +199,17 @@ for i = 1, params.epochs do
     -- save them to disk for later use
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
+
+  if curr_epoch % 10 == 1 then
+    evaluate_results(params.beam_size)
+  end
+
+  local start = sys.clock()
+  printf('-- epoch %d\n', i)
+  loss = model:train(train_dataset)
+
+  printf("Average loss %.4f \n", loss)
+  printf('-- finished epoch in %.2fs\n', sys.clock() - start)
 
   local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
