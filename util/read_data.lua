@@ -46,7 +46,8 @@ function imagelstm.read_dataset(dataset_path)
   -- Returns vocab, embeddings
 
   print('Reading caption dataset from ' .. dataset_path)
-  local dataset = json.load(dataset_path)
+  --local dataset = json.load(dataset_path)
+  local dataset = torch.load(dataset_path)
   local images = dataset['images']
 
   -- TODO: preprocess images
@@ -77,7 +78,7 @@ end
 function imagelstm.read_caption_sentences(dir, desired_split)
   local caption_dataset = {}
 
-  local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
+  local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.th')
   local num_images = #annotation_dataset
   local num_desired_images = 0
   -- get input and output sentences
@@ -115,7 +116,7 @@ end
 function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   local caption_dataset = {}
 
-  local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.json')
+  local annotation_dataset = imagelstm.read_dataset(dir .. 'dataset.th')
   local num_images = #annotation_dataset
   local num_desired_images = 0 -- Only include images that are in the split
   -- get input and output sentences

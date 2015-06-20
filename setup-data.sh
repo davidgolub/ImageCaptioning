@@ -16,19 +16,31 @@ python scripts/imagefeats_to_torch.py
 # Convert coco train dataset from .txt to .th
 image_dir="data/coco/train"
 image_pre="googlenet_feats"
+dataset_pre = "dataset"
 
 if [ ! -f $image_dir/$image_pre.th ]; then
     th scripts/convert_imagefeats_txt.lua $image_dir/$image_pre.txt \
         $image_dir/$image_pre.th
 fi
 
+if [ ! -f $image_dir/$dataset_pre.th ]; then
+    th scripts/convert_dataset.lua $image_dir/$dataset_pre.txt \
+        $image_dir/$dataset_pre.th
+fi
+
 # Convert coco test dataset from .txt to .th
 image_dir="data/coco/test"
 image_pre="googlenet_feats"
+dataset_pre = "dataset"
 
 if [ ! -f $image_dir/$image_pre.th ]; then
     th scripts/convert_imagefeats_txt.lua $image_dir/$image_pre.txt \
         $image_dir/$image_pre.th
+fi
+
+if [ ! -f $image_dir/$dataset_pre.th ]; then
+    th scripts/convert_dataset.lua $image_dir/$dataset_pre.txt \
+        $image_dir/$dataset_pre.th
 fi
 
 # Preprocess captioning data

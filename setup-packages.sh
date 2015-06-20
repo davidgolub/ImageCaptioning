@@ -1,3 +1,5 @@
+# in a terminal, run the commands
+curl -sk https://raw.githubusercontent.com/torch/ezinstall/master/install-deps | bash
 git clone https://github.com/torch/distro.git ~/torch --recursive
 cd ~/torch; ./install.sh
 
