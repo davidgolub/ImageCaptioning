@@ -256,7 +256,7 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      -- print("Current loss", loss)
+      print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
       currIndex = currIndex + 1
       return loss, self.grad_params
@@ -459,8 +459,12 @@ end
 function ImageCaptioner:copy(prev_outputs)
   local copied_prev_outputs = {}
   if self.num_layers == 1 then 
-    local first_input = torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
-    local second_input = torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
+    local first_input = self.gpu_mode and 
+                 torch.CudaTensor(prev_outputs[1]:size()):copy(prev_outputs[1])
+                 or torch.Tensor(prev_outputs[1]:size()):copy(prev_outputs[1])
+    local second_input = self.gpu_mode and 
+              torch.CudaTensor(prev_outputs[2]:size()):copy(prev_outputs[2])
+              or torch.Tensor(prev_outputs[2]:size()):copy(prev_outputs[2])
 
     if self.gpu_mode then
       first_input = first_input:cuda()
@@ -474,8 +478,12 @@ function ImageCaptioner:copy(prev_outputs)
     local curr_hiddens = {}
     for i = 1, self.num_layers do 
       local curr_outputs = {}
-      local first_input = torch.Tensor(prev_outputs[1][i]:size()):copy(prev_outputs[1][i])
-      local second_input = torch.Tensor(prev_outputs[2][i]:size()):copy(prev_outputs[2][i])
+      local first_input = self.gpu_mode and 
+                 torch.CudaTensor(prev_outputs[1][i]:size()):copy(prev_outputs[1][i])
+                 or torch.Tensor(prev_outputs[1][i]:size()):copy(prev_outputs[1][i])
+      local second_input = self.gpu_mode and 
+              torch.CudaTensor(prev_outputs[2][i]:size()):copy(prev_outputs[2][i])
+              or torch.Tensor(prev_outputs[2][i]:size()):copy(prev_outputs[2][i])
 
       if self.gpu_mode then
         first_input = first_input:cuda()
