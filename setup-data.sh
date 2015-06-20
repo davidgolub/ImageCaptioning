@@ -7,8 +7,8 @@ wget -O data/coco/train/dataset.json https://softmaxstorage.blob.core.windows.ne
 wget -O data/coco/train/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_train.txt
 
 # Download coco data test
-wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_val.json
-wget -O data/coco/test/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_val.txt
+wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_test.json
+wget -O data/coco/test/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_test.txt
 
 # Convert coco dataset from cPickle to .txt
 python scripts/imagefeats_to_torch.py
@@ -72,6 +72,9 @@ if [ ! -f $image_dir/$image_pre.th ]; then
     th scripts/convert_imagefeats.lua $image_dir/$image_pre.txt \
         $image_dir/$image_pre.th
 fi
+
+# Preprocess items for calculating bleu score
+th main.lua
 
 # Install dependencies
 luarocks install torch

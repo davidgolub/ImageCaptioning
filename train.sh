@@ -16,6 +16,7 @@ gpu_mode=${12-}
 
 th image_captioning/main.lua \
 -batch_size 100 \
+-dataset flickr8k \
 -mem_dim $mem_dim \
 -emb_dim $emb_dim \
 -epochs 100 \
