@@ -203,16 +203,13 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 10 == 10 then
+  if curr_epoch % 10 == 1 then
+    evaluate_results(params.beam_size)
     print('writing model to ' .. model_save_path)
     model:save(model_save_path)
     model = imagelstm.ImageCaptioner.load(model_save_path)
-  end
 
-  if curr_epoch % 20 == 19 then
-    --evaluate_results(params.beam_size)
   end
-
 
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
