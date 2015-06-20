@@ -8,7 +8,7 @@
 local ConcatProjLayer, parent = torch.class('imagelstm.ConcatProjLayer', 'imagelstm.InputLayer')
 
 function ConcatProjLayer:__init(config)
-   parent__init(self, config)
+   parent.__init(self, config)
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.emb_dim)
