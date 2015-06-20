@@ -24,7 +24,7 @@ function EmbedLayer:__init(config)
 
   self.params, self.grad_params = self.emb:getParameters()
 
-  if gpu_mode then
+  if self.gpu_mode then
     self:set_gpu_mode()
   end
 end
@@ -57,11 +57,13 @@ end
 -- Does a single forward step of concat layer, concatenating
 -- Input 
 function EmbedLayer:forward(word_indeces, image_feats)
+   parent:forward(word_indeces, image_feats)
    self.word_proj = self.emb:forward(word_indeces)
    return self.word_proj
 end
 
 function EmbedLayer:backward(word_indices, image_feats, err)
+   parent:backward(word_indices, image_feats, err)
    self.emb:backward(word_indices, err)
 end
 

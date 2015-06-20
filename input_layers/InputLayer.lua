@@ -51,11 +51,15 @@ end
 -- Does a single forward step of concat layer, concatenating
 -- Input 
 function InputLayer:forward(word_indeces, image_feats)
-	error("Forward not implemented!")
+	 local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+   check_type(image_feats, self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor')
+   check_type(word_indeces, 'torch.IntTensor')
 end
 
 function InputLayer:backward(word_indices, image_feats, err)
-	error("Backward not implemented!")
+  local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+	 check_type(word_indices, 'torch.IntTensor')
+   check_type(image_feats, cuda_type)
 end
 
 -- Returns size of outputs of this combine module

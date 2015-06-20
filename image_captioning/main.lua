@@ -184,7 +184,7 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-  
+
   local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
   local start = sys.clock()
@@ -205,7 +205,13 @@ for i = 1, params.epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   if curr_epoch % 10 == 10 then
-    evaluate_results(params.beam_size)
+    print('writing model to ' .. model_save_path)
+    model:save(model_save_path)
+    model = imagelstm.ImageCaptioner.load(model_save_path)
+  end
+
+  if curr_epoch % 20 == 19 then
+    --evaluate_results(params.beam_size)
   end
 
 

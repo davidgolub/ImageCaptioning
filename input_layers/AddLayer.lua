@@ -85,14 +85,17 @@ end
 -- Word indeces: input tensor of word indeces
 -- image_feats: Image features tensor
 function AddLayer:forward(word_indeces, image_feats)
-    self.text_inputs = self.emb:forward(word_indeces)
-    self.image_inputs = self.image_emb:forward(image_feats)
-    self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
+  parent:forward(word_indeces, image_feats)
+  
+  self.text_inputs = self.emb:forward(word_indeces)
+  self.image_inputs = self.image_emb:forward(image_feats)
+  self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
 
     return self.inputs
 end
 
 function AddLayer:backward(word_indices, image_feats, grads)
+  parent:backward(word_indeces, image_feats, grads)
   -- backprop the gradients through the linear combination step
   local input_emb_grads = self.lstm_emb:backward({self.text_inputs, self.image_inputs}, grads)
   local emb_grads = input_emb_grads[1]

@@ -79,6 +79,7 @@ end
 -- Does a single forward step of add layer
 -- Num_iter: only for beam search since we forward image features on first index
 function SingleAddLayer:forward(word_indeces, image_feats, num_iter)
+    parent:forward(word_indeces, image_feats)
     self.text_inputs = self.emb:forward(word_indeces)
     self.image_inputs = self.image_emb:forward(image_feats)
     self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
@@ -91,6 +92,7 @@ function SingleAddLayer:forward(word_indeces, image_feats, num_iter)
 end
 
 function SingleAddLayer:backward(word_indices, image_feats, grads)
+  parent:backward(word_indeces, image_feats)
   -- backprop the gradients through the linear combination step
   local input_emb_grads = self.lstm_emb:backward({self.text_inputs, self.image_inputs}, grads)
   local emb_grads = input_emb_grads[1]

@@ -54,7 +54,8 @@ end
 -- Where first state corresponds to cell state, second state
 -- corresponds to first hidden state
 function HiddenLayer:forward(inputs)
-   error("Forward not implemented!")
+   local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+   check_type(hidden, cuda_type)
 end
 
 -- Does a single backward step of hidden layer
@@ -62,7 +63,8 @@ end
 -- cell inputs of lstm, second input is error with respect to hidden inputs
 -- of lstm
 function HiddenLayer:backward(inputs, cell_errors)
-   error("Backward not implemented!")
+   local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
+   check_type(inputs, cuda_type)
 end
 
 -- Returns size of outputs of this hidden module

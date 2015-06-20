@@ -38,7 +38,8 @@ function ConcatProjLayer:__init(config)
      self.params:copy(config.combine_weights)
    end
 
-  if gpu_mode then
+  print(gpu_mode)
+  if self.gpu_mode then
     self:set_gpu_mode()
   end
 end
@@ -79,6 +80,9 @@ end
 -- Does a single forward step of concat layer, concatenating
 -- Input 
 function ConcatProjLayer:forward(word_indeces, image_feats)
+   -- parent does checks
+   parent.forward(word_indeces, image_feats)
+
    self.image_proj = self.image_emb:forward(image_feats)
    self.word_proj = self.emb:forward(word_indeces)
    res = self.combine_model:forward({self.word_proj, self.image_proj})
@@ -86,6 +90,8 @@ function ConcatProjLayer:forward(word_indeces, image_feats)
 end
 
 function ConcatProjLayer:backward(word_indices, image_feats, err)
+   parent.backward(word_indeces, image_feats, err)
+
    emb_errors = self.combine_model:backward({self.word_proj, self.image_proj}, err)
 
    -- get the image and word projection errors

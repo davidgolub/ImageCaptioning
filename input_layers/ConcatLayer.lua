@@ -59,12 +59,16 @@ end
 -- Does a single forward step of concat layer, concatenating
 -- Input 
 function ConcatLayer:forward(word_indeces, image_feats)
+   parent:forward(word_indeces, image_feats)
+
    self.word_proj = self.emb:forward(word_indeces)
    res = self.combine_model:forward({self.word_proj, image_feats})
    return res
 end
 
 function ConcatLayer:backward(word_indices, image_feats, err)
+   parent:backward(word_indeces, image_feats, err)
+
    emb_errors = self.combine_model:backward({self.word_proj, image_feats}, err)
 
    -- get the image and word projection errors

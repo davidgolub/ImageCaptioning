@@ -3,7 +3,13 @@
   Math helper functions on tables
 
 --]]
-  
+
+-- Check type of input
+function check_type(input, desired_type)
+  local input_type = torch.typename(input)
+  assert(input_type == desired_type)
+end
+
 -- Enable dropouts
 function enable_sequential_dropouts(model)
    for i,m in ipairs(model.modules) do
