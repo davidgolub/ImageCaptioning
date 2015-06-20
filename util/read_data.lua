@@ -194,16 +194,16 @@ function imagelstm.read_flickr8k_dataset(base_path, gpu_mode)
 
   -- load train dataset
   local train_dir = data_dir
-  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
+  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, gpu_mode,
     'train')
 
   -- load val dataset
   local val_dir = data_dir
-  local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, params.gpu_mode, 'val')
+  local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, gpu_mode, 'val')
 
   -- load test dataset
   local test_dir = data_dir
-  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
+  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, gpu_mode, 
     'test')
 
   return vocab, train_dataset, val_dataset, test_dataset
@@ -224,12 +224,12 @@ function imagelstm.read_coco_dataset(base_path, gpu_mode)
 
   -- load train dataset
   local train_dir = data_dir .. 'train/'
-  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
+  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, gpu_mode,
     'train')
 
   -- load test dataset
   local test_dir = data_dir .. 'test/'
-  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
+  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, gpu_mode, 
     'train')
 
     -- load val dataset
