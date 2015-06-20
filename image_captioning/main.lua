@@ -63,10 +63,10 @@ local vocab, train_dataset, val_dataset, test_dataset
 if params.dataset == 'coco' then
   print("Loading coco dataset")
   vocab, train_dataset, val_dataset, test_dataset =
-    imagelstm.read_coco_dataset(params.data_dir .. "/coco/")
+    imagelstm.read_coco_dataset(params.data_dir .. "/coco/", params.gpu_mode)
 else
   vocab, train_dataset, val_dataset, test_dataset = 
-    imagelstm.read_flickr8k_dataset(params.data_dir .. "/flickr8k/")
+    imagelstm.read_flickr8k_dataset(params.data_dir .. "/flickr8k/", params.gpu_mode)
 end
 
 -- load embeddings
@@ -187,6 +187,7 @@ for i = 1, params.epochs do
   local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
   local train_loss = model:eval(train_dataset)
+
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
