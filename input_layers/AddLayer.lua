@@ -10,7 +10,7 @@ function AddLayer:__init(config)
    parent.__init(self, config)
 
    -- word embeddings
-   self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
+   self.emb_table = nn.LookupTable(self.vocab_size, self.emb_dim)
 
    -- image feature embedding
    self.image_emb = nn.Linear(self.image_dim, self.emb_dim)

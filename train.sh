@@ -14,7 +14,6 @@ combine_module=${10-embedlayer}
 dropout=${11-}
 gpu_mode=${12-}
 
-
 th image_captioning/main.lua \
 -batch_size 100 \
 -mem_dim $mem_dim \

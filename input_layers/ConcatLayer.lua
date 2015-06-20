@@ -10,7 +10,11 @@ local ConcatLayer, parent = torch.class('imagelstm.ConcatLayer', 'imagelstm.Inpu
 function ConcatLayer:__init(config)
    parent.__init(self, config)
    self.emb = nn.LookupTable(self.vocab_size, self.emb_dim)
-
+   
+   -- Copy embedding weights
+   if config.emb_vecs ~= nil then
+     self.emb_table.weight:copy(config.emb_vecs)
+   end
    -- image feature embedding
    self.combine_model = nn.Sequential()
                     :add(imagelstm.CRowJoinTable(2))

@@ -18,6 +18,10 @@ function ConcatProjLayer:__init(config)
      self.combine_model:add(nn.Dropout(self.dropout_prob))
    end
 
+   if config.emb_vecs ~= nil then
+     self.emb.weight:copy(config.emb_vecs)
+   end
+
    local modules = nn.Parallel()
     :add(self.image_emb)
     :add(self.emb)

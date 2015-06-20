@@ -4,11 +4,11 @@ wget -P data/flickr8k/ https://bitbucket.org/softmaxinc/image-captioner/download
 
 # Download coco data train
 wget -O data/coco/train/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_train.json
-wget -O data/coco/train/googlenet_feats.cPickle https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_features_train.cPickle
+wget -O data/coco/train/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_train.txt
 
 # Download coco data test
 wget -O data/coco/test/dataset.json https://softmaxstorage.blob.core.windows.net/coco-feats/coco_dataset_val.json
-wget -O data/coco/test/googlenet_feats.cPickle https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_features_val.cPickle
+wget -O data/coco/test/googlenet_feats.txt https://softmaxstorage.blob.core.windows.net/coco-feats/googlenet_feats_val.txt
 
 # Convert coco dataset from cPickle to .txt
 python scripts/imagefeats_to_torch.py

@@ -79,7 +79,7 @@ def build_vocab(dataset_path, dst_path, feat_path, word_count_threshold = 5):
 
 if __name__ == '__main__':
     print('=' * 80)
-    print('Preprocessing Caption dataset')
+    print('Preprocessing Flickr8k Caption dataset')
     print('=' * 80)
 
     base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -91,4 +91,15 @@ if __name__ == '__main__':
         os.path.join(flickr8k_dir, 'dataset.json'),
         os.path.join(flickr8k_dir, 'vocab.txt'),
         os.path.join(flickr8k_dir, 'vocab_feats.600d.txt'))
+
+    print('=' * 80)
+    print('Preprocessing Coco Caption dataset')
+    print('=' * 80)
+    coco_dir = os.path.join(data_dir, 'coco') 
+
+    # get vocabulary
+    build_vocab(
+        os.path.join(coco_dir, 'train/dataset.json'),
+        os.path.join(coco_dir, 'vocab.txt'),
+        os.path.join(coco_dir, 'vocab_feats.600d.txt'))
 

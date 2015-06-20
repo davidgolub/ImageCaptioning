@@ -22,7 +22,8 @@ cmd:option('-image_dim', 1024, 'input image size into captioner')
 cmd:option('-emb_dim', 100, 'embedding size')
 cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
-cmd:option('-data_dir', 'data/flickr8k/', 'directory of caption dataset')
+cmd:option('-data_dir', 'data', 'directory of caption dataset')
+cmd:option('-dataset', 'coco', 'what dataset to use [flickr8k][coco]')
 cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
 cmd:option('-hidden_module', 'hiddenlayer', '[hiddenlayer]')
@@ -57,31 +58,19 @@ end
 
 header('Image-Captioning with LSTMs')
 
--- directory containing dataset files
-local data_dir = params.data_dir
+local vocab, train_dataset, val_dataset, test_dataset 
 
--- load vocab
-vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
-
--- load datasets
-
--- load train dataset
-local train_dir = data_dir
-local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
-  'train')
-
--- load val dataset
-local val_dir = data_dir
-local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, params.gpu_mode, 'val')
-
--- load test dataset
-local test_dir = data_dir
-local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
-  'test')
-
+if params.dataset == 'coco' then
+  print("Loading coco dataset")
+  vocab, train_dataset, val_dataset, test_dataset =
+    imagelstm.read_coco_dataset(params.data_dir .. "/coco/")
+else
+  vocab, train_dataset, val_dataset, test_dataset = 
+    imagelstm.read_flickr8k_dataset(params.data_dir .. "/flickr8k/")
+end
 
 -- load embeddings
-print('loading word embeddings')
+print('Loading word embeddings')
 local emb_dir = params.emb_dir
 local emb_prefix = emb_dir .. 'glove.840B'
 --local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')

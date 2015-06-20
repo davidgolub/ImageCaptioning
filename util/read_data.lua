@@ -173,3 +173,64 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
 
   return caption_dataset
 end
+
+-- reads flickr8k dataset where base directory path is specified
+-- base_path: base path of flickr8k
+-- gpu_mode: whether to read in image features in gpu or cpu mode
+-- returns: imagelstm.Vocab, train, val, test datasets in that order
+function imagelstm.read_flickr8k_dataset(base_path, gpu_mode)
+    -- directory containing dataset files
+  local data_dir = base_path
+
+  -- load vocab
+  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+
+  -- load datasets
+
+  -- load train dataset
+  local train_dir = data_dir
+  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
+    'train')
+
+  -- load val dataset
+  local val_dir = data_dir
+  local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, params.gpu_mode, 'val')
+
+  -- load test dataset
+  local test_dir = data_dir
+  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
+    'test')
+
+  return vocab, train_dataset, val_dataset, test_dataset
+end
+
+-- reads coco dataset where base directory path is specified
+-- base_path: base path of flickr8k
+-- gpu_mode: whether to read in image features in gpu or cpu mode
+-- returns: imagelstm.Vocab, train, val, test datasets in that order
+function imagelstm.read_coco_dataset(base_path, gpu_mode)
+    -- directory containing dataset files
+  local data_dir = base_path
+
+  -- load vocab
+  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+
+  -- load datasets
+
+  -- load train dataset
+  local train_dir = data_dir .. 'train/'
+  local train_dataset = imagelstm.read_caption_dataset(train_dir, vocab, params.gpu_mode,
+    'train')
+
+  -- load test dataset
+  local test_dir = data_dir .. 'test/'
+  local test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
+    'train')
+
+    -- load val dataset
+  local val_dir = data_dir .. 'val'
+  --local val_dataset = imagelstm.read_caption_dataset(val_dir, vocab, params.gpu_mode, 'val')
+  local val_dataset = test_dataset
+  return vocab, train_dataset, val_dataset, test_dataset
+end
+
