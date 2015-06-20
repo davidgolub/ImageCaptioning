@@ -164,7 +164,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   print("Number of image ids", #image_ids)
   image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   if gpu_mode then
-    image_feats:cuda()
+    image_feats = image_feats:cuda()
   end
 
   caption_dataset.vocab = vocab
