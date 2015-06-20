@@ -50,13 +50,18 @@ end
 
 -- Does a single forward step of concat layer, concatenating
 -- Input 
-function InputLayer:forward(word_indeces, image_feats)
+function InputLayer:forward(word_indices, image_feats)
+   assert(word_indices ~= nil)
+   assert(image_feats ~= nil)
 	 local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
    check_type(image_feats, cuda_type)
-   check_type(word_indeces, 'torch.IntTensor')
+   check_type(word_indices, 'torch.IntTensor')
 end
 
 function InputLayer:backward(word_indices, image_feats, err)
+  assert(word_indices ~= nil)
+  assert(image_feats ~= nil)
+  assert(err ~= nil)
   local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
 	 check_type(word_indices, 'torch.IntTensor')
    check_type(image_feats, cuda_type)

@@ -79,18 +79,18 @@ end
 
 -- Does a single forward step of concat layer, concatenating
 -- Input 
-function ConcatProjLayer:forward(word_indeces, image_feats)
+function ConcatProjLayer:forward(word_indices, image_feats)
    -- parent does checks
-   parent.forward(word_indeces, image_feats)
+   parent:forward(word_indices, image_feats)
 
    self.image_proj = self.image_emb:forward(image_feats)
-   self.word_proj = self.emb:forward(word_indeces)
+   self.word_proj = self.emb:forward(word_indices)
    res = self.combine_model:forward({self.word_proj, self.image_proj})
    return res
 end
 
 function ConcatProjLayer:backward(word_indices, image_feats, err)
-   parent.backward(word_indeces, image_feats, err)
+   parent:backward(word_indices, image_feats, err)
 
    emb_errors = self.combine_model:backward({self.word_proj, self.image_proj}, err)
 
