@@ -7,7 +7,8 @@
 -- Check type of input
 function check_type(input, desired_type)
   local input_type = torch.typename(input)
-  assert(input_type == desired_type)
+  assert(input_type == desired_type, "input has type " 
+    .. input_type .. " but desired is " .. desired_type)
 end
 
 -- Enable dropouts

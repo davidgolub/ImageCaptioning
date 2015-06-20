@@ -52,7 +52,7 @@ end
 -- Input 
 function InputLayer:forward(word_indeces, image_feats)
 	 local cuda_type = self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
-   check_type(image_feats, self.gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor')
+   check_type(image_feats, cuda_type)
    check_type(word_indeces, 'torch.IntTensor')
 end
 
