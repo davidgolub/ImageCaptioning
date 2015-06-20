@@ -54,8 +54,10 @@ end
 -- Where first state corresponds to cell state, second state
 -- corresponds to first hidden state
 function HiddenLayer:forward(inputs, gpu_mode)
+   assert(inputs ~= nil)
+   assert(gpu_mode ~= nil)
    local cuda_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
-   check_type(hidden, cuda_type)
+   check_type(inputs, cuda_type)
 end
 
 -- Does a single backward step of hidden layer
@@ -63,6 +65,8 @@ end
 -- cell inputs of lstm, second input is error with respect to hidden inputs
 -- of lstm
 function HiddenLayer:backward(inputs, gpu_mode)
+   assert(inputs ~= nil)
+   assert(gpu_mode ~= nil)
    local cuda_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
    check_type(inputs, cuda_type)
 end
