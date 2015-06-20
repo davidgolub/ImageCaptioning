@@ -152,6 +152,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
           local in_ids = vocab:map(tokens)
         
           if gpu_mode then
+            print("Converting sentence ids to cuda")
             out_ids = out_ids:cuda()
             in_ids = in_ids:cuda()
           end
