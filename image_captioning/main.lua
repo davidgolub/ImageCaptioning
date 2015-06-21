@@ -136,16 +136,16 @@ function evaluate(model, beam_size, dataset, save_path)
 end
 
 -- Calculates BLEU scores on train, test and val sets
-function evaluate_results(beam_size)
+function evaluate_results(beam_size, dataset)
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, beam_size, test_dataset, 'predictions/bleu/coco/output_test.pred')
+  evaluate(model, beam_size, test_dataset, 'predictions/bleu/' .. dataset .. '/output_test.pred')
 
   header('Evaluating on train set')
   --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, beam_size, val_dataset, 'predictions/bleu/coco/output_val.pred')
+  evaluate(model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. 'output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -202,9 +202,10 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 20 == 10 then
-    evaluate_results(params.beam_size)
+  if curr_epoch % 20 == 5 then
+    evaluate_results(params.beam_size, params.dataset)
   end
+
 
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
@@ -215,6 +216,10 @@ for i = 1, params.epochs do
 
   local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
+
+  if curr_epoch % 50 == 20 then
+    model:save(model_save_path)
+  end
   -- print('writing model to ' .. model_save_path)
   -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)

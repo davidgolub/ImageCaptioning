@@ -1,12 +1,11 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
-emb_dim=${2-100}
-mem_dim=${1-150}
-num_layers=${3-1}
-
+num_layers=${1-1}
+mem_dim=${2-150}
+emb_dim=${3-100}
+regularization=${4-1e-5}
 learning_rate=${5-0.1}
 optim_method=${6-adagrad}
-regularization=${4-1e-5}
 in_dropout_prob=${7-0.2}
 hidden_dropout_prob=${8-0.5}
 beam_size=${9-6}
