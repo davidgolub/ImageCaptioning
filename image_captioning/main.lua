@@ -139,13 +139,13 @@ end
 function evaluate_results(beam_size)
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, beam_size, test_dataset, 'predictions/bleu/output_test.pred')
+  evaluate(model, beam_size, test_dataset, 'predictions/bleu/coco/output_test.pred')
 
   header('Evaluating on train set')
   --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, beam_size, val_dataset, 'predictions/bleu/output_val.pred')
+  evaluate(model, beam_size, val_dataset, 'predictions/bleu/coco/output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -184,7 +184,6 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-  local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
 
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -204,18 +203,13 @@ for i = 1, params.epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   if curr_epoch % 20 == 10 then
-    print('writing model to ' .. model_save_path)
-    model:save(model_save_path)
-    --model = imagelstm.ImageCaptioner.load(model_save_path)
-  end
-
-  if curr_epoch % 20 == 19 then
     evaluate_results(params.beam_size)
   end
 
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
 
+  local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
 

@@ -1,7 +1,1 @@
-./train.sh 600 600 2 0 0.01 adagrad 0.5 0.5 embedlayer -dropout -gpu_mode | tee -a "log_emblayer.txt"
-# ./train.sh 256 256 1 0 0.01 rmsprop 0.2 0.5 6 embedlayer -dropout -gpu_mode | tee -a "log_emblayer.txt"
-# ./train.sh 256 256 1 0 0.01 rmsprop 0.5 0.5 6 concatprojlayer -dropout -gpu_mode | tee -a "log_emblayer.txt"
-# ./train.sh 256 256 3 0 0.01 rmsprop 0.5 0.5 6 emblayer -dropout -gpu_mode | tee -a "log_emblayer.txt"
-# ./train.sh 256 256 1 0 0.001 rmsprop 0.5 0.5 6 concatprojlayer -gpu_mode -dropout | tee -a "log_emblayer.txt"
 # ./train.sh 600 600 2 0 0.001 rmsprop 0.5 0.5 5 concatprojlayer -gpu_mode -dropout | tee -a "log_emblayer.txt"
-# ./train.sh 256 256 2 0 0.001 rmsprop 0.5 0.5 5 concatprojlayer -gpu_mode -dropout | tee -a "log_emblayer.txt"

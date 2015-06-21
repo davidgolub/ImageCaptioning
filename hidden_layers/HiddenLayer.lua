@@ -64,7 +64,7 @@ end
 -- Cell errors is an array where first input is error with respect to 
 -- cell inputs of lstm, second input is error with respect to hidden inputs
 -- of lstm
-function HiddenLayer:backward(inputs, gpu_mode)
+function HiddenLayer:backward(inputs, cell_errors, gpu_mode)
    assert(inputs ~= nil)
    assert(gpu_mode ~= nil)
    local cuda_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'

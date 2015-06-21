@@ -144,12 +144,12 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
           table.insert(tokens, "</s>")
 
           -- first get labels for sentence
-          local out_ids = vocab:map(tokens)
+          local out_ids = vocab:map_no_unk(tokens)
 
           -- then get input sentence stuff: off by one language model
           table.insert(tokens, 1, "<s>")
           table.remove(tokens)
-          local in_ids = vocab:map(tokens)
+          local in_ids = vocab:map_no_unk(tokens)
         
           if gpu_mode then
             out_ids = out_ids:cuda()
@@ -166,7 +166,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
     end
   end
 
-  print("Number of image ids", #image_ids)
+  print("Number of sentences to train on", #image_ids)
   image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   if gpu_mode then
     image_feats = image_feats:cuda()

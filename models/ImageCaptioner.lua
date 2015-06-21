@@ -234,6 +234,7 @@ function ImageCaptioner:train(dataset)
         local inputs = self.combine_layer:forward(sentence, image_feats)
         local hidden_inputs = self.hidden_layer:forward(image_feats)
 
+
         local lstm_output, class_predictions, caption_loss = 
         self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
         
@@ -256,7 +257,7 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      -- print("Current loss", loss)
+      print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
       currIndex = currIndex + 1
       return loss, self.grad_params

@@ -1,7 +1,7 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
-emb_dim=${2-2}
-mem_dim=${1-3}
+emb_dim=${2-100}
+mem_dim=${1-150}
 num_layers=${3-1}
 
 learning_rate=${5-0.1}
@@ -11,12 +11,14 @@ in_dropout_prob=${7-0.2}
 hidden_dropout_prob=${8-0.5}
 beam_size=${9-6}
 combine_module=${10-embedlayer}
-dropout=${11-}
-gpu_mode=${12-}
+dataset=${11-flickr8k}
+dropout=${12-}
+gpu_mode=${13-}
+
 
 th image_captioning/main.lua \
 -batch_size 100 \
--dataset coco \
+-dataset $dataset \
 -mem_dim $mem_dim \
 -emb_dim $emb_dim \
 -epochs 100 \

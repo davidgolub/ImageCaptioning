@@ -105,6 +105,7 @@ function Vocab:tokens(indeces)
   return output
 end
 
+-- Converts tokens including unknowns to IntTensor
 function Vocab:map(tokens)
   local len = #tokens
   local output = torch.IntTensor(len)
@@ -114,6 +115,27 @@ function Vocab:map(tokens)
   return output
 end
 
+-- Converts tokens excluding unknowns to int indeces
+function Vocab:map_no_unk(tokens)
+  local len = #tokens
+  for i = 1, len do
+    local index = self:index(tokens[i])
+    if index == self.unk_index then
+      len = len - 1
+    end
+  end
+
+  local output = torch.IntTensor(len)
+  local curr_index = 1
+  for i = 1, #tokens do
+    local index = self:index(tokens[i])
+    if index ~= self.unk_index then
+      output[curr_index] = index
+      curr_index = curr_index + 1
+    end
+  end
+  return output
+end
 function Vocab:add_unk_token()
   if self.unk_token ~= nil then return end
   self.unk_index = self:add('<unk>')
