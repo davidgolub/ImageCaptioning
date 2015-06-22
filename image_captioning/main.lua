@@ -202,7 +202,7 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 20 == 5 then
+  if curr_epoch % 20 == 10 then
     evaluate_results(params.beam_size, params.dataset)
   end
 
