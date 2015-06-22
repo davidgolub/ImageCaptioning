@@ -92,7 +92,7 @@ function SingleAddLayer:forward(word_indeces, image_feats, num_iter)
 end
 
 function SingleAddLayer:backward(word_indices, image_feats, grads)
-  parent:backward(word_indeces, image_feats, grads, self.gpu_mode)
+  parent:backward(word_indices, image_feats, grads, self.gpu_mode)
   -- backprop the gradients through the linear combination step
   local input_emb_grads = self.lstm_emb:backward({self.text_inputs, self.image_inputs}, grads)
   local emb_grads = input_emb_grads[1]

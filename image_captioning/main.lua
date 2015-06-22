@@ -145,7 +145,7 @@ function evaluate_results(beam_size, dataset)
   --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
 
   header('Evaluating on val set')
-  evaluate(model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. 'output_val.pred')
+  evaluate(model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. '/output_val.pred')
 
   os.execute("./test.sh")
 end
@@ -202,8 +202,9 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 20 == 10 then
+  if curr_epoch % 10 == 5 then
     evaluate_results(params.beam_size, params.dataset)
+    model:save(model_save_path)
   end
 
 
@@ -218,12 +219,11 @@ for i = 1, params.epochs do
   imagelstm.models_dir .. model:getPath(i))
 
   if curr_epoch % 50 == 20 then
-    model:save(model_save_path)
+  --  model:save(model_save_path)
   end
   -- print('writing model to ' .. model_save_path)
   -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
-
 end
 
 -- write model to disk

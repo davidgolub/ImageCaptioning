@@ -55,7 +55,7 @@ function InputLayer:forward(word_indices, image_feats, gpu_mode)
    assert(word_indices ~= nil)
    assert(image_feats ~= nil)
    --print("Gpu mode for forward step parent", gpu_mode)
-local word_type = gpu_mode and 'torch.CudaTensor' or 'torch.IntTensor'
+  local word_type = gpu_mode and 'torch.CudaTensor' or 'torch.IntTensor'
   local image_type = gpu_mode and 'torch.CudaTensor' or 'torch.DoubleTensor'
   check_type(word_indices, word_type)
   check_type(image_feats, image_type)
