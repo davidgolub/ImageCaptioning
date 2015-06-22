@@ -202,11 +202,10 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 10 == 5 then
+  if curr_epoch % 10 == 9 then
     evaluate_results(params.beam_size, params.dataset)
-    model:save(model_save_path)
+    --model:save(model_save_path)
   end
-
 
   printf("Average loss %.4f \n", loss)
   printf('-- finished epoch in %.2fs\n', sys.clock() - start)
