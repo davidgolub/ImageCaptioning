@@ -357,9 +357,6 @@ function ImageCaptioner:eval(dataset)
 
   -- perplexity is 2**log_2(sum(losses)) / dataset.size
   local norm_ppl = tot_ppl2 / num_words
-  print(tot_ppl2)
-  print(num_words)
-  print(norm_ppl)
   local perplexity = math.exp(norm_ppl)
   xlua.progress(dataset.size, dataset.size)
   return average_loss, perplexity
