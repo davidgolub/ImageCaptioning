@@ -285,12 +285,12 @@ function ImageCaptioner:train(dataset)
   average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
 
-  return average_loss, 
+  return average_loss
 end
 
 -- Evaluates model on dataset
 -- Returns average loss
-function GoogleImageCaptioner:eval(dataset)
+function ImageCaptioner:eval(dataset)
   assert(dataset ~= nil)
   self:disable_dropouts()
 
