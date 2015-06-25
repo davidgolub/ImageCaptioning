@@ -285,17 +285,20 @@ function ImageCaptioner:train(dataset)
   average_loss = tot_loss / dataset.size
   xlua.progress(dataset.size, dataset.size)
 
-  return average_loss
+  return average_loss, 
+end
 
 -- Evaluates model on dataset
 -- Returns average loss
-function ImageCaptioner:eval(dataset)
+function GoogleImageCaptioner:eval(dataset)
   assert(dataset ~= nil)
   self:disable_dropouts()
 
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
+  local tot_ppl2 = 0
+  local num_words = 0
   --dataset.size
   for i = 1, dataset.size, self.batch_size do --dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
@@ -316,6 +319,7 @@ function ImageCaptioner:eval(dataset)
 
         -- get input and output sentences
         local sentence = dataset.sentences[idx]
+
         local out_sentence = dataset.pred_sentences[idx]
 
         -- get text/image inputs
@@ -326,25 +330,39 @@ function ImageCaptioner:eval(dataset)
         self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
         
         loss = loss + caption_loss
-        
+
+        local sent_perp = 0.0
+        for k = 1, out_sentence:size(1) do
+          sent_perp = sent_perp - class_predictions[k][out_sentence[k]]
+        end
+        tot_ppl2 = tot_ppl2 + sent_perp
+        num_words = num_words + sentence:size(1) + 0.0
       end
 
       tot_loss = tot_loss + loss
+
       loss = loss / batch_size
       self.grad_params:div(batch_size)
 
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      --print(currIndex, " of ", self.params:size(1))
+      -- print(currIndex, " of ", self.params:size(1))
       --currIndex = currIndex + 1
       return loss, self.grad_params
     end
     feval()
   end
-  average_loss = tot_loss / dataset.size
+  local average_loss = tot_loss / dataset.size
+
+  -- perplexity is 2**log_2(sum(losses)) / dataset.size
+  local norm_ppl = tot_ppl2 / num_words
+  print(tot_ppl2)
+  print(num_words)
+  print(norm_ppl)
+  local perplexity = math.exp(norm_ppl)
   xlua.progress(dataset.size, dataset.size)
-  return average_loss
+  return average_loss, perplexity
 end
 
 function ImageCaptioner:predict(image_features, beam_size)
