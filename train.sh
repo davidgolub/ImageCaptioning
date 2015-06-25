@@ -10,9 +10,10 @@ in_dropout_prob=${7-0.2}
 hidden_dropout_prob=${8-0.5}
 beam_size=${9-6}
 combine_module=${10-embedlayer}
-dataset=${11-flickr8k}
-dropout=${12-}
-gpu_mode=${13-}
+hidden_module=${11-projlayer}
+dataset=${12-flickr8k}
+dropout=${13-}
+gpu_mode=${14-}
 
 
 th image_captioning/main.lua \
@@ -23,7 +24,7 @@ th image_captioning/main.lua \
 -epochs 100 \
 -num_layers $num_layers \
 -combine_module $combine_module \
--hidden_module hiddendummylayer \
+-hidden_module $hidden_module \
 -in_dropout_prob $in_dropout_prob \
 -hidden_dropout_prob $hidden_dropout_prob \
 -learning_rate $learning_rate \
