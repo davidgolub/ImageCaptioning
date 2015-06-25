@@ -18,6 +18,8 @@ function HiddenLayer:__init(config)
    self.dropout_prob = config.dropout_prob
    self.dropout = config.dropout and false or config.dropout
    self.num_layers = config.num_layers
+
+   print("Hidden layer dropout probability ", self.dropout_prob)
 end
 
 -- Returns all of the weights of this module

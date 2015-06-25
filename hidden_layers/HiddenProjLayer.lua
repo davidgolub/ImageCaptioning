@@ -30,8 +30,7 @@ function HiddenProjLayer:__init(config)
       modules:add(self.hidden_image_emb[i])
     end
    end
-
-   print("Hidden layer", self.dropout_prob)
+   
    self.params, self.grad_params = modules:getParameters()
 
   if gpu_mode then

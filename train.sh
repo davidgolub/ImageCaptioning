@@ -1,8 +1,8 @@
 export PATH=/Users/david/torch/install/bin:$PATH
 
 num_layers=${1-1}
-mem_dim=${2-150}
-emb_dim=${3-100}
+mem_dim=${2-2}
+emb_dim=${3-2}
 regularization=${4-1e-5}
 learning_rate=${5-0.1}
 optim_method=${6-adagrad}
@@ -23,7 +23,7 @@ th image_captioning/main.lua \
 -epochs 100 \
 -num_layers $num_layers \
 -combine_module $combine_module \
--hidden_module projlayer \
+-hidden_module hiddendummylayer \
 -in_dropout_prob $in_dropout_prob \
 -hidden_dropout_prob $hidden_dropout_prob \
 -learning_rate $learning_rate \

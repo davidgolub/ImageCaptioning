@@ -1,20 +1,21 @@
 --[[
 
-  An ImageCaptionerLSTM takes in three things as input: 
+  An GoogleImageCaptionerLSTM takes in three things as input: 
   1) an LSTM cell 
   2) an output function for that cell that is the criterion.
   3) an input function that converts input to one that can go into LSTM cell
 
 --]]
 
-local ImageCaptionerLSTM = torch.class('imagelstm.ImageCaptionerLSTM')
+local GoogleImageCaptionerLSTM = torch.class('imagelstm.GoogleImageCaptionerLSTM')
 
-function ImageCaptionerLSTM:__init(config)
+function GoogleImageCaptionerLSTM:__init(config)
   -- parameters for lstm cell
   self.gpu_mode = config.gpu_mode
   self.criterion        =  config.criterion
   self.output_module_fn = config.output_module_fn
   self.lstm_layer =  imagelstm.LSTM_Decoder(config) 
+  self.reverse = false
 
   local modules = nn.Parallel()
     :add(self.lstm_layer)
@@ -28,40 +29,42 @@ function ImageCaptionerLSTM:__init(config)
 end
 
 -- Enable Dropouts
-function ImageCaptionerLSTM:enable_dropouts()
+function GoogleImageCaptionerLSTM:enable_dropouts()
    enable_sequential_dropouts(self.output_module_fn)
 end
 
 -- Disable Dropouts
-function ImageCaptionerLSTM:disable_dropouts()
+function GoogleImageCaptionerLSTM:disable_dropouts()
    disable_sequential_dropouts(self.output_module_fn)
 end
 
 
 
 -- Resets depth to 1
-function ImageCaptionerLSTM:reset_depth()
+function GoogleImageCaptionerLSTM:reset_depth()
   self.lstm_layer.depth = 0
 end
 
 
-function ImageCaptionerLSTM:zeroGradParameters()
+function GoogleImageCaptionerLSTM:zeroGradParameters()
   self.grad_params:zero()
   self.lstm_layer:zeroGradParameters()
 end
 
 -- Forward propagate.
--- inputs: T x in_dim tensor, where T is the number of time steps.
+-- inputs: T + 1 x in_dim tensor, where T is the number of time steps. First time step is for image
 -- states: hidden, cell states of LSTM if true, read the input from right to left (useful for bidirectional LSTMs).
 -- labels: T x 1 tensor of desired indeces
 -- Returns lstm output, class predictions, and error if train, else not error 
-function ImageCaptionerLSTM:forward(inputs, hidden_inputs, labels)
+function GoogleImageCaptionerLSTM:forward(inputs, hidden_inputs, labels)
     assert(inputs ~= nil)
     assert(hidden_inputs ~= nil)
     assert(labels ~= nil)
     
     local lstm_output = self.lstm_layer:forward(inputs, hidden_inputs, self.reverse)
-    local class_predictions = self.output_module_fn:forward(lstm_output)
+    local lstm_pred = lstm_output:narrow(1, 2, inputs:size(1) - 1)
+    assert(lstm_pred:size(1) == labels:size(1))
+    local class_predictions = self.output_module_fn:forward(lstm_pred)
     local err = self.criterion:forward(class_predictions, labels)
 
     return lstm_output, class_predictions, err
@@ -72,7 +75,7 @@ end
 -- states: hidden, cell states of LSTM
 -- labels: T x 1 tensor of desired indeces
 -- Returns lstm output, class predictions, and error if train, else not error 
-function ImageCaptionerLSTM:tick(inputs, states)
+function GoogleImageCaptionerLSTM:tick(inputs, states)
     assert(inputs ~= nil)
     assert(states ~= nil)
 
@@ -89,22 +92,35 @@ function ImageCaptionerLSTM:tick(inputs, states)
 end
 
 -- Backpropagate: forward() must have been called previously on the same input.
--- inputs: T x in_dim tensor, where T is the number of time steps.
+-- inputs: T + 1 x in_dim tensor, where T is the number of time steps.
 -- hidden_inputs: {hidden_dim, hidden_tim} tensors
 -- reverse: True if reverse input, false otherwise
--- lstm_output: T x num_layers x num_hidden tensor
+-- lstm_output: T + 1 x num_layers x num_hidden tensor
 -- class_predictions: T x 1 tensor of predictions
 -- labels: actual labels
 -- Returns the gradients with respect to the inputs (in the same order as the inputs).
-function ImageCaptionerLSTM:backward(inputs, hidden_inputs, lstm_output, class_predictions, labels)
+function GoogleImageCaptionerLSTM:backward(inputs, hidden_inputs, lstm_output, class_predictions, labels)
   assert(inputs ~= nil)
   assert(hidden_inputs ~= nil)
   assert(lstm_output ~= nil)
   assert(class_predictions ~= nil)
   assert(labels ~= nil)
 
+  local T = class_predictions:size(1)
+
+  -- get predicted derivatives
   local output_module_derivs = self.criterion:backward(class_predictions, labels)
-  local lstm_output_derivs = self.output_module_fn:backward(lstm_output, output_module_derivs)
+  local lstm_pred = lstm_output:narrow(1, 2, inputs:size(1) - 1)
+  local lstm_pred_derivs = self.output_module_fn:backward(lstm_pred, output_module_derivs)
+
+  
+  local hidden_dim = lstm_pred_derivs:size(2)
+
+  -- output of lstm derivatives are 1 + predicted derivatives x in_dim (since image fed in once)
+  local lstm_output_derivs = self.gpu_mode and torch.CudaTensor(T + 1, hidden_dim):zero()
+                              or torch.Tensor(T + 1, hidden_dim):zero()
+
+  lstm_output_derivs:narrow(1, 2, T):copy(lstm_pred_derivs)
   local lstm_input_derivs, hidden_derivs = self.lstm_layer:backward(inputs, hidden_inputs, lstm_output_derivs, self.reverse)
 
   --print("Backward Differences are", 33 * (end1 - start1), 33 *(end2 - end1), 33 * (end3 - end2))
@@ -112,24 +128,24 @@ function ImageCaptionerLSTM:backward(inputs, hidden_inputs, lstm_output, class_p
 end
 
 -- Sets all networks to gpu mode
-function ImageCaptionerLSTM:set_gpu_mode()
+function GoogleImageCaptionerLSTM:set_gpu_mode()
   self.criterion:cuda()
   self.output_module_fn:cuda()
   self.lstm_layer:cuda()
 end
 
 -- Sets all networks to cpu mode
-function ImageCaptionerLSTM:set_cpu_mode()
+function GoogleImageCaptionerLSTM:set_cpu_mode()
   self.criterion:double()
   self.output_module_fn:double()
   self.lstm_layer:double()
 end
 
-function ImageCaptionerLSTM:getModules() 
+function GoogleImageCaptionerLSTM:getModules() 
   return {self.lstm_layer, self.output_module_fn}
 end
 
-function ImageCaptionerLSTM:getParameters()
+function GoogleImageCaptionerLSTM:getParameters()
   return self.params, self.grad_params
 end
 

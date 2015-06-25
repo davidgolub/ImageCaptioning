@@ -52,8 +52,10 @@ end
 local opt_method
 if params.optim == 'adagrad' then
   opt_method = optim.adagrad
-else
+elseif params.optim == 'rmsprop' then
   opt_method = optim.rmsprop
+else
+  opt_method = optim.sgd
 end
 
 header('Image-Captioning with LSTMs')
@@ -136,18 +138,23 @@ function evaluate(model, beam_size, dataset, save_path)
 end
 
 -- Calculates BLEU scores on train, test and val sets
-function evaluate_results(beam_size, dataset)
+function evaluate_results(test_model, beam_size, dataset)
     -- evaluate
   header('Evaluating on test set')
-  evaluate(model, beam_size, test_dataset, 'predictions/bleu/' .. dataset .. '/output_test.pred')
+  test_save_path = 'output_test' .. os.clock() .. '.pred'
+  evaluate(test_model, beam_size, test_dataset, 'predictions/bleu/' .. dataset .. '/' .. test_save_path)
 
+  train_save_path = 'output_train' .. os.clock() .. '.pred'
   header('Evaluating on train set')
-  --evaluate(model, 5, train_dataset, 'predictions/bleu/output_train.pred')
+  evaluate(test_model, beam_size, train_dataset, 'predictions/bleu/' .. dataset .. '/' .. train_save_path)
 
+  val_save_path = 'output_val' .. os.clock() .. '.pred'
   header('Evaluating on val set')
-  evaluate(model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. '/output_val.pred')
+  evaluate(test_model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. '/' .. val_save_path)
 
-  os.execute("./test.sh")
+  os.execute("./test.sh " ..  train_save_path .. ' ' .. val_save_path .. ' '
+    .. test_save_path)
+
 end
 
 -- print information
@@ -157,6 +164,12 @@ model:print_config()
 
 local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(num_epochs))
+
+-- local test_model = imagelstm.GoogleImageCaptioner.load('model.th')
+--for j = 1, 20 do 
+--print("======== BEAM SIZE " .. j .. " ===========")
+-- evaluate_results(test_model, 1, 'flickr8k')
+--end
 
 if params.load_model then
 --if true then
@@ -189,21 +202,22 @@ for i = 1, params.epochs do
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
 
-  local train_loss = model:eval(train_dataset)
-  printf("Train loss is %.4f \n", train_loss)
+  local train_loss, perplexity = model:eval(train_dataset)
+  printf("Train loss is %.4f Perplexity %.4f \n", train_loss, perplexity)
 
-  local test_loss = model:eval(test_dataset)
-  printf("Test loss is %.4f \n", test_loss)
+  local test_loss, perplexity = model:eval(test_dataset)
+  printf("Test loss is %.4f Perplexity %4.f\n", test_loss, perplexity)
 
-  local val_loss = model:eval(val_dataset)
-  printf("Val loss is %.4f \n", val_loss)
+  local val_loss, perplexity = model:eval(val_dataset)
+  printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
 
     -- save them to disk for later use
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  if curr_epoch % 10 == 9 then
-    evaluate_results(params.beam_size, params.dataset)
+  evaluate_results(model, 1, params.dataset)
+  if curr_epoch % 20 == 5 then
+    --evaluate_results(model, params.beam_size, params.dataset)
     --model:save(model_save_path)
   end
 
@@ -218,7 +232,8 @@ for i = 1, params.epochs do
   imagelstm.models_dir .. model:getPath(i))
 
   if curr_epoch % 50 == 20 then
-  --  model:save(model_save_path)
+    print('writing model to ' .. model_save_path)
+    model:save(model_save_path)
   end
   -- print('writing model to ' .. model_save_path)
   -- model:save(model_save_path)

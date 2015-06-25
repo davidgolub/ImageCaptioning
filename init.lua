@@ -29,15 +29,18 @@ include('input_layers/SingleAddLayer.lua')
 include('input_layers/ConcatProjLayer.lua')
 include('input_layers/ConcatLayer.lua')
 include('input_layers/EmbedLayer.lua')
+include('input_layers/GoogleEmbedLayer.lua')
 
 -- New hidden layers
 include('hidden_layers/HiddenLayer.lua')
 include('hidden_layers/HiddenProjLayer.lua')
-
+include('hidden_layers/HiddenDummyLayer.lua')
 
 -- models
 include('models/ImageCaptioner.lua')
 include('models/ImageCaptionerLSTM.lua')
+include('models/GoogleImageCaptioner.lua')
+include('models/GoogleImageCaptionerLSTM.lua')
 include('models/LSTM_Encoder.lua')
 include('models/LSTM_Decoder.lua')
 

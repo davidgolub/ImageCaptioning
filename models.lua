@@ -22,7 +22,7 @@ params.load_model = true
 params.dropout = true
 params.num_epochs = 100
 params.epochs = 98
-params.gpu_mode = true
+params.gpu_mode = false
 
 local use_gpu_mode = params.gpu_mode or false
 local num_epochs = params.epochs
@@ -95,38 +95,8 @@ emb_vecs = nil
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
--- initialize model
-model = imagelstm.ImageCaptioner{
-  batch_size = params.batch_size,
-  optim_method = opt_method,
-  --emb_vecs = vecs,
-  dropout = params.dropout,
-  num_layers = params.num_layers,
-  num_classes = vocab.size,
-  emb_dim = params.emb_dim,
-  combine_module = params.combine_module,
-  learning_rate = params.learning_rate,
-  reg = params.reg,
-  image_dim = params.image_dim,
-  mem_dim = params.mem_dim,
-  num_classes = vocab.size, --For start, end and unk tokens
-  gpu_mode = use_gpu_mode -- Set to true for GPU mode
-}
+model = imagelstm.ImageCaptioner.load("model.th")
 
--- print information
-header('model configuration')
-printf('max epochs = %d\n', params.num_epochs)
-model:print_config()
-
-local model_save_path = string.format(
-  imagelstm.models_dir .. model:getPath(num_epochs))
-
-if params.load_model then
---if true then
-  print("Loading model from file " .. model_save_path)
-  model = imagelstm.ImageCaptioner.load(model_save_path) -- uncomment to load model
-end
-
---train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
---test_predictions = model:get_sentences(model:predict_ataset(test_dataset, 5, 30))
+train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 25, 30))
+test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 25, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))

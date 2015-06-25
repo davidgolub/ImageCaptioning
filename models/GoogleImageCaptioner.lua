@@ -4,9 +4,9 @@
 
 --]]
 
-local ImageCaptioner = torch.class('imagelstm.ImageCaptioner')
+local GoogleImageCaptioner = torch.class('imagelstm.GoogleImageCaptioner')
 
-function ImageCaptioner:__init(config)
+function GoogleImageCaptioner:__init(config)
   self.gpu_mode                = config.gpu_mode          or false
   self.reverse                 = config.reverse           or true
   self.image_dim               = config.image_dim         or 1024
@@ -35,9 +35,9 @@ function ImageCaptioner:__init(config)
     self.num_classes = config.emb_vecs:size(1)
   end
 
-  self.combine_layer = self:get_combine_layer(self.combine_module_type)
+  self.combine_layer = self:get_combine_layer("googleembedlayer")
   
-  self.hidden_layer = self:get_hidden_layer(self.hidden_module_type)
+  self.hidden_layer = self:get_hidden_layer("hiddendummylayer")
  
   self.in_zeros = torch.zeros(self.emb_dim)
   self.optim_state = { learningRate = self.learning_rate }
@@ -46,7 +46,7 @@ function ImageCaptioner:__init(config)
   local num_caption_params = self:new_caption_module():getParameters():size(1)
   print("Number of caption parameters " .. num_caption_params)
 
-  self.image_captioner = imagelstm.ImageCaptionerLSTM{
+  self.image_captioner = imagelstm.GoogleImageCaptionerLSTM{
     gpu_mode = self.gpu_mode,
     in_dim  = self.combine_layer:getOutputSize(),
     mem_dim = self.mem_dim,
@@ -80,7 +80,7 @@ end
 -- Requires: combine_module_type not nil, one of "addlayer", "concatlayer",
 -- "singleaddlayer", "concatprojlayer", "embedlayer"
 -- Returns: combine layer module corresponding to this layer
-function ImageCaptioner:get_combine_layer(combine_module_type)
+function GoogleImageCaptioner:get_combine_layer(combine_module_type)
   assert(combine_module_type ~= nil)
   local layer
   if combine_module_type == "addlayer" then
@@ -128,6 +128,15 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
     dropout_prob = self.in_dropout_prob,
     image_dim = self.image_dim
     }
+  elseif combine_module_type == "googleembedlayer" then
+    layer = imagelstm.GoogleEmbedLayer{  
+    emb_dim = self.emb_dim,
+    num_classes = self.num_classes,
+    gpu_mode = self.gpu_mode,
+    dropout = self.dropout,
+    dropout_prob = self.in_dropout_prob,
+    image_dim = self.image_dim
+    }
   else -- module not recognized
     error("Did not recognize input module type", combine_module_type)
   end
@@ -138,7 +147,7 @@ end
 -- Hidden_module_type: type of input layer to return
 -- Requires: hidden_module_type not nil, one of "projlayer"
 -- Returns: hidden layer module corresponding to this layer
-function ImageCaptioner:get_hidden_layer(hidden_module_type)
+function GoogleImageCaptioner:get_hidden_layer(hidden_module_type)
   assert(hidden_module_type ~= nil)
   local layer
   if hidden_module_type == "projlayer" then
@@ -166,7 +175,7 @@ end
 -- requires parallel_net is of type nn.parallel
 -- requires module_list is an array of modules that is not null
 -- modifies: parallel_net by adding modules into parallel net
-function ImageCaptioner:add_modules(parallel_net, module_list)
+function GoogleImageCaptioner:add_modules(parallel_net, module_list)
   assert(parallel_net ~= nil)
   assert(module_list ~= nil)
   for i = 1, #module_list do
@@ -176,19 +185,19 @@ function ImageCaptioner:add_modules(parallel_net, module_list)
 end
 
 -- Set all of the network parameters to gpu mode
-function ImageCaptioner:set_gpu_mode()
+function GoogleImageCaptioner:set_gpu_mode()
   self.image_captioner:set_gpu_mode()
   self.combine_layer:set_gpu_mode()
   self.hidden_layer:set_gpu_mode()
 end
 
-function ImageCaptioner:set_cpu_mode()
+function GoogleImageCaptioner:set_cpu_mode()
   self.image_captioner:set_cpu_mode()
   self.combine_layer:set_cpu_mode()
   self.hidden_layer:set_cpu_mode()
 end
 
-function ImageCaptioner:new_caption_module()
+function GoogleImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
     caption_module:add(nn.Dropout(0.5))
@@ -200,20 +209,20 @@ function ImageCaptioner:new_caption_module()
 end
 
 -- enables dropouts on all layers
-function ImageCaptioner:enable_dropouts()
+function GoogleImageCaptioner:enable_dropouts()
   self.image_captioner:enable_dropouts()
   self.combine_layer:enable_dropouts()
   self.hidden_layer:enable_dropouts()
 end
 
 -- disables dropouts on all layers
-function ImageCaptioner:disable_dropouts()
+function GoogleImageCaptioner:disable_dropouts()
   self.image_captioner:disable_dropouts()
   self.combine_layer:disable_dropouts()
   self.hidden_layer:disable_dropouts()
 end
 
-function ImageCaptioner:train(dataset)
+function GoogleImageCaptioner:train(dataset)
   assert(dataset ~= nil)
   self:enable_dropouts()
 
@@ -286,16 +295,19 @@ function ImageCaptioner:train(dataset)
   xlua.progress(dataset.size, dataset.size)
 
   return average_loss
+end
 
 -- Evaluates model on dataset
 -- Returns average loss
-function ImageCaptioner:eval(dataset)
+function GoogleImageCaptioner:eval(dataset)
   assert(dataset ~= nil)
   self:disable_dropouts()
 
   local indices = torch.randperm(dataset.size)
   local zeros = torch.zeros(self.mem_dim)
   local tot_loss = 0
+  local tot_ppl2 = 0
+  local num_words = 0
   --dataset.size
   for i = 1, dataset.size, self.batch_size do --dataset.size, self.batch_size do
     xlua.progress(i, dataset.size)
@@ -316,6 +328,7 @@ function ImageCaptioner:eval(dataset)
 
         -- get input and output sentences
         local sentence = dataset.sentences[idx]
+
         local out_sentence = dataset.pred_sentences[idx]
 
         -- get text/image inputs
@@ -326,28 +339,42 @@ function ImageCaptioner:eval(dataset)
         self.image_captioner:forward(inputs, hidden_inputs, out_sentence)
         
         loss = loss + caption_loss
-        
+
+        local sent_perp = 0.0
+        for k = 1, out_sentence:size(1) do
+          sent_perp = sent_perp - class_predictions[k][out_sentence[k]]
+        end
+        tot_ppl2 = tot_ppl2 + sent_perp
+        num_words = num_words + sentence:size(1) + 0.0
       end
 
       tot_loss = tot_loss + loss
+
       loss = loss / batch_size
       self.grad_params:div(batch_size)
 
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      --print(currIndex, " of ", self.params:size(1))
+      -- print(currIndex, " of ", self.params:size(1))
       --currIndex = currIndex + 1
       return loss, self.grad_params
     end
     feval()
   end
-  average_loss = tot_loss / dataset.size
+  local average_loss = tot_loss / dataset.size
+
+  -- perplexity is 2**log_2(sum(losses)) / dataset.size
+  local norm_ppl = tot_ppl2 / num_words
+  print(tot_ppl2)
+  print(num_words)
+  print(norm_ppl)
+  local perplexity = math.exp(norm_ppl)
   xlua.progress(dataset.size, dataset.size)
-  return average_loss
+  return average_loss, perplexity
 end
 
-function ImageCaptioner:predict(image_features, beam_size)
+function GoogleImageCaptioner:predict(image_features, beam_size)
   assert(image_features ~= nil)
   --assert(beam_size > 0, "Beam size must be a positive number")
 
@@ -379,13 +406,20 @@ function ImageCaptioner:predict(image_features, beam_size)
   end
 
   -- Start with special START token:
-  local next_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{1}
+  local next_token = self.gpu_mode and torch.CudaTensor{self.vocab.start_index} 
+                      or torch.IntTensor{self.vocab.start_index}
 
   -- Terminate when predict the END token
-  local end_token = self.gpu_mode and torch.CudaTensor{2} or torch.IntTensor{2}
+  local end_token = self.gpu_mode and torch.CudaTensor{self.vocab.end_index} 
+                      or torch.IntTensor{self.vocab.end_index}
 
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = self.hidden_layer:forward(image_features)
+  local _, _, next_outputs, _ = 
+                        lstm_tick(next_token, prev_outputs, num_iter)
+  prev_outputs = next_outputs
+  
+  num_iter = num_iter + 1
 
   if beam_size < 2 then
     local ll = 0
@@ -395,7 +429,7 @@ function ImageCaptioner:predict(image_features, beam_size)
       local pred_token, likelihood, next_outputs, class_predictions = 
                         lstm_tick(next_token, prev_outputs, num_iter)
       -- keep count of number of tokens seen already
-      num_iter = num_iter + 1
+
       ll = ll + likelihood
       if pred_token ~= end_token then
         table.insert(tokens, pred_token)
@@ -404,6 +438,7 @@ function ImageCaptioner:predict(image_features, beam_size)
       -- convert token into proper format for feed-forwarding
       next_token[1] = pred_token
       prev_outputs = next_outputs
+      num_iter = num_iter + 1
     end
     return {{ll, tokens}}
   else
@@ -482,7 +517,7 @@ function ImageCaptioner:predict(image_features, beam_size)
   end
 end
 
-function ImageCaptioner:copy(prev_outputs)
+function GoogleImageCaptioner:copy(prev_outputs)
   local copied_prev_outputs = {}
   if self.num_layers == 1 then 
     local first_input = self.gpu_mode and 
@@ -526,7 +561,7 @@ function ImageCaptioner:copy(prev_outputs)
   return copied_prev_outputs
 end
 
-function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
+function GoogleImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
   self:disable_dropouts()
   local beam_size = beam_size or 1
   local predictions = {}
@@ -541,7 +576,7 @@ function ImageCaptioner:predict_dataset(dataset, beam_size, num_predictions)
 end
 
 -- saves prediction to specified file path
-function ImageCaptioner:save_predictions(predictions_save_path, loss, test_predictions)
+function GoogleImageCaptioner:save_predictions(predictions_save_path, loss, test_predictions)
   local predictions_file, err = io.open(predictions_save_path,"w")
 
   print('writing predictions to ' .. predictions_save_path)
@@ -560,7 +595,7 @@ end
 
 -- gets sentences from predictions
 -- test predictions: predictions to get sentences from
-function ImageCaptioner:get_sentences(test_predictions)
+function GoogleImageCaptioner:get_sentences(test_predictions)
   local sentences = {}
   --predictions_file:write("LOSS " .. loss .. '\n')
   for i = 1, #test_predictions do
@@ -578,7 +613,7 @@ function ImageCaptioner:get_sentences(test_predictions)
   return sentences
 end
 
-function ImageCaptioner:print_config()
+function GoogleImageCaptioner:print_config()
   local num_params = self.params:size(1)
   local num_caption_params = self:new_caption_module():getParameters():size(1)
   printf('%-25s = %d\n', 'num params', num_params)
@@ -597,7 +632,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %s\n', 'dropout', tostring(self.dropout))
 end
 
-function ImageCaptioner:save(path)
+function GoogleImageCaptioner:save(path)
 
   local config = {
     reverse           = self.reverse,
@@ -636,7 +671,7 @@ end
 
 -- returns model path representation based on the model configuration
 -- epoch: model epoch to return
-function ImageCaptioner:getPath(epoch) 
+function GoogleImageCaptioner:getPath(epoch) 
   local model_save_path = string.format(
   '/image_captioning_lstm.hidden_type_%s.input_type_%s.emb_dim_%d.num_layers_%d.mem_dim_%d.epoch_%d.th', 
   self.hidden_module_type,
@@ -646,7 +681,7 @@ function ImageCaptioner:getPath(epoch)
   return model_save_path
 end
 
-function ImageCaptioner.load(path)
+function GoogleImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   model.params:copy(state.params)

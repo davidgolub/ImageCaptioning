@@ -92,7 +92,6 @@ end
 -- Instantiate a new LSTM cell.
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
-
 function LSTM:new_cell()
  return self:fast_lstm(self.in_dim, self.mem_dim)
  --return self:old_lstm()
@@ -242,7 +241,7 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
     end
     local cell_inputs = {input, prev_output[1], prev_output[2]}
     local outputs = cell:forward(cell_inputs)
-    local ctable, htable = unpack(outputs)
+    local htable = outputs[2]
     if self.num_layers == 1 then
       self.outputs[t] = htable
     else
@@ -262,7 +261,7 @@ function LSTM:tick(input, prev_outputs)
 
   --local in_val = {input, copied_prev_outputs[1], copied_prev_outputs[2]}
   local in_val = {input, prev_outputs[1], prev_outputs[2]}
-  -- local cell = self:new_cell()
+  --local cell = self:new_cell()
   local cell = self.master_cell
   local outputs = cell:forward(in_val)
   return outputs

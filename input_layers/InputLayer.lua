@@ -13,7 +13,6 @@ function InputLayer:__init(config)
   assert(config.image_dim ~= nil)
 
   self.gpu_mode = config.gpu_mode or false
-  print("Gpu mode for input layer ", self.gpu_mode)
   self.emb_dim = config.emb_dim or 300
   self.vocab_size = config.num_classes or 300
   self.dropout_prob = config.dropout_prob or 0.5
@@ -22,6 +21,9 @@ function InputLayer:__init(config)
   end
   self.image_dim = config.image_dim or 1024
   self.dropout = config.dropout and false or config.dropout
+
+  print("Gpu mode for input layer ", self.gpu_mode)
+  print("Input layer dropout probability ", self.dropout_prob)
 end
 
 -- Returns all of the weights of this module

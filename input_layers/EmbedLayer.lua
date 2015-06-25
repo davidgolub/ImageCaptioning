@@ -14,13 +14,16 @@ function EmbedLayer:__init(config)
     self.emb_table.weight:copy(config.emb_vecs)
   end
 
-  print("Embed layer ", self.dropout_prob)
   self.emb = nn.Sequential()
             :add(self.emb_table)
 
   if self.dropout then
     self.emb:add(nn.Dropout(self.dropout_prob))
   end
+
+  -- image feature embedding
+  self.image_emb = nn.Sequential()
+                      :add(nn.Linear(self.image_dim, self.emb_dim))
 
   self.params, self.grad_params = self.emb:getParameters()
 

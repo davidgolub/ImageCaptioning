@@ -81,12 +81,13 @@ end
 function SingleAddLayer:forward(word_indeces, image_feats, num_iter)
     parent:forward(word_indeces, image_feats, self.gpu_mode)
     self.text_inputs = self.emb:forward(word_indeces)
-    self.image_inputs = self.image_emb:forward(image_feats)
-    self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
+   
 
     if num_iter ~= nil and num_iter > 0 then
       return self.text_inputs
     else
+      self.image_inputs = self.image_emb:forward(image_feats)
+      self.inputs = self.lstm_emb:forward({self.text_inputs, self.image_inputs})
       return self.inputs
     end
 end
