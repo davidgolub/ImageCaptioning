@@ -33,6 +33,27 @@ if use_gpu_mode then
   require('cunn') -- uncomment for GPU mode
 end
 
+-- Calculates BLEU scores on train, test and val sets
+function evaluate_results(test_model, beam_size, dataset)
+    -- evaluate
+  header('Evaluating on test set')
+  test_save_path = 'output_test' .. os.clock() .. '.pred'
+  evaluate(test_model, beam_size, test_dataset, 'predictions/bleu/' .. dataset .. '/' .. test_save_path)
+
+  train_save_path = 'output_train' .. os.clock() .. '.pred'
+  header('Evaluating on train set')
+  evaluate(test_model, beam_size, train_dataset, 'predictions/bleu/' .. dataset .. '/' .. train_save_path)
+
+  val_save_path = 'output_val' .. os.clock() .. '.pred'
+  header('Evaluating on val set')
+  evaluate(test_model, beam_size, val_dataset, 'predictions/bleu/' .. dataset .. '/' .. val_save_path)
+
+  os.execute("./test.sh " ..  train_save_path .. ' ' .. val_save_path .. ' '
+    .. test_save_path)
+
+end
+
+
 function accuracy(pred, gold)
   return torch.eq(pred, gold):sum() / pred:size(1)
 end

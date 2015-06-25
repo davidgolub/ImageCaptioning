@@ -79,15 +79,20 @@ function GoogleImageCaptionerLSTM:tick(inputs, states)
     assert(inputs ~= nil)
     assert(states ~= nil)
 
-    local lstm_output = self.lstm_layer:tick(inputs, states)
-    local ctable, htable = unpack(lstm_output)
-    local hidden_state
-    if self.lstm_layer.num_layers > 1 then 
-      hidden_state = htable[self.lstm_layer.num_layers]
-    else
-      hidden_state = htable
-    end
-    local class_predictions = self.output_module_fn:forward(hidden_state)
+    local tmp = torch.Tensor(1, inputs:size(1))
+    tmp[1] = inputs
+    local lstm_output = self.lstm_layer:forward(tmp, states, false)
+    local class_predictions = self.output_module_fn:forward(lstm_output)
+
+    --local lstm_output = self.lstm_layer:tick(inputs, states)
+    --local ctable, htable = unpack(lstm_output)
+    --local hidden_state
+    --if self.lstm_layer.num_layers > 1 then 
+      --hidden_state = htable[self.lstm_layer.num_layers]
+    --else
+      --hidden_state = htable
+    --end
+    --local class_predictions = self.output_module_fn:forward(hidden_state)
     return lstm_output, class_predictions
 end
 

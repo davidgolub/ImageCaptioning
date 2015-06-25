@@ -99,7 +99,7 @@ collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
-local model = imagelstm.ImageCaptioner{
+local model = imagelstm.GoogleImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
   --emb_vecs = vecs,
@@ -121,22 +121,6 @@ local model = imagelstm.ImageCaptioner{
 
 local loss = 0.0
 
--- evaluates the model on the test set
-function evaluate(model, beam_size, dataset, save_path)
-  printf('-- using model with train score = %.4f\n', loss)
-  --if model.gpu_mode then
-  --   model:set_cpu_mode()
-  --end
-
-  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.num_images)
-
-  --if model.gpu_mode then
-  --  model:set_gpu_mode()
-  --end
-  print("Saving predictions to ", save_path)
-  model:save_predictions(save_path, loss, test_predictions)
-end
-
 -- Calculates BLEU scores on train, test and val sets
 function evaluate_results(test_model, beam_size, dataset)
     -- evaluate
@@ -156,6 +140,23 @@ function evaluate_results(test_model, beam_size, dataset)
     .. test_save_path)
 
 end
+
+-- evaluates the model on the test set
+function evaluate(model, beam_size, dataset, save_path)
+  printf('-- using model with train score = %.4f\n', loss)
+  --if model.gpu_mode then
+  --   model:set_cpu_mode()
+  --end
+
+  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.num_images)
+
+  --if model.gpu_mode then
+  --  model:set_gpu_mode()
+  --end
+  print("Saving predictions to ", save_path)
+  model:save_predictions(save_path, loss, test_predictions)
+end
+
 
 -- print information
 header('model configuration')
@@ -184,7 +185,6 @@ end
 if lfs.attributes(imagelstm.predictions_dir) == nil then
   lfs.mkdir(imagelstm.predictions_dir)
 end
-
 -- train
 local train_start = sys.clock()
 local best_train_score = -1.0
@@ -197,7 +197,6 @@ imagelstm.predictions_dir .. model:getPath(2))
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
-
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -233,8 +232,9 @@ for i = 1, params.epochs do
 
   if curr_epoch % 50 == 20 then
     print('writing model to ' .. model_save_path)
-    model:save(model_save_path)
+    --model:save(model_save_path)
   end
+  --model:save(model_save_path)
   -- print('writing model to ' .. model_save_path)
   -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)

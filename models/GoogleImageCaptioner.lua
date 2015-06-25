@@ -373,6 +373,7 @@ end
 
 function GoogleImageCaptioner:predict(image_features, beam_size)
   assert(image_features ~= nil)
+  self.image_captioner:reset_depth()
   --assert(beam_size > 0, "Beam size must be a positive number")
 
   -- Keep track of tokens predicted
