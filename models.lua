@@ -120,4 +120,6 @@ model = imagelstm.ImageCaptioner.load("model.th")
 
 train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 25, 30))
 test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 25, 30))
+
+model:eval(train_dataset, 1)
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))

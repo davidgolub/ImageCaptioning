@@ -24,7 +24,7 @@ cmd:option('-mem_dim', 150,'memory dimension of captioner')
 cmd:option('-learning_rate', 0.01, 'learning rate')
 cmd:option('-data_dir', 'data', 'directory of caption dataset')
 cmd:option('-dataset', 'coco', 'what dataset to use [flickr8k][coco]')
-cmd:option('-emb_dir', 'data/glove/', 'director of word embeddings')
+cmd:option('-emb_dir', 'data/flickr8k/', 'director of word embeddings')
 cmd:option('-combine_module', 'addlayer', '[embedlayer] [addlayer] [singleaddlayer] [concatlayer] [concatprojlayer]')
 cmd:option('-hidden_module', 'hiddenlayer', '[hiddenlayer]')
 cmd:option('-model_epoch', 98, 'epoch to load model from')
@@ -62,6 +62,7 @@ header('Image-Captioning with LSTMs')
 
 local vocab, train_dataset, val_dataset, test_dataset 
 
+add_unk = true
 if params.dataset == 'coco' then
   print("Loading coco dataset")
   vocab, train_dataset, val_dataset, test_dataset =
@@ -73,22 +74,23 @@ end
 
 -- load embeddings
 print('Loading word embeddings')
+add_unk = false
 local emb_dir = params.emb_dir
-local emb_prefix = emb_dir .. 'glove.840B'
---local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')
---local emb_dim = emb_vecs:size(2)
+local emb_prefix = emb_dir .. 'vocab_feats'
+local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.600d.th')
+local emb_dim = emb_vecs:size(2)
 
 -- use only vectors in vocabulary (not necessary, but gives faster training)
 local num_unk = 0
-local vecs = torch.Tensor(vocab.size, params.emb_dim)
+local vecs = torch.ones(vocab.size, params.emb_dim)
 for i = 1, vocab.size do
   local w = string.gsub(vocab:token(i), '\\', '') -- remove escape characters
-  -- if emb_vocab:contains(w) then
-     -- vecs[i] = emb_vecs[emb_vocab:index(w)]
-  -- else
+  if emb_vocab:contains(w) then
+     vecs[i] = vecs[i] * emb_vecs[emb_vocab:index(w)][1]
+  else
     num_unk = num_unk + 1
     vecs[i]:uniform(-0.05, 0.05)
-  --end
+  end
 end
 
 print('unk count = ' .. num_unk)
@@ -102,7 +104,7 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
-  --emb_vecs = vecs,
+  emb_vecs = vecs,
   vocab = vocab,
   hidden_dropout_prob = params.hidden_dropout_prob,
   in_dropout_prob = params.in_dropout_prob,
@@ -194,6 +196,7 @@ local best_train_model = model
 local predictions_save_path = string.format(
 imagelstm.predictions_dir .. model:getPath(2))
 
+
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
@@ -205,7 +208,7 @@ for i = 1, params.epochs do
   printf("Train loss is %.4f Perplexity %.4f \n", train_loss, perplexity)
 
   local test_loss, perplexity = model:eval(test_dataset)
-  printf("Test loss is %.4f Perplexity %4.f\n", test_loss, perplexity)
+  printf("Test loss is %.4f Perplexity %4.f \n", test_loss, perplexity)
 
   local val_loss, perplexity = model:eval(val_dataset)
   printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
@@ -216,7 +219,7 @@ for i = 1, params.epochs do
 
   --evaluate_results(model, 1, params.dataset)
   if curr_epoch % 20 == 5 then
-    --evaluate_results(model, params.beam_size, params.dataset)
+    evaluate_results(model, params.beam_size, params.dataset)
     --model:save(model_save_path)
   end
 
@@ -234,7 +237,7 @@ for i = 1, params.epochs do
     print('writing model to ' .. model_save_path)
     --model:save(model_save_path)
   end
-  --model:save(model_save_path)
+
   -- print('writing model to ' .. model_save_path)
   -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)

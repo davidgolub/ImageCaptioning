@@ -16,10 +16,6 @@ function Vocab:__init(path)
   self._index = {}
   self._tokens = {}
 
-  self:add_start_token()
-  self:add_end_token()
-  self:add_unk_token()
-
   -- Include special start symbol and end symbol
   local file = io.open(path)
   if file == nil then error("Error opening file " .. path .. "\n") end
@@ -58,6 +54,12 @@ function Vocab:__init(path)
       self.end_token = tok
       break
     end
+  end
+
+  if add_unk then
+      self:add_start_token()
+      self:add_end_token()
+      self:add_unk_token()
   end
 
   print("Loaded all the vocabulary from " .. path .. " size is " .. self.size)

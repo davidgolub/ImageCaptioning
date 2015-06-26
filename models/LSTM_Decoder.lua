@@ -342,6 +342,10 @@ function LSTM:zeroGradParameters()
   self.master_cell:zeroGradParameters()
 end
 
+function LSTM:getModules()
+  return {self.master_cell}
+end
+
 function LSTM:parameters()
   return self.master_cell:parameters()
 end

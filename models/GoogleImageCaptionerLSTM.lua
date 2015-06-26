@@ -154,3 +154,7 @@ function GoogleImageCaptionerLSTM:getParameters()
   return self.params, self.grad_params
 end
 
+function GoogleImageCaptionerLSTM:getWeights()
+  return self.params
+end
+

@@ -13,7 +13,7 @@ function ConcatLayer:__init(config)
    
    -- Copy embedding weights
    if config.emb_vecs ~= nil then
-     self.emb_table.weight:copy(config.emb_vecs)
+     self.emb.weight:copy(config.emb_vecs)
    end
    -- image feature embedding
    self.combine_model = nn.Sequential()

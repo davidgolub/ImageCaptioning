@@ -11,6 +11,7 @@ function EmbedLayer:__init(config)
   self.emb_table = nn.LookupTable(self.vocab_size, self.emb_dim)
     -- Copy embedding weights
   if config.emb_vecs ~= nil then
+    print("Initializing embeddings from config ")
     self.emb_table.weight:copy(config.emb_vecs)
   end
 
@@ -21,9 +22,6 @@ function EmbedLayer:__init(config)
     self.emb:add(nn.Dropout(self.dropout_prob))
   end
 
-  -- image feature embedding
-  self.image_emb = nn.Sequential()
-                      :add(nn.Linear(self.image_dim, self.emb_dim))
 
   self.params, self.grad_params = self.emb:getParameters()
 

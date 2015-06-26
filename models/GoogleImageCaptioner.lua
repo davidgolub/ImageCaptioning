@@ -392,7 +392,7 @@ function GoogleImageCaptioner:predict(image_features, beam_size)
 
    local inputs = self.combine_layer:forward(next_token, image_features, curr_iter)
    -- feed forward to predictions
-   local next_outputs, class_predictions = self.image_captioner:tick(inputs[1], prev_outputs)
+   local next_outputs, class_predictions, err = self.image_captioner:forward(inputs, prev_outputs)
    local squeezed_predictions = torch.squeeze(class_predictions)
    local predicted_token = argmax(squeezed_predictions, num_iter < 3)
    

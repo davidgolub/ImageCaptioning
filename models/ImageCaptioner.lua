@@ -30,6 +30,7 @@ function ImageCaptioner:__init(config)
   self.vocab                   = config.vocab
   self.in_dropout_prob         = config.in_dropout_prob or 0.5
   self.hidden_dropout_prob     = config.hidden_dropout_prob or 0.5
+  self.emb_vecs                = config.emb_vecs
 
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
@@ -125,6 +126,7 @@ function ImageCaptioner:get_combine_layer(combine_module_type)
     num_classes = self.num_classes,
     gpu_mode = self.gpu_mode,
     dropout = self.dropout,
+    emb_vecs = self.emb_vecs,
     dropout_prob = self.in_dropout_prob,
     image_dim = self.image_dim
     }
@@ -376,13 +378,15 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- prev_outputs: hidden state, cell state of lstm
   -- returns predicted token, its log likelihood, state of lstm, and all predictions
 
+  self.image_captioner:reset_depth()
   local function lstm_tick(next_token, prev_outputs, curr_iter)
    assert(next_token ~= nil)
    assert(prev_outputs ~= nil)
 
    local inputs = self.combine_layer:forward(next_token, image_features, curr_iter)
+
    -- feed forward to predictions
-   local next_outputs, class_predictions = self.image_captioner:tick(inputs[1], prev_outputs)
+   local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
    local squeezed_predictions = torch.squeeze(class_predictions)
    local predicted_token = argmax(squeezed_predictions, num_iter < 3)
    
@@ -644,6 +648,9 @@ function ImageCaptioner:save(path)
 
   torch.save(path, {
     params = params,
+    hidden_params = self.hidden_layer:getWeights(),
+    combine_params = self.combine_layer:getWeights(),
+    caption_params = self.image_captioner:getWeights(),
     optim_state = optim_state,
     config = config,
   })
@@ -664,7 +671,12 @@ end
 function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
+  print(state.params:size())
+  print(model.params:size())
   model.params:copy(state.params)
+  model.hidden_layer.params:copy(state.hidden_params)
+  model.combine_layer.params:copy(state.combine_params)
+  model.image_captioner.params:copy(state.caption_params)
   model.optim_state = state.optim_state
 
   return model
