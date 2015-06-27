@@ -10,12 +10,12 @@ function HiddenProjLayer:__init(config)
    parent.__init(self, config)
    
    local modules = nn.Parallel()
+   self.cell_activations = self.gpu_mode and torch.zeros(self.proj_dim):cuda()
+                            or torch.zeros(self.proj_dim)
    -- image feature embedding
    if self.num_layers == 1 then 
     local hidden_image_emb = self:new_hidden_module()
     self.hidden_image_emb = hidden_image_emb
-
-    self.cell_activations = torch.zeros(self.proj_dim);
     modules:add(self.hidden_image_emb)
    else
     self.hidden_image_emb = {}

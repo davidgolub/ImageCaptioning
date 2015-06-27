@@ -93,8 +93,8 @@ end
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
 function LSTM:new_cell()
- return self:fast_lstm(self.in_dim, self.mem_dim)
- --return self:old_lstm()
+ -- return self:fast_lstm(self.in_dim, self.mem_dim)
+ return self:old_lstm()
 end
 
 function LSTM:old_lstm()
@@ -142,6 +142,9 @@ function LSTM:old_lstm()
   htable, ctable = nn.Identity()(htable), nn.Identity()(ctable)
   local cell = nn.gModule({input, ctable_p, htable_p}, {ctable, htable})
 
+  if self.gpu_mode then
+    cell:cuda()
+  end
   -- share parameters
   if self.master_cell then
     share_params(cell, self.master_cell, 'weight', 'bias', 'gradWeight', 'gradBias')
