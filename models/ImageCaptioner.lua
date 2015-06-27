@@ -152,7 +152,16 @@ function ImageCaptioner:get_hidden_layer(hidden_module_type)
       dropout = self.dropout,
       dropout_prob = self.hidden_dropout_prob
     }
-  else 
+  elseif hidden_module_type == "singleprojlayer" then
+    layer = imagelstm.HiddenSingleProjLayer{
+      gpu_mode = self.gpu_mode,
+      image_dim = self.image_dim,
+      mem_dim = self.mem_dim,
+      num_layers = self.num_layers,
+      dropout = self.dropout,
+      dropout_prob = self.hidden_dropout_prob
+    }
+  else
     layer = imagelstm.HiddenDummyLayer{
       gpu_mode = self.gpu_mode,
       image_dim = self.image_dim,
@@ -193,7 +202,7 @@ end
 function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
-    caption_module:add(nn.Dropout(0.5))
+    caption_module:add(nn.Dropout(0.3, false))
   end
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
@@ -235,7 +244,7 @@ function ImageCaptioner:train(dataset)
       for j = 1, batch_size do
         local idx = indices[i + j - 1]
         
-        --local idx = i + j - 1
+        local idx = i + j - 1
         -- get the image features
         local imgid = dataset.image_ids[idx]
         local image_feats = dataset.image_feats[imgid]
@@ -271,7 +280,7 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      -- print("Current loss", loss)
+      print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
       currIndex = currIndex + 1
       return loss, self.grad_params
@@ -378,7 +387,6 @@ function ImageCaptioner:predict(image_features, beam_size)
   -- prev_outputs: hidden state, cell state of lstm
   -- returns predicted token, its log likelihood, state of lstm, and all predictions
 
-  self.image_captioner:reset_depth()
   local function lstm_tick(next_token, prev_outputs, curr_iter)
    assert(next_token ~= nil)
    assert(prev_outputs ~= nil)
@@ -386,7 +394,7 @@ function ImageCaptioner:predict(image_features, beam_size)
    local inputs = self.combine_layer:forward(next_token, image_features, curr_iter)
 
    -- feed forward to predictions
-   local next_outputs, class_predictions = self.image_captioner:tick(inputs, prev_outputs)
+   local next_outputs, class_predictions = self.image_captioner:tick(inputs[1], prev_outputs)
    local squeezed_predictions = torch.squeeze(class_predictions)
    local predicted_token = argmax(squeezed_predictions, num_iter < 3)
    
@@ -673,6 +681,7 @@ function ImageCaptioner.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   print(state.params:size())
   print(model.params:size())
+  print(model.hidden_layer)
   model.params:copy(state.params)
   model.hidden_layer.params:copy(state.hidden_params)
   model.combine_layer.params:copy(state.combine_params)

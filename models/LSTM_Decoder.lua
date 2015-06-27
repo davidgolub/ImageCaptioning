@@ -73,18 +73,18 @@ function LSTM:__init(config)
   end
 
   -- precreate cells for faster performance
-  for i = 1, 100 do
-    self.cells[i] = self:new_cell()
-  end
+  --for i = 1, 100 do
+  --  self.cells[i] = self:new_cell()
+  -- end
 
   -- precreate outputs for faster performance
   for i = 1, 100 do
     if self.gpu_mode then 
-      self.tensors[i] = torch.FloatTensor(i, self.mem_dim):cuda()
-      self.back_tensors[i] = torch.FloatTensor(i, self.in_dim):cuda()
+      self.tensors[i] = torch.FloatTensor(i, self.mem_dim):zero():cuda()
+      self.back_tensors[i] = torch.FloatTensor(i, self.in_dim):zero():cuda()
     else
-      self.tensors[i] = torch.DoubleTensor(i, self.mem_dim)
-      self.back_tensors[i] = torch.DoubleTensor(i, self.in_dim)
+      self.tensors[i] = torch.DoubleTensor(i, self.mem_dim):zero()
+      self.back_tensors[i] = torch.DoubleTensor(i, self.in_dim):zero()
     end
   end
 end
@@ -215,9 +215,9 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
   self.outputs = self.tensors[size]
   if self.outputs == nil then
     if self.gpu_mode then
-      self.tensors[size] = torch.FloatTensor(size, self.mem_dim):cuda()
+      self.tensors[size] = torch.FloatTensor(size, self.mem_dim):zero():cuda()
     else
-      self.tensors[size] = torch.DoubleTensor(size, self.mem_dim)
+      self.tensors[size] = torch.DoubleTensor(size, self.mem_dim):zero()
     end
     self.outputs = self.tensors[size]
   end

@@ -23,7 +23,7 @@ function AddLayer:__init(config)
    self.lstm_emb = nn.Sequential()
               :add(nn.gModule({x1, x2}, {a}))
    if self.dropout then
-      self.lstm_emb:add(nn.Dropout(self.dropout_prob))
+      self.lstm_emb:add(nn.Dropout(self.dropout_prob, false))
   end
 
    local modules = nn.Parallel()

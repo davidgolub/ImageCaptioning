@@ -19,7 +19,7 @@ function EmbedLayer:__init(config)
             :add(self.emb_table)
 
   if self.dropout then
-    self.emb:add(nn.Dropout(self.dropout_prob))
+    self.emb:add(nn.Dropout(self.dropout_prob, false))
   end
 
 

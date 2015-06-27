@@ -15,7 +15,7 @@ function ConcatProjLayer:__init(config)
    self.combine_model = nn.Sequential()
                       :add(imagelstm.CRowJoinTable(2))
    if self.dropout then
-     self.combine_model:add(nn.Dropout(self.dropout_prob))
+     self.combine_model:add(nn.Dropout(self.dropout_prob, false))
    end
 
    if config.emb_vecs ~= nil then

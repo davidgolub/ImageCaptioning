@@ -113,6 +113,7 @@ local model = imagelstm.ImageCaptioner{
   num_classes = vocab.size,
   emb_dim = params.emb_dim,
   combine_module = params.combine_module,
+  hidden_module = params.hidden_module,
   learning_rate = params.learning_rate,
   reg = params.reg,
   image_dim = params.image_dim,
@@ -196,6 +197,35 @@ local best_train_model = model
 local predictions_save_path = string.format(
 imagelstm.predictions_dir .. model:getPath(2))
 
+function test_saving()
+  local train_loss, perplexity = model:eval(train_dataset)
+  printf("Train loss is %.4f Perplexity %.4f \n", train_loss, perplexity)
+
+  print('Norm of items before saving ', model.params:norm())
+  print('Norm of combine layers', model.combine_layer:getParameters():norm())
+  print('Norm of hidden layers', model.hidden_layer:getParameters():norm())
+  print('Norm of lstm layers', model.image_captioner:getParameters():norm())
+
+  model:save(model_save_path)
+
+  local train_loss, perplexity = model:eval(train_dataset)
+  printf("Train loss is %.4f Perplexity %.4f \n", train_loss, perplexity)
+  print('Norm of items right after saving ', model.params:norm())
+  print('Norm of combine layers', model.combine_layer:getParameters():norm())
+  print('Norm of hidden layers', model.hidden_layer:getParameters():norm())
+  print('Norm of lstm layers', model.image_captioner:getParameters():norm())
+
+  local new_model = imagelstm.ImageCaptioner.load(model_save_path)
+  local train_loss, perplexity = new_model:eval(train_dataset)
+  printf("Train loss AFTER LOADING SAVING is %.4f Perplexity %.4f \n", train_loss, perplexity)
+
+  print('Norm of items before saving ', model.params:norm())
+  print('Norm of combine layers', model.combine_layer:getParameters():norm())
+  print('Norm of hidden layers', model.hidden_layer:getParameters():norm())
+  print('Norm of lstm layers', model.image_captioner:getParameters():norm())
+  assert(false)
+end
+
 
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
@@ -217,10 +247,10 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  --evaluate_results(model, 1, params.dataset)
+  evaluate_results(model, 1, params.dataset)
   if curr_epoch % 20 == 5 then
-    evaluate_results(model, params.beam_size, params.dataset)
-    --model:save(model_save_path)
+    --evaluate_results(model, params.beam_size, params.dataset)
+    model:save(model_save_path)
   end
 
   printf("Average loss %.4f \n", loss)
@@ -235,7 +265,7 @@ for i = 1, params.epochs do
 
   if curr_epoch % 50 == 20 then
     print('writing model to ' .. model_save_path)
-    --model:save(model_save_path)
+    model:save(model_save_path)
   end
 
   -- print('writing model to ' .. model_save_path)

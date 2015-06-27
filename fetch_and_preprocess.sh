@@ -9,7 +9,7 @@ if [ ! -f $glove_dir/$glove_pre.$glove_dim.th ]; then
         $glove_dir/$glove_pre.vocab $glove_dir/$glove_pre.$glove_dim.th
 fi
 
-# Preprocess flickr vocab vectors
+# Preprocess coco vocab vectors
 glove_dir="data/coco"
 glove_pre="vocab_feats"
 glove_dim="600d"

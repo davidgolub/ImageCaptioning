@@ -35,6 +35,7 @@ include('input_layers/GoogleEmbedLayer.lua')
 include('hidden_layers/HiddenLayer.lua')
 include('hidden_layers/HiddenProjLayer.lua')
 include('hidden_layers/HiddenDummyLayer.lua')
+include('hidden_layers/HiddenSingleProjLayer.lua')
 
 -- models
 include('models/ImageCaptioner.lua')

@@ -22,7 +22,7 @@ function SingleAddLayer:__init(config)
                 add(nn.gModule({x1, x2}, {a}))
 
    if self.dropout then
-    self.lstm_emb:add(nn.Dropout(self.dropout_prob))
+    self.lstm_emb:add(nn.Dropout(self.dropout_prob, false))
    end
 
    if config.emb_vecs ~= nil then

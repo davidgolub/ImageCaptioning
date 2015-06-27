@@ -24,8 +24,8 @@ function GoogleEmbedLayer:__init(config)
                       :add(nn.Linear(self.image_dim, self.emb_dim))
 
   if self.dropout then
-    self.emb:add(nn.Dropout(self.dropout_prob))
-    self.image_emb:add(nn.Dropout(self.dropout_prob))
+    self.emb:add(nn.Dropout(self.dropout_prob, false))
+    self.image_emb:add(nn.Dropout(self.dropout_prob, false))
   end
 
   local modules = nn.Parallel()

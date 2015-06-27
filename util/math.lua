@@ -20,6 +20,16 @@ function enable_sequential_dropouts(model)
    end
 end
 
+-- Convert 1-d torch tensor to lua table
+function tensor_to_array(t1)
+  -- This assumes `t1` is a 2-dimensional tensor!
+  local t2 = {}
+  for i=1,t1:size(1) do
+    t2[i] = t1[i]
+  end
+  return t2
+end
+
 -- Disable dropouts
 function disable_sequential_dropouts(model)
    for i,m in ipairs(model.modules) do

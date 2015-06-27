@@ -145,12 +145,16 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
 
           -- first get labels for sentence
           local out_ids = vocab:map_no_unk(tokens)
+          local out_sentence = table.concat(vocab:tokens(tensor_to_array(out_ids)), ' ')
 
           -- then get input sentence stuff: off by one language model
           table.insert(tokens, 1, "<s>")
           table.remove(tokens)
           local in_ids = vocab:map_no_unk(tokens)
-        
+          local in_sentence = table.concat(vocab:tokens(tensor_to_array(in_ids)), ' ')
+
+          --print("Out sentence " .. out_sentence)
+          --print("In sentence " .. in_sentence)
           if gpu_mode then
             out_ids = out_ids:cuda()
             in_ids = in_ids:cuda()
