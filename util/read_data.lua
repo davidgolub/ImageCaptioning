@@ -123,6 +123,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   local sentences = {}
   local out_sentences = {}
   local image_ids = {}
+  local max_num_tokens = 0
 
   -- single image ids with no duplicates
   local single_image_ids = {}
@@ -139,7 +140,9 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
       for j = 1, #curr_sentences do
         local split = curr_sentences[j]['split']
         local tokens = curr_sentences[j]['tokens']
-
+        if #tokens > max_num_tokens then
+          max_num_tokens = #tokens
+        end
         if #tokens < 100 then
           table.insert(tokens, "</s>")
 
@@ -171,6 +174,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   end
 
   print("Number of sentences to train on", #image_ids)
+  print("Max sentence length", max_num_tokens)
   image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   if gpu_mode then
     image_feats = image_feats:cuda()
