@@ -250,7 +250,7 @@ for i = 1, params.epochs do
   evaluate_results(model, 1, params.dataset)
   if curr_epoch % 20 == 5 then
     --evaluate_results(model, params.beam_size, params.dataset)
-    model:save(model_save_path)
+    -- model:save(model_save_path)
   end
 
   printf("Average loss %.4f \n", loss)
