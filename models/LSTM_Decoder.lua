@@ -92,8 +92,8 @@ end
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
 function LSTM:new_cell()
- --return self:fast_lstm(self.in_dim, self.mem_dim)
- return self:old_lstm()
+ return self:fast_lstm(self.in_dim, self.mem_dim)
+ --return self:old_lstm()
 end
 
 function LSTM:old_lstm()
