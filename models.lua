@@ -27,6 +27,7 @@ params.gpu_mode = false
 local use_gpu_mode = params.gpu_mode or false
 local num_epochs = params.epochs
 
+num_unk_sentences = 0
 if use_gpu_mode then 
   print("Loading gpu modules")
   require('cutorch') -- uncomment for GPU mode

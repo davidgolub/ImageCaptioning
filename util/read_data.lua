@@ -123,8 +123,8 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   local sentences = {}
   local out_sentences = {}
   local image_ids = {}
+  local max_num_sent_tokens = 0
   local max_num_tokens = 0
-
   -- single image ids with no duplicates
   local single_image_ids = {}
   for i = 1, num_images do
@@ -140,8 +140,8 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
       for j = 1, #curr_sentences do
         local split = curr_sentences[j]['split']
         local tokens = curr_sentences[j]['tokens']
-        if #tokens > max_num_tokens then
-          max_num_tokens = #tokens
+        if #tokens > max_num_sent_tokens then
+          max_num_sent_tokens = #tokens
         end
         if #tokens < 100 then
           table.insert(tokens, "</s>")
@@ -154,6 +154,8 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
           table.insert(tokens, 1, "<s>")
           table.remove(tokens)
           local in_ids = vocab:map_no_unk(tokens)
+          max_num_tokens = max_num_tokens + in_ids:size(1)
+
           local in_sentence = table.concat(vocab:tokens(tensor_to_array(in_ids)), ' ')
 
           --print("Out sentence " .. out_sentence)
@@ -174,7 +176,7 @@ function imagelstm.read_caption_dataset(dir, vocab, gpu_mode, desired_split)
   end
 
   print("Number of sentences to train on", #image_ids)
-  print("Max sentence length", max_num_tokens)
+  print("Max sentence length", max_num_tokens, max_num_sent_tokens)
   image_feats = imagelstm.read_image_features(dir .. 'googlenet_feats.th')
   if gpu_mode then
     image_feats = image_feats:cuda()

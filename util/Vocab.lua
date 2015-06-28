@@ -120,13 +120,20 @@ end
 -- Converts tokens excluding unknowns to int indeces
 function Vocab:map_no_unk(tokens)
   local len = #tokens
-  for i = 1, len do
+  local has_unk = false
+  for i = 1, #tokens do
     local index = self:index(tokens[i])
+    if #tokens > 30 then 
+      print(tokens[i])
+    end
     if index == self.unk_index then
+      --print(tokens[i])
+      --print(index)
       len = len - 1
     end
   end
-
+  
+  if has_unk then num_unk_sentences = num_unk_sentences + 1 end
   local output = torch.IntTensor(len)
   local curr_index = 1
   for i = 1, #tokens do
