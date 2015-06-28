@@ -248,7 +248,6 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
     end
 
     local cell_inputs = {input, prev_output[1], prev_output[2]}
-    print(cell_inputs)
     local outputs = cell:forward(cell_inputs)
     local htable = outputs[2]
     if self.num_layers == 1 then
