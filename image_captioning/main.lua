@@ -101,7 +101,7 @@ collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
-local model = imagelstm.GoogleImageCaptioner{
+local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
   emb_vecs = vecs,
