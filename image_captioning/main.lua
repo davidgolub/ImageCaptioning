@@ -86,7 +86,9 @@ local vecs = torch.ones(vocab.size, params.emb_dim)
 for i = 1, vocab.size do
   local w = string.gsub(vocab:token(i), '\\', '') -- remove escape characters
   if emb_vocab:contains(w) then
-     vecs[i] = vecs[i] * emb_vecs[emb_vocab:index(w)][1]
+     local mean_vec = emb_vecs[emb_vocab:index(w)][1] -- want to make sure not all emb same
+     vecs[i] = vecs[i] * mean_vec
+     --vecs[i]:uniform(-0.05 + mean_vec, 0.05 + mean_vec)
   else
     num_unk = num_unk + 1
     vecs[i]:uniform(-0.05, 0.05)
@@ -258,8 +260,8 @@ for i = 1, params.epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   -- evaluate_results(model, 1, params.dataset)
-  if curr_epoch % 20 == 5 then
-    --evaluate_results(model, params.beam_size, params.dataset)
+  if curr_epoch % 10 == 5 then
+    evaluate_results(model, params.beam_size, params.dataset)
     -- model:save(model_save_path)
   end
 
@@ -280,8 +282,9 @@ for i = 1, params.epochs do
   end
 
   print('writing model to ' .. model_save_path)
-  -- model:save(model_save_path)
-  --model = imagelstm.ImageCaptioner.load(model_save_path)
+  model:save(model_save_path, curr_epoch)
+  --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
+
 end
 
 -- write model to disk

@@ -31,7 +31,7 @@ function ImageCaptioner:__init(config)
   self.in_dropout_prob         = config.in_dropout_prob or 0.5
   self.hidden_dropout_prob     = config.hidden_dropout_prob or 0.5
   self.emb_vecs                = config.emb_vecs
-
+  self.model_epoch             = config.model_epoch or -1
   if config.emb_vecs ~= nil then
     self.num_classes = config.emb_vecs:size(1)
   end
@@ -614,6 +614,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %d\n', 'num compositional params', num_params - num_caption_params)
   printf('%-25s = %d\n', 'word vector dim', self.emb_dim)
   printf('%-25s = %d\n', 'LSTM memory dim', self.mem_dim)
+  printf('%-25s = %d\n', 'Model epoch', self.model_epoch)
   printf('%-25s = %d\n', 'minibatch size', self.batch_size)
   printf('%-25s = %.2e\n', 'learning rate', self.learning_rate)
   printf('%-25s = %.2e\n', 'input layer dropout prob', self.in_dropout_prob)
@@ -626,7 +627,7 @@ function ImageCaptioner:print_config()
   printf('%-25s = %s\n', 'dropout', tostring(self.dropout))
 end
 
-function ImageCaptioner:save(path)
+function ImageCaptioner:save(path, epoch)
 
   local config = {
     reverse           = self.reverse,
@@ -645,6 +646,7 @@ function ImageCaptioner:save(path)
     vocab             = self.vocab,
     in_dropout_prob   = self.in_dropout_prob,
     hidden_dropout_prob = self.hidden_dropout_prob,
+    model_epoch = epoch or -1
   }
 
   local params = self.params
@@ -683,7 +685,9 @@ function ImageCaptioner.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
   
   model.params:copy(state.params)
-  model.hidden_layer.params:copy(state.hidden_params)
+  if model.hidden_layer.params ~= nil then
+    model.hidden_layer.params:copy(state.hidden_params)
+  end
   model.combine_layer.params:copy(state.combine_params)
   model.image_captioner.params:copy(state.caption_params)
   model.optim_state = state.optim_state

@@ -1,10 +1,6 @@
-#!/usr/bin/env perl
-#
-# This file is part of moses.  Its use is licensed under the GNU Lesser General
-# Public License version 2.1 or, at your option, any later version.
+#!/usr/bin/perl -w
 
 # $Id$
-use warnings;
 use strict;
 
 my $lowercase = 0;
@@ -76,7 +72,7 @@ while(<STDIN>) {
 		$REF_NGRAM_N{$ngram}++;
 	    }
 	    foreach my $ngram (keys %REF_NGRAM_N) {
-		if (!defined($REF_NGRAM{$ngram}) ||
+		if (!defined($REF_NGRAM{$ngram}) || 
 		    $REF_NGRAM{$ngram} < $REF_NGRAM_N{$ngram}) {
 		    $REF_NGRAM{$ngram} = $REF_NGRAM_N{$ngram};
 #	    print "$i: REF_NGRAM{$ngram} = $REF_NGRAM{$ngram}<BR>\n";
@@ -138,19 +134,34 @@ if ($length_reference==0){
   exit(1);
 }
 
-if ($length_translation<$length_reference) {
-  $brevity_penalty = exp(1-$length_reference/$length_translation);
-}
-$bleu = $brevity_penalty * exp((my_log( $bleu[1] ) +
-				my_log( $bleu[2] ) +
-				my_log( $bleu[3] ) +
-				my_log( $bleu[4] ) ) / 4) ;
-printf "BLEU = %.2f, %.1f/%.1f/%.1f/%.1f (BP=%.3f, ratio=%.3f, hyp_len=%d, ref_len=%d)\n",
-    100*$bleu,
-    100*$bleu[1],
-    100*$bleu[2],
-    100*$bleu[3],
-    100*$bleu[4],
+#if ($length_translation<$length_reference) {
+#  $brevity_penalty = exp(1-$length_reference/$length_translation);
+#}
+
+#$bleu = $brevity_penalty * exp((my_log( $bleu[1] ) +
+#				my_log( $bleu[2] ) +
+#				my_log( $bleu[3] ) +
+#				my_log( $bleu[4] ) ) / 4) ;
+
+my $bleu_1 = $brevity_penalty * exp((my_log( $bleu[1] )));
+
+my $bleu_2 = $brevity_penalty * exp((my_log( $bleu[1] ) +
+                               my_log( $bleu[2] ) ) / 2) ;
+
+my $bleu_3 = $brevity_penalty * exp((my_log( $bleu[1] ) +
+                               my_log( $bleu[2] ) +
+                               my_log( $bleu[3] ) ) / 3) ;
+
+my $bleu_4 = $brevity_penalty * exp((my_log( $bleu[1] ) +
+                               my_log( $bleu[2] ) +
+                               my_log( $bleu[3] ) +
+                               my_log( $bleu[4] ) ) / 4) ;
+
+printf "BLEU = %.1f/%.1f/%.1f/%.1f (BP=%.3f, ratio=%.3f, hyp_len=%d, ref_len=%d)\n",
+    100*$bleu_1,
+    100*$bleu_2,
+    100*$bleu_3,
+    100*$bleu_4,
     $brevity_penalty,
     $length_translation / $length_reference,
     $length_translation,
@@ -160,3 +171,5 @@ sub my_log {
   return -9999999999 unless $_[0];
   return log($_[0]);
 }
+
+

@@ -6,25 +6,25 @@ test_file=${3-output_test.pred}
 cd predictions/bleu/flickr8k
 echo 'FLICKR8k ===============   ' 
 echo 'bleu score on train set is '
-./multi-bleu.pl gold_standard_train < $train_file
+perl multi-bleu.pl gold_standard_train < $train_file
 
 echo 'bleu score on val set is '
-./multi-bleu.pl gold_standard_val < $val_file
+perl multi-bleu.pl gold_standard_val < $val_file
 
 echo 'bleu score on test set is '
-./multi-bleu.pl gold_standard_test < $test_file
+perl multi-bleu.pl gold_standard_test < $test_file
 cd ../../../
 
 # Do coco predictions
 cd predictions/bleu/coco
 echo 'COCO ===============   ' 
 echo 'bleu score on train set is '
-./multi-bleu.pl gold_standard_train < $train_file
+perl multi-bleu.pl gold_standard_train < $train_file
 
 echo 'bleu score on val set is '
-./multi-bleu.pl gold_standard_val < $val_file
+perl multi-bleu.pl gold_standard_val < $val_file
 
 echo 'bleu score on test set is '
-./multi-bleu.pl gold_standard_test < $test_file
+perl multi-bleu.pl gold_standard_test < $test_file
 cd ../../../
 
