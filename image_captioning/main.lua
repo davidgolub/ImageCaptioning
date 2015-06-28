@@ -261,7 +261,7 @@ for i = 1, params.epochs do
 
   -- evaluate_results(model, 1, params.dataset)
   if curr_epoch % 10 == 5 then
-    evaluate_results(model, params.beam_size, params.dataset)
+    --evaluate_results(model, params.beam_size, params.dataset)
     -- model:save(model_save_path)
   end
 
@@ -282,7 +282,7 @@ for i = 1, params.epochs do
   end
 
   print('writing model to ' .. model_save_path)
-  model:save(model_save_path, curr_epoch)
+  --model:save(model_save_path, curr_epoch)
   --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
