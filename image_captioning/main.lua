@@ -198,6 +198,17 @@ local predictions_save_path = string.format(
 imagelstm.predictions_dir .. model:getPath(2))
 
 function test_saving()
+  local predictions_save_path = string.format(
+  imagelstm.predictions_dir .. model:getPath(1))
+
+
+  local test_predictions = model:predict_dataset(test_dataset, params.beam_size, 30)
+  print("Saving predictions to ", predictions_save_path)
+  model:save_predictions(predictions_save_path, loss, test_predictions)
+
+  local model_save_path = string.format(
+  imagelstm.models_dir .. model:getPath(i))
+
   local train_loss, perplexity = model:eval(train_dataset)
   printf("Train loss is %.4f Perplexity %.4f \n", train_loss, perplexity)
 
@@ -243,7 +254,6 @@ for i = 1, params.epochs do
   local val_loss, perplexity = model:eval(val_dataset)
   printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
 
-    -- save them to disk for later use
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
@@ -262,6 +272,7 @@ for i = 1, params.epochs do
 
   local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
+    -- save them to disk for later use
 
   if curr_epoch % 50 == 20 then
     print('writing model to ' .. model_save_path)

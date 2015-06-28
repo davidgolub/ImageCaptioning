@@ -280,7 +280,7 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      -- print("Current loss", loss)
+      print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
       currIndex = currIndex + 1
       return loss, self.grad_params
@@ -423,6 +423,7 @@ function ImageCaptioner:predict(image_features, beam_size)
        -- get text/image inputs
       local pred_token, likelihood, next_outputs, class_predictions = 
                         lstm_tick(next_token, prev_outputs, num_iter)
+     
       -- keep count of number of tokens seen already
       num_iter = num_iter + 1
       ll = ll + likelihood
@@ -432,7 +433,7 @@ function ImageCaptioner:predict(image_features, beam_size)
 
       -- convert token into proper format for feed-forwarding
       next_token[1] = pred_token
-      prev_outputs = next_outputs
+      prev_outputs = self:copy(next_outputs)
     end
     return {{ll, tokens}}
   else

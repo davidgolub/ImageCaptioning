@@ -55,6 +55,22 @@ function evaluate_results(test_model, beam_size, dataset)
 
 end
 
+-- evaluates the model on the test set
+function evaluate(model, beam_size, dataset, save_path)
+  printf('-- using model with train score = %.4f\n', 0.00)
+  --if model.gpu_mode then
+  --   model:set_cpu_mode()
+  --end
+
+  local test_predictions = model:predict_dataset(dataset, beam_size, dataset.num_images)
+
+  --if model.gpu_mode then
+  --  model:set_gpu_mode()
+  --end
+  print("Saving predictions to ", save_path)
+  model:save_predictions(save_path, loss, test_predictions)
+end
+
 
 function accuracy(pred, gold)
   return torch.eq(pred, gold):sum() / pred:size(1)
@@ -121,5 +137,5 @@ printf('num train = %d\n', train_dataset.size)
 model = imagelstm.ImageCaptioner.load("model.th")
 
 train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
-test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 1, 30))
+test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))

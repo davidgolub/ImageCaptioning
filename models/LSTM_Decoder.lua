@@ -21,7 +21,6 @@ function LSTM:__init(config)
   self.cells = {}  -- table of cells in a roll-out
   self.tensors = {}  -- table of tensors for faster lookup
   self.back_tensors = {} -- table of tensors for backprop
-  self.predict_cell = self:new_cell()
 
   -- initial (t = 0) states for forward propagation and initial error signals
   -- for backpropagation
@@ -93,8 +92,8 @@ end
 -- Each cell shares the same parameters, but the activations of their constituent
 -- layers differ.
 function LSTM:new_cell()
- return self:fast_lstm(self.in_dim, self.mem_dim)
- --return self:old_lstm()
+ --return self:fast_lstm(self.in_dim, self.mem_dim)
+ return self:old_lstm()
 end
 
 function LSTM:old_lstm()
@@ -220,14 +219,14 @@ end
 -- returns output only of last memory layer
 function LSTM:forward(inputs, hidden_inputs, reverse)
   local size = inputs:size(1)
-  self.outputs = self.tensors[size]
-  if self.outputs == nil then
+  self.output = self.tensors[size]
+  if self.output == nil then
     if self.gpu_mode then
       self.tensors[size] = torch.FloatTensor(size, self.mem_dim):zero():cuda()
     else
       self.tensors[size] = torch.DoubleTensor(size, self.mem_dim):zero()
     end
-    self.outputs = self.tensors[size]
+    self.output = self.tensors[size]
   end
 
   for t = 1, size do
@@ -247,16 +246,18 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
     else
       prev_output = hidden_inputs
     end
+
     local cell_inputs = {input, prev_output[1], prev_output[2]}
+    print(cell_inputs)
     local outputs = cell:forward(cell_inputs)
     local htable = outputs[2]
     if self.num_layers == 1 then
-      self.outputs[t] = htable
+      self.output[t] = htable
     else
-      self.outputs[t] = htable[self.num_layers]
+      self.output[t] = htable[self.num_layers]
     end
   end
-  return self.outputs
+  return self.output
 end
 
 -- Does a single tick of lstm layer, used in beam search
@@ -270,6 +271,7 @@ function LSTM:tick(input, prev_outputs)
   --local in_val = {input, copied_prev_outputs[1], copied_prev_outputs[2]}
   local in_val = {input, prev_outputs[1], prev_outputs[2]}
   local cell = self.master_cell
+
   local outputs = cell:forward(in_val)
   return outputs
 end

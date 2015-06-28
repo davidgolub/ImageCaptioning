@@ -77,7 +77,7 @@ function ImageCaptionerLSTM:tick(inputs, states)
     assert(states ~= nil)
 
     local lstm_output = self.lstm_layer:tick(inputs, states)
-    local ctable, htable = unpack(lstm_output)
+    local htable = lstm_output[2]
     local hidden_state
     if self.lstm_layer.num_layers > 1 then 
       hidden_state = htable[self.lstm_layer.num_layers]
@@ -85,6 +85,7 @@ function ImageCaptionerLSTM:tick(inputs, states)
       hidden_state = htable
     end
     local class_predictions = self.output_module_fn:forward(hidden_state)
+    local lstm_output = self.lstm_layer:tick(inputs, states)
     return lstm_output, class_predictions
 end
 
