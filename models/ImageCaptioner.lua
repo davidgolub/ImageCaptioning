@@ -202,7 +202,7 @@ end
 function ImageCaptioner:new_caption_module()
   local caption_module = nn.Sequential()
   if self.dropout then
-    caption_module:add(nn.Dropout(0.3, false))
+    caption_module:add(nn.Dropout(0.5, false))
   end
   caption_module
     :add(nn.Linear(self.mem_dim, self.num_classes))
@@ -276,7 +276,7 @@ function ImageCaptioner:train(dataset)
       self.grad_params:div(batch_size)
 
       -- clamp grad params in accordance to karpathy from -5 to 5
-      -- self.grad_params:clamp(-5, 5)
+      self.grad_params:clamp(-5, 5)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
@@ -448,8 +448,8 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- then initialize our tokens list
     for i = 1, beam_size do
       local next_token = best_indices[i]
-      --local copied_outputs = self:copy(next_outputs)
-      local copied_outputs = next_outputs
+      local copied_outputs = self:copy(next_outputs)
+      --local copied_outputs = next_outputs
       local curr_beam = {class_predictions[next_token], {next_token}, copied_outputs}
       table.insert(beams, curr_beam)
     end
@@ -493,11 +493,10 @@ function ImageCaptioner:predict(image_features, beam_size)
             table.insert(next_tokens_list, next_token)
 
             local next_ll = log_likelihood + class_pred[next_token]
-            --local copied_next_out = self:copy(next_out)
-            local copied_next_out = next_out
+            local copied_next_out = self:copy(next_out)
+            --local copied_next_out = next_out
             local next_beam = {next_ll, next_tokens_list, copied_next_out}
 
-            --local copied_outputs = self:copy(next_outputs)
             table.insert(next_beams, next_beam)
           end
         end
@@ -681,9 +680,7 @@ end
 function ImageCaptioner.load(path)
   local state = torch.load(path)
   local model = imagelstm.ImageCaptioner.new(state.config)
-  print(state.params:size())
-  print(model.params:size())
-  print(model.hidden_layer)
+  
   model.params:copy(state.params)
   model.hidden_layer.params:copy(state.hidden_params)
   model.combine_layer.params:copy(state.combine_params)

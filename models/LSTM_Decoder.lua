@@ -269,11 +269,8 @@ function LSTM:tick(input, prev_outputs)
 
   --local in_val = {input, copied_prev_outputs[1], copied_prev_outputs[2]}
   local in_val = {input, prev_outputs[1], prev_outputs[2]}
-  --local cell = self:new_cell()
-  print(prev_outputs[1]:norm())
   local cell = self.master_cell
   local outputs = cell:forward(in_val)
-  print(prev_outputs[1]:norm())
   return outputs
 end
 

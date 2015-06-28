@@ -57,6 +57,7 @@ function share_params(cell, src, ...)
   for i = 1, #cell.forwardnodes do
     local node = cell.forwardnodes[i]
     if node.data.module then
+    	--print(node.data.module)
       node.data.module:share(src.forwardnodes[i].data.module, ...)
     end
   end

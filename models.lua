@@ -120,6 +120,6 @@ printf('num train = %d\n', train_dataset.size)
 
 model = imagelstm.ImageCaptioner.load("model.th")
 
-train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 1, 30))
+train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
 test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 1, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))

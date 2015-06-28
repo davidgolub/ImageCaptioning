@@ -101,7 +101,7 @@ collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
 -- initialize model
-local model = imagelstm.ImageCaptioner{
+local model = imagelstm.GoogleImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
   emb_vecs = vecs,
@@ -265,11 +265,11 @@ for i = 1, params.epochs do
 
   if curr_epoch % 50 == 20 then
     print('writing model to ' .. model_save_path)
-    model:save(model_save_path)
+    --model:save(model_save_path)
   end
 
   print('writing model to ' .. model_save_path)
-  model:save(model_save_path)
+  -- model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
 end
 
