@@ -268,8 +268,8 @@ for i = 1, params.epochs do
     model:save(model_save_path)
   end
 
-  -- print('writing model to ' .. model_save_path)
-  -- model:save(model_save_path)
+  print('writing model to ' .. model_save_path)
+  model:save(model_save_path)
   --model = imagelstm.ImageCaptioner.load(model_save_path)
 end
 

@@ -280,7 +280,7 @@ function ImageCaptioner:train(dataset)
       -- regularization: BAD BAD BAD
       -- loss = loss + 0.5 * self.reg * self.params:norm() ^ 2
       -- self.grad_params:add(self.reg, self.params)
-      print("Current loss", loss)
+      -- print("Current loss", loss)
       -- print(currIndex, " of ", self.params:size(1))
       currIndex = currIndex + 1
       return loss, self.grad_params
@@ -406,10 +406,12 @@ function ImageCaptioner:predict(image_features, beam_size)
   end
 
   -- Start with special START token:
-  local next_token = self.gpu_mode and torch.CudaTensor{1} or torch.IntTensor{1}
+  local next_token = self.gpu_mode and torch.CudaTensor{self.vocab.start_index} 
+                      or torch.IntTensor{self.vocab.start_index}
 
   -- Terminate when predict the END token
-  local end_token = self.gpu_mode and torch.CudaTensor{2} or torch.IntTensor{2}
+  local end_token = self.gpu_mode and torch.CudaTensor{self.vocab.end_index} 
+                      or torch.IntTensor{self.vocab.end_index}
 
   -- Initial hidden state/cell state values for lstm
   local prev_outputs = self.hidden_layer:forward(image_features)
@@ -446,8 +448,8 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- then initialize our tokens list
     for i = 1, beam_size do
       local next_token = best_indices[i]
-      local copied_outputs = self:copy(next_outputs)
-      --local copied_outputs = next_outputs
+      --local copied_outputs = self:copy(next_outputs)
+      local copied_outputs = next_outputs
       local curr_beam = {class_predictions[next_token], {next_token}, copied_outputs}
       table.insert(beams, curr_beam)
     end
@@ -491,8 +493,8 @@ function ImageCaptioner:predict(image_features, beam_size)
             table.insert(next_tokens_list, next_token)
 
             local next_ll = log_likelihood + class_pred[next_token]
-            local copied_next_out = self:copy(next_out)
-            --local copied_next_out = next_out
+            --local copied_next_out = self:copy(next_out)
+            local copied_next_out = next_out
             local next_beam = {next_ll, next_tokens_list, copied_next_out}
 
             --local copied_outputs = self:copy(next_outputs)

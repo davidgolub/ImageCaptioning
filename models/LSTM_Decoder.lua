@@ -236,7 +236,7 @@ function LSTM:forward(inputs, hidden_inputs, reverse)
     local cell = self.cells[self.depth]
 
     if cell == nil then
-      print("Cells are null at depth ", self.depth)
+      --print("Cells are null at depth ", self.depth)
       cell = self:new_cell()
       self.cells[self.depth] = cell
     end
@@ -270,8 +270,10 @@ function LSTM:tick(input, prev_outputs)
   --local in_val = {input, copied_prev_outputs[1], copied_prev_outputs[2]}
   local in_val = {input, prev_outputs[1], prev_outputs[2]}
   --local cell = self:new_cell()
+  print(prev_outputs[1]:norm())
   local cell = self.master_cell
   local outputs = cell:forward(in_val)
+  print(prev_outputs[1]:norm())
   return outputs
 end
 

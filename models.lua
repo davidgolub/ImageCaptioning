@@ -27,6 +27,7 @@ params.gpu_mode = false
 local use_gpu_mode = params.gpu_mode or false
 local num_epochs = params.epochs
 
+add_unk = true
 num_unk_sentences = 0
 if use_gpu_mode then 
   print("Loading gpu modules")
@@ -119,8 +120,6 @@ printf('num train = %d\n', train_dataset.size)
 
 model = imagelstm.ImageCaptioner.load("model.th")
 
-train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 25, 30))
-test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 25, 30))
-
-model:eval(train_dataset, 1)
+train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 1, 30))
+test_predictions = model:get_sentences(model:predict_dataset(test_dataset, 1, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
