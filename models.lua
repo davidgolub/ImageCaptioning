@@ -135,10 +135,10 @@ emb_vecs = nil
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
-model = imagelstm.ImageCaptioner.load("model_35.th")
+model = imagelstm.ImageCaptioner.load("model_37.th")
 model:print_config()
 
 --train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
 --test_delpredictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
-evaluate_results(model, 10, 'flickr8k')
+evaluate_results(model, 25, 'flickr8k')

@@ -675,13 +675,16 @@ function ImageCaptioner:getPath(epoch)
   '/image_captioning_lstm.hidden_type_%s.input_type_%s.emb_dim_%d.num_layers_%d.mem_dim_%d.epoch_%d.th', 
   self.hidden_module_type,
   self.combine_module_type,
-  self.emb_dim, self.num_layers,
+  self.emb_dim, self.num_laydghers,
   self.mem_dim, epoch)
   return model_save_path
 end
 
 function ImageCaptioner.load(path)
   local state = torch.load(path)
+  print(state.config.in_dropout_prob)
+  print(state.config.hidden_dropout_prob)
+  
   local model = imagelstm.ImageCaptioner.new(state.config)
   
   model.params:copy(state.params)

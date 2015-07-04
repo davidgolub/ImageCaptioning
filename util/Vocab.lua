@@ -9,7 +9,8 @@ token.
 
 local Vocab = torch.class('imagelstm.Vocab')
 
-function Vocab:__init(path)
+function Vocab:__init(path, add_unk)
+  assert(add_unk ~= nil)
   print("Loading vocabulary from path " .. path)
 
   self.size = 0

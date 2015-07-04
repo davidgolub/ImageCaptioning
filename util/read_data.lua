@@ -7,10 +7,10 @@
 function imagelstm.read_embedding(vocab_path, emb_path)
   -- Reads vocabulary from vocab_path, 
   -- Reads word embeddings from embd_path
-  local vocab = imagelstm.Vocab(vocab_path)
+  local vocab = imagelstm.Vocab(vocab_path, false)
   local embedding = torch.load(emb_path)
   return vocab, embedding
-end
+
 
 function imagelstm.read_sentences(path, vocab)
   -- Reads sentences from specified path
@@ -203,7 +203,7 @@ function imagelstm.read_flickr8k_dataset(base_path, gpu_mode)
   local data_dir = base_path
 
   -- load vocab
-  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt', true)
 
   -- load datasets
 
@@ -233,7 +233,7 @@ function imagelstm.read_coco_dataset(base_path, gpu_mode)
   local data_dir = base_path
 
   -- load vocab
-  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+  local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt', true)
 
   -- load datasets
 

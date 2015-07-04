@@ -62,7 +62,6 @@ header('Image-Captioning with LSTMs')
 
 local vocab, train_dataset, val_dataset, test_dataset 
 
-add_unk = true
 if params.dataset == 'coco' then
   print("Loading coco dataset")
   vocab, train_dataset, val_dataset, test_dataset =
@@ -74,7 +73,6 @@ end
 
 -- load embeddings
 print('Loading word embeddings')
-add_unk = false
 local emb_dir = params.emb_dir
 local emb_prefix = emb_dir .. 'vocab_feats'
 local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.600d.th')
@@ -106,7 +104,7 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
-  emb_vecs = vecs,
+  --emb_vecs = vecs,
   vocab = vocab,
   hidden_dropout_prob = params.hidden_dropout_prob,
   in_dropout_prob = params.in_dropout_prob,
@@ -282,7 +280,7 @@ for i = 1, params.epochs do
   end
 
   print('writing model to ' .. model_save_path)
-  --model:save(model_save_path, curr_epoch)
+  model:save(model_save_path, curr_epoch)
   --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
