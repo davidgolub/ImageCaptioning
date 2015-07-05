@@ -104,7 +104,7 @@ printf('num train = %d\n', train_dataset.size)
 local model = imagelstm.ImageCaptioner{
   batch_size = params.batch_size,
   optim_method = opt_method,
-  --emb_vecs = vecs,
+  emb_vecs = vecs,
   vocab = vocab,
   hidden_dropout_prob = params.hidden_dropout_prob,
   in_dropout_prob = params.in_dropout_prob,
@@ -258,9 +258,9 @@ for i = 1, params.epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   -- evaluate_results(model, 1, params.dataset)
-  if curr_epoch % 10 == 5 then
+  if curr_epoch % 20 == 19 then
     --evaluate_results(model, params.beam_size, params.dataset)
-    -- model:save(model_save_path)
+    model:save(model_save_path)
   end
 
   printf("Average loss %.4f \n", loss)
@@ -279,8 +279,8 @@ for i = 1, params.epochs do
     --model:save(model_save_path)
   end
 
-  print('writing model to ' .. model_save_path)
-  model:save(model_save_path, curr_epoch)
+  -- print('writing model to ' .. model_save_path)
+  --model:save(model_save_path, curr_epoch)
   --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
 
 end

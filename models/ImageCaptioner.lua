@@ -682,9 +682,6 @@ end
 
 function ImageCaptioner.load(path)
   local state = torch.load(path)
-  print(state.config.in_dropout_prob)
-  print(state.config.hidden_dropout_prob)
-  
   local model = imagelstm.ImageCaptioner.new(state.config)
   
   model.params:copy(state.params)
