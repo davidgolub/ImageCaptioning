@@ -675,7 +675,7 @@ function ImageCaptioner:getPath(epoch)
   '/image_captioning_lstm.hidden_type_%s.input_type_%s.emb_dim_%d.num_layers_%d.mem_dim_%d.epoch_%d.th', 
   self.hidden_module_type,
   self.combine_module_type,
-  self.emb_dim, self.num_laydghers,
+  self.emb_dim, self.num_layers,
   self.mem_dim, epoch)
   return model_save_path
 end

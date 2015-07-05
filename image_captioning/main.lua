@@ -258,7 +258,7 @@ for i = 1, params.epochs do
   imagelstm.predictions_dir .. model:getPath(i))
 
   -- evaluate_results(model, 1, params.dataset)
-  if curr_epoch % 20 == 19 then
+  if curr_epoch % 10 == 9 then
     --evaluate_results(model, params.beam_size, params.dataset)
     model:save(model_save_path)
   end

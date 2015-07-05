@@ -44,6 +44,7 @@ end
 -- first_entry, second_entry are tables
 function min_sort_function(first_table, second_table)
     return first_table[1] < second_table[1]
+end
 
 
 -- Sorts tables by first value

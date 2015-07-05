@@ -10,7 +10,7 @@ function imagelstm.read_embedding(vocab_path, emb_path)
   local vocab = imagelstm.Vocab(vocab_path, false)
   local embedding = torch.load(emb_path)
   return vocab, embedding
-
+end
 
 function imagelstm.read_sentences(path, vocab)
   -- Reads sentences from specified path
