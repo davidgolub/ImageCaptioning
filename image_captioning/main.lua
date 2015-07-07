@@ -250,13 +250,13 @@ for i = 1, params.epochs do
   local test_loss, perplexity = model:eval(test_dataset)
   printf("Test loss is %.4f Perplexity %4.f \n", test_loss, perplexity)
 
-  local val_loss, perplexity = model:eval(val_dataset)
+  --local val_loss, perplexity = model:eval(val_dataset)
   printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
 
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  -- evaluate_results(model, 1, params.dataset)
+  evaluate_results(model, 1, params.dataset)
   if curr_epoch % 10 == 9 then
     --evaluate_results(model, params.beam_size, params.dataset)
     model:save(model_save_path)
