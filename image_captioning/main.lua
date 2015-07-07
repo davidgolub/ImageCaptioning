@@ -237,9 +237,6 @@ function test_saving()
   assert(false)
 end
 
-
-model:save(model_save_path)
-
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
