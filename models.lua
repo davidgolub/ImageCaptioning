@@ -90,7 +90,7 @@ header('Image-Captioning with LSTMs')
 local data_dir = params.data_dir
 
 -- load vocab
-vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
+vocab = imagelstm.Vocab(data_dir .. 'vocab.txt', true)
 
 -- load datasets
 
@@ -108,37 +108,14 @@ local test_dir = data_dir
 test_dataset = imagelstm.read_caption_dataset(test_dir, vocab, params.gpu_mode, 
   'test')
 
--- load embeddings
-print('loading word embeddings')
-local emb_dir = params.emb_dir
-local emb_prefix = emb_dir .. 'glove.840B'
---local emb_vocab, emb_vecs = imagelstm.read_embedding(emb_prefix .. '.vocab', emb_prefix .. '.300d.th')
---local emb_dim = emb_vecs:size(2)
-
--- use only vectors in vocabulary (not necessary, but gives faster training)
-local num_unk = 0
-local vecs = torch.Tensor(vocab.size, params.emb_dim)
-for i = 1, vocab.size do
-  local w = string.gsub(vocab:token(i), '\\', '') -- remove escape characters
-  -- if emb_vocab:contains(w) then
-     -- vecs[i] = emb_vecs[emb_vocab:index(w)]
-  -- else
-    num_unk = num_unk + 1
-    vecs[i]:uniform(-0.05, 0.05)
-  --end
-end
-
-print('unk count = ' .. num_unk)
-emb_vocab = nil
-emb_vecs = nil
 
 collectgarbage()
 printf('num train = %d\n', train_dataset.size)
 
-model = imagelstm.ImageCaptioner.load("model_37.th")
+model = imagelstm.ImageCaptioner.load("model_25.th")
 model:print_config()
 
 --train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
 --test_delpredictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
-evaluate_results(model, 25, 'flickr8k')
+evaluate_results(model, 2, 'flickr8k')

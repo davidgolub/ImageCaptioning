@@ -1,7 +1,6 @@
 --[[
 
-  Hidden Project Layer: Projects image input into projection dimension twice. For feeding in
-  image input into lstm
+  Hidden Dummy Layer: Just feeds in zeros
 --]]
 
 local HiddenDummyLayer, parent = torch.class('imagelstm.HiddenDummyLayer', 'imagelstm.HiddenLayer')

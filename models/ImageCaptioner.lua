@@ -391,18 +391,28 @@ function ImageCaptioner:predict(image_features, beam_size)
    assert(next_token ~= nil)
    assert(prev_outputs ~= nil)
 
+   local start_time = sys.clock()
    local inputs = self.combine_layer:forward(next_token, image_features, curr_iter)
 
+   local t1 = sys.clock()
    -- feed forward to predictions
    local next_outputs, class_predictions = self.image_captioner:tick(inputs[1], prev_outputs)
-   local squeezed_predictions = torch.squeeze(class_predictions)
-   local predicted_token = argmax(squeezed_predictions, num_iter < 3)
+
+   local t2 = sys.clock()
+   --print(class_predictions:size())
+   --local squeezed_predictions = torch.squeeze(class_predictions)
+   --print(squeezed_predictions:size())
+   local t3 = sys.clock()
+   local predicted_token = argmax(class_predictions, num_iter < 3)
    
+   local t4 = sys.clock()
    --print("Predicted token ")
    --print(predicted_token, next_token)
-   local likelihood = squeezed_predictions[predicted_token]
+   local likelihood = class_predictions[predicted_token]
 
-   return predicted_token, likelihood, next_outputs, squeezed_predictions
+   --print("=== TIMES ===")
+   --print("Tot time", t4 - t1, t4 - t3, t3 - t2, t2 - t1)
+   return predicted_token, likelihood, next_outputs, class_predictions
   end
 
   -- Start with special START token:
@@ -443,6 +453,7 @@ function ImageCaptioner:predict(image_features, beam_size)
     -- first get initial predictions
     local pred_token, likelihood, next_outputs, class_predictions = lstm_tick(next_token, prev_outputs, num_iter)
     
+
     -- then get best top k indices indices
     local best_indices = topkargmax(class_predictions, beam_size)
 
