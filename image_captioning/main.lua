@@ -240,6 +240,7 @@ end
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
   local curr_epoch = i
+  evaluate_results(model, 1, params.dataset)
   local start = sys.clock()
   printf('-- epoch %d\n', i)
   loss = model:train(train_dataset)
@@ -256,7 +257,7 @@ for i = 1, params.epochs do
   local predictions_save_path = string.format(
   imagelstm.predictions_dir .. model:getPath(i))
 
-  evaluate_results(model, 1, params.dataset)
+
   if curr_epoch % 10 == 9 then
     --evaluate_results(model, params.beam_size, params.dataset)
     model:save(model_save_path)
