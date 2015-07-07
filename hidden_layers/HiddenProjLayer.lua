@@ -72,6 +72,7 @@ end
 
 -- Sets gpu mode
 function HiddenProjLayer:set_gpu_mode()
+  self.gpu_mode = true
   if self.num_layers == 1 then 
      self.cell_image_emb:cuda()
      self.hidden_image_emb:cuda()
@@ -84,6 +85,7 @@ function HiddenProjLayer:set_gpu_mode()
 end
 
 function HiddenProjLayer:set_cpu_mode()
+  self.gpu_mode = false
   if self.num_layers == 1 then 
      self.cell_image_emb:double()
      self.hidden_image_emb:double()

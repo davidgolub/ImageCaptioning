@@ -38,10 +38,12 @@ end
 -- Sets gpu mode
 function EmbedLayer:set_gpu_mode()
   self.emb:cuda()
+  self.gpu_mode = true
 end
 
 function EmbedLayer:set_cpu_mode()
   self.emb:double()
+  self.gpu_mode = false
 end
 
 -- Enable Dropouts
