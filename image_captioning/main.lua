@@ -239,6 +239,15 @@ end
 
 header('Training Image Captioning LSTM')
 for i = 1, params.epochs do
+
+  local model_save_path = string.format(
+  imagelstm.models_dir .. model:getPath(i))
+    -- save them to disk for later use
+
+
+  print('writing model to ' .. model_save_path)
+  model:save(model_save_path, curr_epoch)
+
   local curr_epoch = i
   local start = sys.clock()
   printf('-- epoch %d\n', i)
@@ -273,13 +282,15 @@ for i = 1, params.epochs do
   imagelstm.models_dir .. model:getPath(i))
     -- save them to disk for later use
 
+
+  print('writing model to ' .. model_save_path)
+  model:save(model_save_path, curr_epoch)
+
+  
   if curr_epoch % 50 == 20 then
     print('writing model to ' .. model_save_path)
     --model:save(model_save_path)
   end
-
-  -- print('writing model to ' .. model_save_path)
-  --model:save(model_save_path, curr_epoch)
   --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
