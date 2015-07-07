@@ -22,7 +22,7 @@ params.load_model = true
 params.dropout = true
 params.num_epochs = 100
 params.epochs = 98
-params.gpu_mode = false
+params.gpu_mode = true
 
 
 local use_gpu_mode = params.gpu_mode or false
@@ -114,7 +114,7 @@ printf('num train = %d\n', train_dataset.size)
 
 model = imagelstm.ImageCaptioner.load("model_25.th")
 model:print_config()
-
+model:set_gpu_mode()
 --train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
 --test_delpredictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
