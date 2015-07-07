@@ -661,11 +661,13 @@ function ImageCaptioner:save(path, epoch)
   }
 
   local params = self.params
-  local optim_state = self.optim_state
+  local optim_state = {learning_rate = self.learning_rate,
+                                   learningRateDecay = 0,
+                                   weightDecay = 0,
+                                   --momentum = 0.1
+                           }
 
   if self.gpu_mode then 
-    optim_state.paramStd = self.optim_state.paramStd:double()
-    optim_state.paramVariance = self.optim_state.paramVariance:double()
     params = self.params:double()
   end
 
