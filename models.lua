@@ -14,7 +14,7 @@ params.emb_dim = 600
 params.mem_dim = 600
 params.learning_rate = 0.01
 params.data_dir = 'data'
-params.dataset = 'coco'
+params.dataset = 'flickr8k'
 params.emb_dir = 'data/glove/'
 params.combine_module = 'embedlayer'
 params.hidden_module = 'hiddenlayer'
@@ -23,7 +23,7 @@ params.load_model = true
 params.dropout = true
 params.num_epochs = 100
 params.epochs = 98
-params.gpu_mode = false 
+params.gpu_mode = true 
 
 
 local use_gpu_mode = params.gpu_mode or false
@@ -89,9 +89,14 @@ end
 
 
 model = imagelstm.ImageCaptioner.load("model_25.th")
+
+if params.gpu_mode then 
+  model:set_gpu_mode()
+end
+
 model:print_config()
 --model:set_gpu_mode()
 --train_predictions = model:get_sentences(model:predict_dataset(train_dataset, 5, 30))
 --test_delpredictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
 --val_predictions = model:get_sentences(model:predict_dataset(test_dataset, 5, 30))
-evaluate_results(model, 1, 'coco')
+evaluate_results(model, 1, 'flickr8k')
