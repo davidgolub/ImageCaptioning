@@ -188,12 +188,14 @@ end
 
 -- Set all of the network parameters to gpu mode
 function ImageCaptioner:set_gpu_mode()
+  self.gpu_mode = true
   self.image_captioner:set_gpu_mode()
   self.combine_layer:set_gpu_mode()
   self.hidden_layer:set_gpu_mode()
 end
 
 function ImageCaptioner:set_cpu_mode()
+  self.gpu_mode = false
   self.image_captioner:set_cpu_mode()
   self.combine_layer:set_cpu_mode()
   self.hidden_layer:set_cpu_mode()
