@@ -14,7 +14,7 @@ params.emb_dim = 600
 params.mem_dim = 600
 params.learning_rate = 0.01
 params.data_dir = 'data'
-params.dataset = 'flickr8k'
+params.dataset = 'coco'
 params.emb_dir = 'data/glove/'
 params.combine_module = 'embedlayer'
 params.hidden_module = 'hiddenlayer'
@@ -23,7 +23,7 @@ params.load_model = true
 params.dropout = true
 params.num_epochs = 100
 params.epochs = 98
-params.gpu_mode = false
+params.gpu_mode = true
 
 
 local use_gpu_mode = params.gpu_mode or false
