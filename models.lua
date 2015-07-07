@@ -23,7 +23,7 @@ params.load_model = true
 params.dropout = true
 params.num_epochs = 100
 params.epochs = 98
-params.gpu_mode = true 
+params.gpu_mode = false
 
 
 local use_gpu_mode = params.gpu_mode or false
