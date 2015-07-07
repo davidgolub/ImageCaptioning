@@ -77,16 +77,15 @@ end
 
 -- TopkArgmax returns top k indices, values from list
 function topkargmax(list, k)
-  local vals, indices = torch.sort(list)
-  tmp_list = {}
-  for i = 1, list:size(1) do
-    table.insert(tmp_list, {list[i], i})
-  end
-  table.sort(tmp_list, max_sort_function)
-
+  local cloned_list = list:clone()
   max_indices = {}
   for i = 1, k do
-    table.insert(max_indices, indices[i])
+    local vals, indices = torch.max(cloned_list, 1)
+    local best_index = indices[1]
+    print(best_index)
+    cloned_list[best_index] = -1000
+    table.insert(max_indices, best_index)
   end
+  assert(false)
   return max_indices
 end
