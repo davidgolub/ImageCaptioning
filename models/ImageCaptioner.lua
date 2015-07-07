@@ -410,8 +410,8 @@ function ImageCaptioner:predict(image_features, beam_size)
    --print(predicted_token, next_token)
    local likelihood = class_predictions[predicted_token]
 
-   --print("=== TIMES ===")
-   --print("Tot time", t4 - t1, t4 - t3, t3 - t2, t2 - t1)
+   print("=== TIMES ===")
+   print("Tot time", t4 - t1, t4 - t3, t3 - t2, t2 - t1)
    return predicted_token, likelihood, next_outputs, class_predictions
   end
 
