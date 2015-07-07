@@ -55,20 +55,8 @@ end
 
 -- Argmax: hacky way to ignore end token to reduce silly sentences
 function argmax(v, ignore_end)
-  local idx = 1
-  local max = v[1]
-  local start_index = 2
-  if ignore_end then
-    start_index = 4
-  end
-
-  for i = start_index, v:size(1) do
-    if v[i] > max then
-      max = v[i]
-      idx = i
-    end
-  end
-  return idx
+  local vals, indices = torch.sort(v)
+  return indices[1]
 end
 
 -- TopkArgmax returns top k indices, values from list
@@ -89,15 +77,10 @@ end
 
 -- TopkArgmax returns top k indices, values from list
 function topkargmax(list, k)
-  tmp_list = {}
-  for i = 1, list:size(1) do
-    table.insert(tmp_list, {list[i], i})
-  end
-  table.sort(tmp_list, max_sort_function)
-
+  local vals, indices = torch.sort(list)
   max_indices = {}
   for i = 1, k do
-    table.insert(max_indices, tmp_list[i][2])
+    table.insert(max_indices, indices[i])
   end
   return max_indices
 end
