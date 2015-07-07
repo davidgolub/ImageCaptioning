@@ -11,7 +11,7 @@ hidden_dropout_prob=${8-0.5}
 beam_size=${9-6}
 combine_module=${10-embedlayer}
 hidden_module=${11-projlayer}
-dataset=${12-flickr8k}
+dataset=${12-coco} #${12-flickr8k}
 dropout=${13-}
 gpu_mode=${14-}
 
