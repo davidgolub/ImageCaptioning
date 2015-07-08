@@ -82,10 +82,8 @@ function topkargmax(list, k)
   for i = 1, k do
     local vals, indices = torch.max(cloned_list, 1)
     local best_index = indices[1]
-    print(best_index)
     cloned_list[best_index] = -1000
     table.insert(max_indices, best_index)
   end
-  assert(false)
   return max_indices
 end
