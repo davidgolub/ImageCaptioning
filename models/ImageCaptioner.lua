@@ -675,9 +675,9 @@ function ImageCaptioner:save(path, epoch)
 
   torch.save(path, {
     params = params,
-    hidden_params = self.hidden_layer:getWeights(),
-    combine_params = self.combine_layer:getWeights(),
-    caption_params = self.image_captioner:getWeights(),
+    hidden_params = self.hidden_layer:getWeights():double(),
+    combine_params = self.combine_layer:getWeights():double(),
+    caption_params = self.image_captioner:getWeights():double(),
     optim_state = optim_state,
     config = config,
   })
