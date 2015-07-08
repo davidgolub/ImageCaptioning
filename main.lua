@@ -2,9 +2,6 @@ require('.')
 
 function save_bleu_flickr8k(data_dir, data_split, save_data_split)
 	
-		-- load vocab
-	local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
-
 	local train_sentences, min_size = 
 		imagelstm.read_caption_sentences(data_dir, data_split)
 
@@ -36,8 +33,6 @@ end
 function save_bleu_coco(data_dir, data_split, save_data_split)
 	
 		-- load vocab
-	local vocab = imagelstm.Vocab(data_dir .. 'vocab.txt')
-
 	local train_sentences, min_size = 
 		imagelstm.read_caption_sentences(data_dir .. data_split .. '/', 'train')
 

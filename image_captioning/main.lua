@@ -254,8 +254,8 @@ for i = 1, params.epochs do
   local test_loss, perplexity = model:eval(test_dataset)
   printf("Test loss is %.4f Perplexity %4.f \n", test_loss, perplexity)
 
-  --local val_loss, perplexity = model:eval(val_dataset)
-  --printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
+  local val_loss, perplexity = model:eval(val_dataset)
+  printf("Val loss is %.4f Perplexity %4.f \n", val_loss, perplexity)
 
   local model_save_path = string.format(
   imagelstm.models_dir .. model:getPath(i))
@@ -273,13 +273,12 @@ for i = 1, params.epochs do
   print("Saving predictions to ", predictions_save_path)
   model:save_predictions(predictions_save_path, loss, test_predictions)
 
-  evaluate_results(model, 1, params.dataset)
 
-  if curr_epoch % 50 == 20 then
+  if curr_epoch % 20 == 10 then
     print('writing model to ' .. model_save_path)
-    --model:save(model_save_path)
+    evaluate_results(model, 1, params.dataset)
   end
-  --m-odel = imagelstm.ImageCaptioner.load(model_save_path)
+  --model = imagelstm.ImageCaptioner.load(model_save_path)
 
 end
 
